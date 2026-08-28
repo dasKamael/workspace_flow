@@ -66,4 +66,11 @@ class ProjectDao extends DatabaseAccessor<AppDatabase> with _$ProjectDaoMixin {
   /// Adds an entry unless one with the same name already exists.
   Future<void> upsertAppLibraryEntry(AppLibraryEntriesCompanion entry) =>
       into(appLibraryEntries).insert(entry, mode: InsertMode.insertOrIgnore);
+
+  /// Removes an entry by name — the table's unique key, so it also identifies the row.
+  ///
+  /// Windows already placed in a saved project keep their own copy of the app's fields
+  /// and are unaffected: only future drags of this chip stop being possible.
+  Future<void> deleteAppLibraryEntry(String name) =>
+      (delete(appLibraryEntries)..where((e) => e.name.equals(name))).go();
 }

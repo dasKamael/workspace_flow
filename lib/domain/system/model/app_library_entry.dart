@@ -9,7 +9,17 @@ part 'app_library_entry.g.dart';
 /// Finder picker; websites are typed into the editor's URL field.
 @freezed
 abstract class AppLibraryEntry with _$AppLibraryEntry {
-  const factory AppLibraryEntry({required String name, String? bundleId, String? path, String? url}) = _AppLibraryEntry;
+  const factory AppLibraryEntry({
+    required String name,
+    String? bundleId,
+    String? path,
+    String? url,
+
+    /// A folder or file this entry opens with the app — a specific project rather
+    /// than just the app in general. Distinct from [path], which is the app bundle's
+    /// own location on disk.
+    String? documentPath,
+  }) = _AppLibraryEntry;
 
   /// Read back in the layout overlay, which runs in its own Flutter engine.
   factory AppLibraryEntry.fromJson(Map<String, dynamic> json) => _$AppLibraryEntryFromJson(json);
@@ -19,5 +29,13 @@ abstract class AppLibraryEntry with _$AppLibraryEntry {
   bool get isWebsite => url != null;
 
   /// Identity used to tell whether this entry is already placed in the current layout.
-  String get key => url ?? bundleId ?? name;
+  ///
+  /// [documentPath] is folded in so two project variants of the same app — "VS Code —
+  /// client-a" and "VS Code — client-b" — are distinct entries rather than colliding
+  /// on their shared bundle id.
+  String get key {
+    if (url != null) return url!;
+    if (documentPath != null) return '$bundleId|$documentPath';
+    return bundleId ?? name;
+  }
 }

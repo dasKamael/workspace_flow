@@ -16,6 +16,7 @@ _ProjectWindow _$ProjectWindowFromJson(Map<String, dynamic> json) => _ProjectWin
   height: (json['height'] as num).toDouble(),
   bundleId: json['bundleId'] as String?,
   url: json['url'] as String?,
+  documentPath: json['documentPath'] as String?,
   sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
 );
 
@@ -29,5 +30,6 @@ Map<String, dynamic> _$ProjectWindowToJson(_ProjectWindow instance) => <String, 
   'height': instance.height,
   'bundleId': instance.bundleId,
   'url': instance.url,
+  'documentPath': instance.documentPath,
   'sortOrder': instance.sortOrder,
 };

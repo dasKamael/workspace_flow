@@ -6,7 +6,7 @@ part of 'launch.service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$launchServiceHash() => r'7d1b4e77f6d588d8dde899228bd721f92daef20a';
+String _$launchServiceHash() => r'cd327ef8f784b068310c6f5e5836ea0126d22a2c';
 
 /// Opens a project's apps and puts their windows back where they were saved.
 ///

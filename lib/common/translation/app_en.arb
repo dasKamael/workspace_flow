@@ -78,6 +78,7 @@
   "project_editor_untitled": "Untitled project",
   "project_editor_sources_label": "Apps & websites",
   "project_editor_choose_from_finder": "Choose from Finder…",
+  "project_editor_add_project": "Add project…",
   "project_editor_use_current_arrangement": "Use current arrangement",
   "project_editor_arrange_on_screen": "Arrange on screen",
   "project_editor_capture_empty": "No windows to capture. Grant Accessibility access, or open the apps you want to save.",

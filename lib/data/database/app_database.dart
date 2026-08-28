@@ -31,10 +31,18 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (Migrator m, int from, int to) async {
+      // v2: a window or library entry can name a folder/file to open — a specific
+      // project rather than just the app in general.
+      if (from < 2) {
+        await m.addColumn(appLibraryEntries, appLibraryEntries.documentPath);
+        await m.addColumn(projectWindows, projectWindows.documentPath);
+      }
+    },
     beforeOpen: (details) async {
       // Required for the ON DELETE CASCADE / SET NULL clauses above to take effect.
       await customStatement('PRAGMA foreign_keys = ON');

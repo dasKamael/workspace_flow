@@ -73,6 +73,24 @@ final class SystemBridgePlugin {
         result(entry)
       }
 
+    case "chooseFolder":
+      let directory = arguments["directory"] as? String ?? NSHomeDirectory()
+      AppLauncherService.chooseFolder(directory: directory) { entry in
+        result(entry)
+      }
+
+    case "launchAppWithDocument":
+      guard
+        let bundleId = arguments["bundleId"] as? String,
+        let documentPath = arguments["documentPath"] as? String
+      else {
+        result(Self.badArguments(call))
+        return
+      }
+      AppLauncherService.launchWithDocument(bundleId: bundleId, documentPath: documentPath) { processId in
+        result(processId)
+      }
+
     case "isAccessibilityTrusted":
       result(WindowControlService.isTrusted())
 

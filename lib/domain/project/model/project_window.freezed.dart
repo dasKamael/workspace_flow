@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProjectWindow {
 
- int get id; String get name; int get screenIndex; double get x; double get y; double get width; double get height; String? get bundleId; String? get url; int get sortOrder;
+ int get id; String get name; int get screenIndex; double get x; double get y; double get width; double get height; String? get bundleId; String? get url;/// A folder or file to open with [bundleId] — a specific project rather than just
+/// the app in general. Set from an AppLibraryEntry carrying the same field.
+ String? get documentPath; int get sortOrder;
 /// Create a copy of ProjectWindow
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +30,16 @@ $ProjectWindowCopyWith<ProjectWindow> get copyWith => _$ProjectWindowCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProjectWindow&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.screenIndex, screenIndex) || other.screenIndex == screenIndex)&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.url, url) || other.url == url)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProjectWindow&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.screenIndex, screenIndex) || other.screenIndex == screenIndex)&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.url, url) || other.url == url)&&(identical(other.documentPath, documentPath) || other.documentPath == documentPath)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,screenIndex,x,y,width,height,bundleId,url,sortOrder);
+int get hashCode => Object.hash(runtimeType,id,name,screenIndex,x,y,width,height,bundleId,url,documentPath,sortOrder);
 
 @override
 String toString() {
-  return 'ProjectWindow(id: $id, name: $name, screenIndex: $screenIndex, x: $x, y: $y, width: $width, height: $height, bundleId: $bundleId, url: $url, sortOrder: $sortOrder)';
+  return 'ProjectWindow(id: $id, name: $name, screenIndex: $screenIndex, x: $x, y: $y, width: $width, height: $height, bundleId: $bundleId, url: $url, documentPath: $documentPath, sortOrder: $sortOrder)';
 }
 
 
@@ -48,7 +50,7 @@ abstract mixin class $ProjectWindowCopyWith<$Res>  {
   factory $ProjectWindowCopyWith(ProjectWindow value, $Res Function(ProjectWindow) _then) = _$ProjectWindowCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, int screenIndex, double x, double y, double width, double height, String? bundleId, String? url, int sortOrder
+ int id, String name, int screenIndex, double x, double y, double width, double height, String? bundleId, String? url, String? documentPath, int sortOrder
 });
 
 
@@ -65,7 +67,7 @@ class _$ProjectWindowCopyWithImpl<$Res>
 
 /// Create a copy of ProjectWindow
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? screenIndex = null,Object? x = null,Object? y = null,Object? width = null,Object? height = null,Object? bundleId = freezed,Object? url = freezed,Object? sortOrder = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? screenIndex = null,Object? x = null,Object? y = null,Object? width = null,Object? height = null,Object? bundleId = freezed,Object? url = freezed,Object? documentPath = freezed,Object? sortOrder = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -76,6 +78,7 @@ as double,width: null == width ? _self.width : width // ignore: cast_nullable_to
 as double,height: null == height ? _self.height : height // ignore: cast_nullable_to_non_nullable
 as double,bundleId: freezed == bundleId ? _self.bundleId : bundleId // ignore: cast_nullable_to_non_nullable
 as String?,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,documentPath: freezed == documentPath ? _self.documentPath : documentPath // ignore: cast_nullable_to_non_nullable
 as String?,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
 as int,
   ));
@@ -162,10 +165,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int screenIndex,  double x,  double y,  double width,  double height,  String? bundleId,  String? url,  int sortOrder)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  int screenIndex,  double x,  double y,  double width,  double height,  String? bundleId,  String? url,  String? documentPath,  int sortOrder)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProjectWindow() when $default != null:
-return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.width,_that.height,_that.bundleId,_that.url,_that.sortOrder);case _:
+return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.width,_that.height,_that.bundleId,_that.url,_that.documentPath,_that.sortOrder);case _:
   return orElse();
 
 }
@@ -183,10 +186,10 @@ return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.widt
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int screenIndex,  double x,  double y,  double width,  double height,  String? bundleId,  String? url,  int sortOrder)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  int screenIndex,  double x,  double y,  double width,  double height,  String? bundleId,  String? url,  String? documentPath,  int sortOrder)  $default,) {final _that = this;
 switch (_that) {
 case _ProjectWindow():
-return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.width,_that.height,_that.bundleId,_that.url,_that.sortOrder);case _:
+return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.width,_that.height,_that.bundleId,_that.url,_that.documentPath,_that.sortOrder);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +206,10 @@ return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.widt
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int screenIndex,  double x,  double y,  double width,  double height,  String? bundleId,  String? url,  int sortOrder)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  int screenIndex,  double x,  double y,  double width,  double height,  String? bundleId,  String? url,  String? documentPath,  int sortOrder)?  $default,) {final _that = this;
 switch (_that) {
 case _ProjectWindow() when $default != null:
-return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.width,_that.height,_that.bundleId,_that.url,_that.sortOrder);case _:
+return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.width,_that.height,_that.bundleId,_that.url,_that.documentPath,_that.sortOrder);case _:
   return null;
 
 }
@@ -218,7 +221,7 @@ return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.widt
 @JsonSerializable()
 
 class _ProjectWindow extends ProjectWindow {
-  const _ProjectWindow({required this.id, required this.name, required this.screenIndex, required this.x, required this.y, required this.width, required this.height, this.bundleId, this.url, this.sortOrder = 0}): super._();
+  const _ProjectWindow({required this.id, required this.name, required this.screenIndex, required this.x, required this.y, required this.width, required this.height, this.bundleId, this.url, this.documentPath, this.sortOrder = 0}): super._();
   factory _ProjectWindow.fromJson(Map<String, dynamic> json) => _$ProjectWindowFromJson(json);
 
 @override final  int id;
@@ -230,6 +233,9 @@ class _ProjectWindow extends ProjectWindow {
 @override final  double height;
 @override final  String? bundleId;
 @override final  String? url;
+/// A folder or file to open with [bundleId] — a specific project rather than just
+/// the app in general. Set from an AppLibraryEntry carrying the same field.
+@override final  String? documentPath;
 @override@JsonKey() final  int sortOrder;
 
 /// Create a copy of ProjectWindow
@@ -245,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProjectWindow&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.screenIndex, screenIndex) || other.screenIndex == screenIndex)&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.url, url) || other.url == url)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProjectWindow&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.screenIndex, screenIndex) || other.screenIndex == screenIndex)&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.url, url) || other.url == url)&&(identical(other.documentPath, documentPath) || other.documentPath == documentPath)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,screenIndex,x,y,width,height,bundleId,url,sortOrder);
+int get hashCode => Object.hash(runtimeType,id,name,screenIndex,x,y,width,height,bundleId,url,documentPath,sortOrder);
 
 @override
 String toString() {
-  return 'ProjectWindow(id: $id, name: $name, screenIndex: $screenIndex, x: $x, y: $y, width: $width, height: $height, bundleId: $bundleId, url: $url, sortOrder: $sortOrder)';
+  return 'ProjectWindow(id: $id, name: $name, screenIndex: $screenIndex, x: $x, y: $y, width: $width, height: $height, bundleId: $bundleId, url: $url, documentPath: $documentPath, sortOrder: $sortOrder)';
 }
 
 
@@ -265,7 +271,7 @@ abstract mixin class _$ProjectWindowCopyWith<$Res> implements $ProjectWindowCopy
   factory _$ProjectWindowCopyWith(_ProjectWindow value, $Res Function(_ProjectWindow) _then) = __$ProjectWindowCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, int screenIndex, double x, double y, double width, double height, String? bundleId, String? url, int sortOrder
+ int id, String name, int screenIndex, double x, double y, double width, double height, String? bundleId, String? url, String? documentPath, int sortOrder
 });
 
 
@@ -282,7 +288,7 @@ class __$ProjectWindowCopyWithImpl<$Res>
 
 /// Create a copy of ProjectWindow
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? screenIndex = null,Object? x = null,Object? y = null,Object? width = null,Object? height = null,Object? bundleId = freezed,Object? url = freezed,Object? sortOrder = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? screenIndex = null,Object? x = null,Object? y = null,Object? width = null,Object? height = null,Object? bundleId = freezed,Object? url = freezed,Object? documentPath = freezed,Object? sortOrder = null,}) {
   return _then(_ProjectWindow(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -293,6 +299,7 @@ as double,width: null == width ? _self.width : width // ignore: cast_nullable_to
 as double,height: null == height ? _self.height : height // ignore: cast_nullable_to_non_nullable
 as double,bundleId: freezed == bundleId ? _self.bundleId : bundleId // ignore: cast_nullable_to_non_nullable
 as String?,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,documentPath: freezed == documentPath ? _self.documentPath : documentPath // ignore: cast_nullable_to_non_nullable
 as String?,sortOrder: null == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
 as int,
   ));

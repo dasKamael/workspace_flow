@@ -50,8 +50,13 @@ class ProjectRepository {
       bundleId: Value(entry.bundleId),
       path: Value(entry.path),
       url: Value(entry.url),
+      documentPath: Value(entry.documentPath),
     ),
   );
+
+  /// Removes [entry] from the library. Projects that already placed it are unaffected —
+  /// a window carries its own copy of the app's fields, not a reference to this row.
+  Future<void> removeFromAppLibrary(AppLibraryEntry entry) => dao.deleteAppLibraryEntry(entry.name);
 
   List<ProjectWindowsCompanion> _companions(int projectId, List<ProjectWindow> windows) => [
     for (final (index, window) in windows.indexed)
@@ -60,6 +65,7 @@ class ProjectRepository {
         name: window.name,
         bundleId: Value(window.bundleId),
         url: Value(window.url),
+        documentPath: Value(window.documentPath),
         screenIndex: Value(window.screenIndex),
         x: window.x,
         y: window.y,

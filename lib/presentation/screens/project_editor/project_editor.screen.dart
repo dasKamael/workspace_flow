@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +21,7 @@ import 'package:workspace_flow/presentation/design_system/molecules/ui_text_fiel
 import 'package:workspace_flow/presentation/design_system/organisms/ui_sheet.dart';
 import 'package:workspace_flow/presentation/router.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/project_editor.controller.dart';
+import 'package:workspace_flow/presentation/screens/project_editor/project_editor.state.dart';
 
 /// The project editor sheet: name, sources on the left, window layout on the right.
 class ProjectEditorScreen extends ConsumerStatefulWidget {
@@ -81,10 +84,34 @@ class _ProjectEditorScreenState extends ConsumerState<ProjectEditorScreen> {
     setState(() => _captureFailed = true);
   }
 
+  /// The shared library, plus whatever this project's own windows use that the
+  /// library no longer (or never did) list — so the panel never looks like it forgot
+  /// an app the layout still visibly has.
+  ///
+  /// Every chip gets a × either way, but it means different things: for a library row
+  /// it drops that entry from the shared pool; for a window-only chip — nothing backs
+  /// it in the library — it drops the matching window from *this* project's draft,
+  /// since that is the only thing its × could sensibly do.
+  List<_LibraryRow> _combinedEntries(List<AppLibraryEntry> library, ProjectEditorState state, WidgetRef ref) {
+    final rows = <_LibraryRow>[
+      for (final entry in library)
+        (entry: entry, onRemove: () => ref.read(projectServiceProvider.notifier).removeFromLibrary(entry)),
+    ];
+    final knownKeys = library.map((entry) => entry.key).toSet();
+
+    for (final entry in state.windowEntries) {
+      if (!knownKeys.add(entry.key)) continue;
+      rows.add((entry: entry, onRemove: () => _controller.removeWindowsMatching(entry)));
+    }
+
+    return rows;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(projectEditorControllerProvider(widget.projectId));
     final library = ref.watch(appLibraryProvider).valueOrNull ?? const <AppLibraryEntry>[];
+    final icons = ref.watch(appLibraryIconsProvider).valueOrNull ?? const <String, Uint8List>{};
 
     if (state.isLoaded && !_didPrefillName) {
       _didPrefillName = true;
@@ -126,7 +153,8 @@ class _ProjectEditorScreenState extends ConsumerState<ProjectEditorScreen> {
               const SizedBox(width: UiSize.xxl),
               Expanded(
                 child: _SourcesColumn(
-                  library: library,
+                  entries: _combinedEntries(library, state, ref),
+                  icons: icons,
                   websiteController: _websiteController,
                   onAddWebsite: _addWebsite,
                   captureFailed: _captureFailed,
@@ -183,16 +211,26 @@ class _LayoutColumn extends StatelessWidget {
   );
 }
 
+/// One chip in the "Apps & websites" panel: a library entry, or an app/site this
+/// project's own windows use that the library no longer (or never did) list.
+///
+/// Only [removable] rows carry a × — there is nothing to remove for an entry that
+/// exists purely because a window uses it; removing it wouldn't do anything to that
+/// window anyway.
+typedef _LibraryRow = ({AppLibraryEntry entry, VoidCallback onRemove});
+
 /// Everything that answers "which apps and websites belong to this project".
 class _SourcesColumn extends ConsumerWidget {
   const _SourcesColumn({
-    required this.library,
+    required this.entries,
+    required this.icons,
     required this.websiteController,
     required this.onAddWebsite,
     required this.captureFailed,
   });
 
-  final List<AppLibraryEntry> library;
+  final List<_LibraryRow> entries;
+  final Map<String, Uint8List> icons;
   final TextEditingController websiteController;
   final VoidCallback onAddWebsite;
 
@@ -214,6 +252,18 @@ class _SourcesColumn extends ConsumerWidget {
             onPressed: () => _chooseFromFinder(ref),
           ),
           UiSpacer.m,
+          // Pairs a folder with an app — "VS Code — client-a" — so a project window
+          // opens showing the right project instead of a blank editor.
+          UiGhostButton(
+            label: context.translations.project_editor_add_project,
+            icon: const UiSvgIcon(path: UiIcon.folder, size: UiSize.l, color: UiColor.fgMuted),
+            onPressed: () => _addProjectFolder(ref),
+          ),
+        ],
+      ),
+      UiSpacer.m,
+      Row(
+        children: [
           Expanded(
             child: UiTextField(
               controller: websiteController,
@@ -233,7 +283,10 @@ class _SourcesColumn extends ConsumerWidget {
         child: Wrap(
           spacing: UiSize.xs,
           runSpacing: UiSize.xs,
-          children: [for (final entry in library) UiChip(label: entry.name)],
+          children: [
+            for (final row in entries)
+              UiChip(label: row.entry.name, icon: icons[row.entry.bundleId], onRemove: row.onRemove),
+          ],
         ),
       ),
       UiSpacer.m,
@@ -248,4 +301,8 @@ class _SourcesColumn extends ConsumerWidget {
 
   /// Opens the real `NSOpenPanel`; the chosen app joins the library as a chip.
   Future<void> _chooseFromFinder(WidgetRef ref) => ref.read(projectServiceProvider.notifier).chooseFromFinder();
+
+  /// Opens a folder picker and then an app picker, and joins the pair as a chip naming
+  /// that specific project.
+  Future<void> _addProjectFolder(WidgetRef ref) => ref.read(projectServiceProvider.notifier).addProjectFolder();
 }

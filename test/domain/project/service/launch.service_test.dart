@@ -58,6 +58,12 @@ void main() {
     launcher = MockAppLauncherRepository();
     windowControl = MockWindowControlRepository();
     when(() => launcher.launchApp(bundleId: any(named: 'bundleId'))).thenAnswer((_) async => 4242);
+    when(
+      () => launcher.launchWithDocument(
+        bundleId: any(named: 'bundleId'),
+        documentPath: any(named: 'documentPath'),
+      ),
+    ).thenAnswer((_) async => 4242);
     when(() => launcher.openUrl(any())).thenAnswer((_) async {});
     when(() => windowControl.isAccessibilityTrusted()).thenAnswer((_) async => true);
     when(
@@ -232,5 +238,85 @@ void main() {
     verify(() => launcher.openUrl('https://app-care.de')).called(1);
     verifyNever(() => launcher.launchApp(bundleId: any(named: 'bundleId')));
     expect(container.read(launchServiceProvider).stepFor(30), LaunchStep.open);
+  }, timeout: const Timeout(Duration(seconds: 30)));
+
+  test('Given a window naming a project folder, '
+      'when it is launched, '
+      'then the app opens that folder instead of starting blank', () async {
+    // Given
+    const withProject = Project(
+      id: 4,
+      name: 'Client Work',
+      windows: [
+        ProjectWindow(
+          id: 40,
+          name: 'VS Code — client-a',
+          bundleId: 'com.microsoft.VSCode',
+          documentPath: '/Users/dev/client-a',
+          screenIndex: 0,
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100,
+        ),
+      ],
+    );
+    final container = makeContainer();
+
+    // When
+    await container.read(launchServiceProvider.notifier).launch(withProject);
+
+    // Then — the document-aware launch is used, not a blank one
+    verify(
+      () => launcher.launchWithDocument(bundleId: 'com.microsoft.VSCode', documentPath: '/Users/dev/client-a'),
+    ).called(1);
+    verifyNever(() => launcher.launchApp(bundleId: any(named: 'bundleId')));
+    expect(container.read(launchServiceProvider).stepFor(40), LaunchStep.open);
+  }, timeout: const Timeout(Duration(seconds: 30)));
+
+  test('Given two windows for the same app with different project folders, '
+      'when the project is launched, '
+      'then each opens its own project rather than one window twice', () async {
+    // Given
+    const twoClients = Project(
+      id: 5,
+      name: 'Two Clients',
+      windows: [
+        ProjectWindow(
+          id: 50,
+          name: 'VS Code — client-a',
+          bundleId: 'com.microsoft.VSCode',
+          documentPath: '/Users/dev/client-a',
+          screenIndex: 0,
+          x: 0,
+          y: 0,
+          width: 50,
+          height: 100,
+        ),
+        ProjectWindow(
+          id: 51,
+          name: 'VS Code — client-b',
+          bundleId: 'com.microsoft.VSCode',
+          documentPath: '/Users/dev/client-b',
+          screenIndex: 1,
+          x: 0,
+          y: 0,
+          width: 50,
+          height: 100,
+        ),
+      ],
+    );
+    final container = makeContainer();
+
+    // When
+    await container.read(launchServiceProvider.notifier).launch(twoClients);
+
+    // Then
+    verify(
+      () => launcher.launchWithDocument(bundleId: 'com.microsoft.VSCode', documentPath: '/Users/dev/client-a'),
+    ).called(1);
+    verify(
+      () => launcher.launchWithDocument(bundleId: 'com.microsoft.VSCode', documentPath: '/Users/dev/client-b'),
+    ).called(1);
   }, timeout: const Timeout(Duration(seconds: 30)));
 }

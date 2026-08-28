@@ -100,4 +100,72 @@ void main() {
     expect(projects.map((p) => p.name), ['First', 'Second', 'Third']);
     expect(projects.map((p) => p.sortOrder), [0, 1, 2]);
   });
+
+  test('Given a window naming a project folder, '
+      'when it is saved and read back, '
+      'then the folder path survives the round trip', () async {
+    // Given
+    final withProject = window(
+      'VS Code — client-a',
+    ).copyWith(bundleId: 'com.microsoft.VSCode', documentPath: '/Users/dev/client-a');
+
+    // When
+    await repository.createProject(name: 'Client Work', windows: [withProject]);
+    final projects = await repository.watchProjects().first;
+
+    // Then
+    expect(projects.single.windows.single.documentPath, '/Users/dev/client-a');
+  });
+
+  test('Given a library entry naming a project folder, '
+      'when it is added and read back, '
+      'then the folder path survives the round trip', () async {
+    // Given
+    const entry = AppLibraryEntry(
+      name: 'VS Code — client-a',
+      bundleId: 'com.microsoft.VSCode',
+      documentPath: '/Users/dev/client-a',
+    );
+
+    // When
+    await repository.addToAppLibrary(entry);
+    final library = await repository.watchAppLibrary().first;
+
+    // Then
+    expect(library.single.documentPath, '/Users/dev/client-a');
+  });
+
+  test('Given an entry in the library, '
+      'when it is removed, '
+      'then it no longer appears', () async {
+    // Given
+    const entry = AppLibraryEntry(name: 'Figma', bundleId: 'com.figma.Desktop');
+    await repository.addToAppLibrary(entry);
+
+    // When
+    await repository.removeFromAppLibrary(entry);
+
+    // Then
+    expect(await repository.watchAppLibrary().first, isEmpty);
+  });
+
+  test('Given an app already placed in a saved project, '
+      'when its library entry is removed, '
+      'then the project keeps its window unchanged', () async {
+    // Given — the window carries its own copy of the app's fields
+    const entry = AppLibraryEntry(name: 'VS Code', bundleId: 'com.microsoft.VSCode');
+    await repository.addToAppLibrary(entry);
+    await repository.createProject(
+      name: 'App-Care Sprint',
+      windows: [window('VS Code').copyWith(bundleId: 'com.microsoft.VSCode')],
+    );
+
+    // When
+    await repository.removeFromAppLibrary(entry);
+
+    // Then — gone from the library, but the project is untouched
+    expect(await repository.watchAppLibrary().first, isEmpty);
+    final projects = await repository.watchProjects().first;
+    expect(projects.single.windows.single.bundleId, 'com.microsoft.VSCode');
+  });
 }

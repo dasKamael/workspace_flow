@@ -3,6 +3,19 @@ import FlutterMacOS
 
 /// Launches apps and websites, and discovers what is installed.
 enum AppLauncherService {
+  /// Windows an already-running app had right before we asked it to open one more, so
+  /// the next `positionWindow` call for that process can tell the genuinely new window
+  /// apart from one that was already there — `kAXWindowsAttribute` has no defined
+  /// order, so picking blindly can just as easily grab an old window as the new one.
+  private static var preOpenSnapshots: [pid_t: [AXUIElement]] = [:]
+
+  /// Takes and removes the snapshot recorded for `processId`, if any.
+  static func consumePreOpenSnapshot(processId: Int) -> [AXUIElement] {
+    let pid = pid_t(processId)
+    defer { preOpenSnapshots[pid] = nil }
+    return preOpenSnapshots[pid] ?? []
+  }
+
   private static let applicationDirectories = [
     "/Applications",
     "/System/Applications",
@@ -89,6 +102,54 @@ enum AppLauncherService {
   static func open(url string: String) {
     guard let url = URL(string: string) else { return }
     NSWorkspace.shared.open(url)
+  }
+
+  /// Opens [bundleId] with [documentPath] — a specific project rather than just the
+  /// app in general, e.g. `code` opening a particular folder.
+  ///
+  /// Unlike `launch(bundleId:)` this never just activates an already-running instance:
+  /// the point is a *new* window for this document, which is what "Open With" does for
+  /// an app that is already running and supports multiple windows.
+  static func launchWithDocument(bundleId: String, documentPath: String, completion: @escaping (Int?) -> Void) {
+    guard let appURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) else {
+      completion(nil)
+      return
+    }
+
+    // Only relevant if the app is already running with other windows open — for a
+    // fresh launch there is nothing to confuse the new window with.
+    if let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).first {
+      preOpenSnapshots[running.processIdentifier] = WindowControlService.currentWindows(
+        processId: Int(running.processIdentifier)
+      )
+    }
+
+    let documentURL = URL(fileURLWithPath: documentPath)
+    let configuration = NSWorkspace.OpenConfiguration()
+    configuration.activates = true
+
+    NSWorkspace.shared.open([documentURL], withApplicationAt: appURL, configuration: configuration) { application, _ in
+      completion(application.map { Int($0.processIdentifier) })
+    }
+  }
+
+  /// The real `NSOpenPanel`, restricted to folders — picking a project to pair with an
+  /// app, as opposed to `chooseApp`, which picks the app itself.
+  static func chooseFolder(directory: String, completion: @escaping ([String: Any]?) -> Void) {
+    let panel = NSOpenPanel()
+    panel.canChooseFiles = false
+    panel.canChooseDirectories = true
+    panel.allowsMultipleSelection = false
+    panel.directoryURL = URL(fileURLWithPath: directory)
+    panel.prompt = "Open"
+
+    panel.begin { response in
+      guard response == .OK, let url = panel.url else {
+        completion(nil)
+        return
+      }
+      completion(["name": url.lastPathComponent, "path": url.path])
+    }
   }
 
   /// The real `NSOpenPanel`, restricted to applications.

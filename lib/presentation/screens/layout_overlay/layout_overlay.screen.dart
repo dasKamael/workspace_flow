@@ -177,6 +177,7 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
         name: entry.name,
         bundleId: entry.bundleId,
         url: entry.url,
+        documentPath: entry.documentPath,
         screenIndex: screenIndex,
         x: percent.dx,
         y: percent.dy,
@@ -186,7 +187,10 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
   });
 
   /// The identities already in the layout, so their chips drop out of the row.
-  Set<String> get _placedKeys => {for (final window in _windows) window.url ?? window.bundleId ?? window.name};
+  ///
+  /// Matches [AppLibraryEntry.key] so two project variants of the same app — sharing a
+  /// bundle id but naming different folders — hide independently of one another.
+  Set<String> get _placedKeys => {for (final window in _windows) window.libraryKey};
 
   void _patch(int index, ProjectWindow Function(ProjectWindow window) patch, {required WindowSnap snap}) {
     if (index < 0 || index >= _windows.length) return;

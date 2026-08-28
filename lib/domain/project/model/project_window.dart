@@ -23,6 +23,10 @@ abstract class ProjectWindow with _$ProjectWindow {
     required double height,
     String? bundleId,
     String? url,
+
+    /// A folder or file to open with [bundleId] — a specific project rather than just
+    /// the app in general. Set from an AppLibraryEntry carrying the same field.
+    String? documentPath,
     @Default(0) int sortOrder,
   }) = _ProjectWindow;
 
@@ -50,11 +54,13 @@ abstract class ProjectWindow with _$ProjectWindow {
     required double y,
     String? bundleId,
     String? url,
+    String? documentPath,
   }) => ProjectWindow(
     id: id,
     name: name,
     bundleId: bundleId,
     url: url,
+    documentPath: documentPath,
     screenIndex: screenIndex,
     x: _clamp(x - defaultWidth / 2, defaultWidth),
     y: _clamp(y - defaultHeight / 2, defaultHeight),
@@ -65,4 +71,12 @@ abstract class ProjectWindow with _$ProjectWindow {
   static double _clamp(double value, double size) => value.clamp(0, (100 - size).clamp(0, 100));
 
   bool get isWebsite => url != null;
+
+  /// Same identity logic as [AppLibraryEntry.key] — lets the overlay hide only the
+  /// library chip that matches this exact window, not every chip sharing its app.
+  String get libraryKey {
+    if (url != null) return url!;
+    if (documentPath != null) return '$bundleId|$documentPath';
+    return bundleId ?? name;
+  }
 }

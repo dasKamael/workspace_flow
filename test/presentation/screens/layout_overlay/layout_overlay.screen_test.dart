@@ -250,4 +250,50 @@ void main() {
     await tester.pump();
     expect(applied!.map((window) => window.name), isNot(contains('VS Code')));
   });
+
+  testWidgets('Given two library entries for the same app with different project folders, '
+      'when only one is placed, '
+      'then the other stays available instead of both hiding together', (tester) async {
+    // Given — a developer with two clients open in the same editor
+    const clientA = ProjectWindow(
+      id: -1,
+      name: 'VS Code — client-a',
+      bundleId: 'com.microsoft.VSCode',
+      documentPath: '/Users/dev/client-a',
+      screenIndex: 0,
+      x: 0,
+      y: 0,
+      width: 50,
+      height: 100,
+    );
+    const clientB = AppLibraryEntry(
+      name: 'VS Code — client-b',
+      bundleId: 'com.microsoft.VSCode',
+      documentPath: '/Users/dev/client-b',
+    );
+
+    await pumpAppWidget(
+      tester,
+      surfaceSize: const Size(2560, 1440),
+      child: LayoutOverlayScreen(
+        screens: screens,
+        initialWindows: const [clientA],
+        library: const [
+          AppLibraryEntry(
+            name: 'VS Code — client-a',
+            bundleId: 'com.microsoft.VSCode',
+            documentPath: '/Users/dev/client-a',
+          ),
+          clientB,
+        ],
+        onApply: (result) => applied = result,
+        onCancel: () => cancels++,
+      ),
+    );
+
+    // Then — client-a is already placed and hidden, but client-b is still offered
+    // even though it shares a bundle id with the placed window
+    expect(find.widgetWithText(Draggable<AppLibraryEntry>, 'VS Code — client-a'), findsNothing);
+    expect(find.widgetWithText(Draggable<AppLibraryEntry>, 'VS Code — client-b'), findsOneWidget);
+  });
 }

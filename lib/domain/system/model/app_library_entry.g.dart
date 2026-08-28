@@ -11,6 +11,7 @@ _AppLibraryEntry _$AppLibraryEntryFromJson(Map<String, dynamic> json) => _AppLib
   bundleId: json['bundleId'] as String?,
   path: json['path'] as String?,
   url: json['url'] as String?,
+  documentPath: json['documentPath'] as String?,
 );
 
 Map<String, dynamic> _$AppLibraryEntryToJson(_AppLibraryEntry instance) => <String, dynamic>{
@@ -18,4 +19,5 @@ Map<String, dynamic> _$AppLibraryEntryToJson(_AppLibraryEntry instance) => <Stri
   'bundleId': instance.bundleId,
   'path': instance.path,
   'url': instance.url,
+  'documentPath': instance.documentPath,
 };

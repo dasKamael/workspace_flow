@@ -184,6 +184,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get project_editor_choose_from_finder => 'Choose from Finder…';
 
   @override
+  String get project_editor_add_project => 'Add project…';
+
+  @override
   String get project_editor_use_current_arrangement => 'Use current arrangement';
 
   @override

@@ -36,6 +36,7 @@ class ProjectWindowEntityMapper implements EntityMapper<ProjectWindow, ProjectWi
     name: entity.name,
     bundleId: entity.bundleId,
     url: entity.url,
+    documentPath: entity.documentPath,
     screenIndex: entity.screenIndex,
     x: entity.x,
     y: entity.y,
@@ -53,8 +54,13 @@ class AppLibraryEntryMapper implements EntityMapper<AppLibraryEntry, AppLibraryE
   const AppLibraryEntryMapper();
 
   @override
-  AppLibraryEntry toModel(AppLibraryEntity entity) =>
-      AppLibraryEntry(name: entity.name, bundleId: entity.bundleId, path: entity.path, url: entity.url);
+  AppLibraryEntry toModel(AppLibraryEntity entity) => AppLibraryEntry(
+    name: entity.name,
+    bundleId: entity.bundleId,
+    path: entity.path,
+    url: entity.url,
+    documentPath: entity.documentPath,
+  );
 
   @override
   AppLibraryEntity toEntity(AppLibraryEntry model) =>

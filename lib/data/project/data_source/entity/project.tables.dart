@@ -20,6 +20,9 @@ class ProjectWindows extends Table {
   TextColumn get name => text().withLength(min: 1, max: 200)();
   TextColumn get bundleId => text().nullable()();
   TextColumn get url => text().nullable()();
+
+  /// A folder or file to open with [bundleId] — a specific project, not just the app.
+  TextColumn get documentPath => text().nullable()();
   IntColumn get screenIndex => integer().withDefault(const Constant(0))();
   RealColumn get x => real()();
   RealColumn get y => real()();
@@ -36,6 +39,10 @@ class AppLibraryEntries extends Table {
   TextColumn get bundleId => text().nullable()();
   TextColumn get path => text().nullable()();
   TextColumn get url => text().nullable()();
+
+  /// A folder or file this entry opens with the app — a specific project rather than
+  /// just the app in general.
+  TextColumn get documentPath => text().nullable()();
 
   /// A given app or site appears once in the library.
   @override

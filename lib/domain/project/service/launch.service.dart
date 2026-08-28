@@ -81,7 +81,12 @@ class LaunchService extends _$LaunchService {
       final bundleId = window.bundleId;
       if (bundleId == null) return false;
 
-      final processId = await launcher.launchApp(bundleId: bundleId);
+      // A window naming a project folder opens that folder, not just the app blank —
+      // and, unlike a plain launch, always opens a fresh window even if the app is
+      // already running with other projects open.
+      final processId = window.documentPath != null
+          ? await launcher.launchWithDocument(bundleId: bundleId, documentPath: window.documentPath!)
+          : await launcher.launchApp(bundleId: bundleId);
       if (processId == null) return false;
       if (!canPosition) return true;
 

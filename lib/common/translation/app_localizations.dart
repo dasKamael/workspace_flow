@@ -391,6 +391,12 @@ abstract class AppLocalizations {
   /// **'Choose from Finder…'**
   String get project_editor_choose_from_finder;
 
+  /// No description provided for @project_editor_add_project.
+  ///
+  /// In en, this message translates to:
+  /// **'Add project…'**
+  String get project_editor_add_project;
+
   /// No description provided for @project_editor_use_current_arrangement.
   ///
   /// In en, this message translates to:

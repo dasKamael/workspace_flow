@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AppLibraryEntry {
 
- String get name; String? get bundleId; String? get path; String? get url;
+ String get name; String? get bundleId; String? get path; String? get url;/// A folder or file this entry opens with the app — a specific project rather
+/// than just the app in general. Distinct from [path], which is the app bundle's
+/// own location on disk.
+ String? get documentPath;
 /// Create a copy of AppLibraryEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $AppLibraryEntryCopyWith<AppLibraryEntry> get copyWith => _$AppLibraryEntryCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppLibraryEntry&&(identical(other.name, name) || other.name == name)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.path, path) || other.path == path)&&(identical(other.url, url) || other.url == url));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AppLibraryEntry&&(identical(other.name, name) || other.name == name)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.path, path) || other.path == path)&&(identical(other.url, url) || other.url == url)&&(identical(other.documentPath, documentPath) || other.documentPath == documentPath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,bundleId,path,url);
+int get hashCode => Object.hash(runtimeType,name,bundleId,path,url,documentPath);
 
 @override
 String toString() {
-  return 'AppLibraryEntry(name: $name, bundleId: $bundleId, path: $path, url: $url)';
+  return 'AppLibraryEntry(name: $name, bundleId: $bundleId, path: $path, url: $url, documentPath: $documentPath)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $AppLibraryEntryCopyWith<$Res>  {
   factory $AppLibraryEntryCopyWith(AppLibraryEntry value, $Res Function(AppLibraryEntry) _then) = _$AppLibraryEntryCopyWithImpl;
 @useResult
 $Res call({
- String name, String? bundleId, String? path, String? url
+ String name, String? bundleId, String? path, String? url, String? documentPath
 });
 
 
@@ -65,12 +68,13 @@ class _$AppLibraryEntryCopyWithImpl<$Res>
 
 /// Create a copy of AppLibraryEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? bundleId = freezed,Object? path = freezed,Object? url = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? bundleId = freezed,Object? path = freezed,Object? url = freezed,Object? documentPath = freezed,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bundleId: freezed == bundleId ? _self.bundleId : bundleId // ignore: cast_nullable_to_non_nullable
 as String?,path: freezed == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String?,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,documentPath: freezed == documentPath ? _self.documentPath : documentPath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -156,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String? bundleId,  String? path,  String? url)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String? bundleId,  String? path,  String? url,  String? documentPath)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AppLibraryEntry() when $default != null:
-return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
+return $default(_that.name,_that.bundleId,_that.path,_that.url,_that.documentPath);case _:
   return orElse();
 
 }
@@ -177,10 +181,10 @@ return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String? bundleId,  String? path,  String? url)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String? bundleId,  String? path,  String? url,  String? documentPath)  $default,) {final _that = this;
 switch (_that) {
 case _AppLibraryEntry():
-return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
+return $default(_that.name,_that.bundleId,_that.path,_that.url,_that.documentPath);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +201,10 @@ return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String? bundleId,  String? path,  String? url)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String? bundleId,  String? path,  String? url,  String? documentPath)?  $default,) {final _that = this;
 switch (_that) {
 case _AppLibraryEntry() when $default != null:
-return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
+return $default(_that.name,_that.bundleId,_that.path,_that.url,_that.documentPath);case _:
   return null;
 
 }
@@ -212,13 +216,17 @@ return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
 @JsonSerializable()
 
 class _AppLibraryEntry extends AppLibraryEntry {
-  const _AppLibraryEntry({required this.name, this.bundleId, this.path, this.url}): super._();
+  const _AppLibraryEntry({required this.name, this.bundleId, this.path, this.url, this.documentPath}): super._();
   factory _AppLibraryEntry.fromJson(Map<String, dynamic> json) => _$AppLibraryEntryFromJson(json);
 
 @override final  String name;
 @override final  String? bundleId;
 @override final  String? path;
 @override final  String? url;
+/// A folder or file this entry opens with the app — a specific project rather
+/// than just the app in general. Distinct from [path], which is the app bundle's
+/// own location on disk.
+@override final  String? documentPath;
 
 /// Create a copy of AppLibraryEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppLibraryEntry&&(identical(other.name, name) || other.name == name)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.path, path) || other.path == path)&&(identical(other.url, url) || other.url == url));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppLibraryEntry&&(identical(other.name, name) || other.name == name)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.path, path) || other.path == path)&&(identical(other.url, url) || other.url == url)&&(identical(other.documentPath, documentPath) || other.documentPath == documentPath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,bundleId,path,url);
+int get hashCode => Object.hash(runtimeType,name,bundleId,path,url,documentPath);
 
 @override
 String toString() {
-  return 'AppLibraryEntry(name: $name, bundleId: $bundleId, path: $path, url: $url)';
+  return 'AppLibraryEntry(name: $name, bundleId: $bundleId, path: $path, url: $url, documentPath: $documentPath)';
 }
 
 
@@ -253,7 +261,7 @@ abstract mixin class _$AppLibraryEntryCopyWith<$Res> implements $AppLibraryEntry
   factory _$AppLibraryEntryCopyWith(_AppLibraryEntry value, $Res Function(_AppLibraryEntry) _then) = __$AppLibraryEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String name, String? bundleId, String? path, String? url
+ String name, String? bundleId, String? path, String? url, String? documentPath
 });
 
 
@@ -270,12 +278,13 @@ class __$AppLibraryEntryCopyWithImpl<$Res>
 
 /// Create a copy of AppLibraryEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? bundleId = freezed,Object? path = freezed,Object? url = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? bundleId = freezed,Object? path = freezed,Object? url = freezed,Object? documentPath = freezed,}) {
   return _then(_AppLibraryEntry(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,bundleId: freezed == bundleId ? _self.bundleId : bundleId // ignore: cast_nullable_to_non_nullable
 as String?,path: freezed == path ? _self.path : path // ignore: cast_nullable_to_non_nullable
 as String?,url: freezed == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,documentPath: freezed == documentPath ? _self.documentPath : documentPath // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

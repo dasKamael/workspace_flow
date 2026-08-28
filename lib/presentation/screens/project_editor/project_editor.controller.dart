@@ -26,6 +26,17 @@ class ProjectEditorController extends _$ProjectEditorController {
 
   void setName(String name) => state = state.copyWith(name: name);
 
+  /// Drops every window in the draft that matches [entry].
+  ///
+  /// Used for a chip in "Apps & websites" that has no backing library row — it exists
+  /// purely because the project's own layout uses it, so the only sensible thing its ×
+  /// can do is take it out of this project. Only the draft changes; nothing is written
+  /// until Save.
+  void removeWindowsMatching(AppLibraryEntry entry) {
+    final windows = state.windows.where((window) => window.libraryKey != entry.key).toList();
+    state = state.copyWith(windows: windows);
+  }
+
   /// Places [entry] on [screenIndex], centred on the drop position.
   ///
   /// Only the website field reaches this now — apps are dropped in from inside the
@@ -37,6 +48,7 @@ class ProjectEditorController extends _$ProjectEditorController {
       name: entry.name,
       bundleId: entry.bundleId,
       url: entry.url,
+      documentPath: entry.documentPath,
       screenIndex: screenIndex,
       x: x,
       y: y,

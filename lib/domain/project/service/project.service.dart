@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:typed_data';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/project/repository/project.repository.dart';
 import 'package:workspace_flow/data/system/repository/app_launcher.repository.dart';
@@ -15,6 +17,23 @@ Stream<List<Project>> projects(Ref ref) => ref.watch(projectRepositoryProvider).
 /// The library of apps and websites offered as chips in the editor.
 @Riverpod(keepAlive: true)
 Stream<List<AppLibraryEntry>> appLibrary(Ref ref) => ref.watch(projectRepositoryProvider).watchAppLibrary();
+
+/// Icons for every app currently in the library, keyed by bundle id — lets a chip show
+/// the real app icon instead of just its name, so several project variants of the same
+/// editor stay easy to tell apart from unrelated apps at a glance.
+@Riverpod(keepAlive: true)
+Future<Map<String, Uint8List>> appLibraryIcons(Ref ref) async {
+  final library = await ref.watch(appLibraryProvider.future);
+  final bundleIds = {for (final entry in library) ?entry.bundleId}.toList();
+  if (bundleIds.isEmpty) return const {};
+
+  try {
+    return await ref.read(appLauncherRepositoryProvider).getAppIcons(bundleIds);
+  } on Object {
+    // The bridge is absent outside macOS and in tests; the chips just show text.
+    return const {};
+  }
+}
 
 /// Which project is selected in the sidebar.
 ///
@@ -58,6 +77,9 @@ class ProjectService extends _$ProjectService {
 
   Future<void> addToLibrary(AppLibraryEntry entry) => ref.read(projectRepositoryProvider).addToAppLibrary(entry);
 
+  Future<void> removeFromLibrary(AppLibraryEntry entry) =>
+      ref.read(projectRepositoryProvider).removeFromAppLibrary(entry);
+
   /// Opens the real `NSOpenPanel`, adds the chosen app to the library and returns it.
   ///
   /// Returns null when the user cancelled — or when the picker is unavailable, which is
@@ -66,6 +88,34 @@ class ProjectService extends _$ProjectService {
     try {
       final entry = await ref.read(appLauncherRepositoryProvider).chooseApp();
       if (entry == null) return null;
+      await addToLibrary(entry);
+      return entry;
+    } on Object {
+      return null;
+    }
+  }
+
+  /// Pairs a project folder with an app and adds it to the library as its own entry —
+  /// "VS Code — client-a" alongside plain "VS Code" — so a project opens with the
+  /// right window already showing instead of a blank one.
+  ///
+  /// Asks for the folder first, then which app opens it; returns null if either step
+  /// is cancelled or the pickers are unavailable.
+  Future<AppLibraryEntry?> addProjectFolder() async {
+    try {
+      final launcher = ref.read(appLauncherRepositoryProvider);
+
+      final folder = await launcher.chooseFolder();
+      if (folder == null) return null;
+
+      final app = await launcher.chooseApp();
+      if (app == null) return null;
+
+      final entry = AppLibraryEntry(
+        name: '${app.name} — ${folder.name}',
+        bundleId: app.bundleId,
+        documentPath: folder.path,
+      );
       await addToLibrary(entry);
       return entry;
     } on Object {

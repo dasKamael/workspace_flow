@@ -305,6 +305,15 @@ class $ProjectWindowsTable extends ProjectWindows with TableInfo<$ProjectWindows
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _documentPathMeta = const VerificationMeta('documentPath');
+  @override
+  late final GeneratedColumn<String> documentPath = GeneratedColumn<String>(
+    'document_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _screenIndexMeta = const VerificationMeta('screenIndex');
   @override
   late final GeneratedColumn<int> screenIndex = GeneratedColumn<int>(
@@ -368,6 +377,7 @@ class $ProjectWindowsTable extends ProjectWindows with TableInfo<$ProjectWindows
     name,
     bundleId,
     url,
+    documentPath,
     screenIndex,
     x,
     y,
@@ -402,6 +412,9 @@ class $ProjectWindowsTable extends ProjectWindows with TableInfo<$ProjectWindows
     }
     if (data.containsKey('url')) {
       context.handle(_urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
+    }
+    if (data.containsKey('document_path')) {
+      context.handle(_documentPathMeta, documentPath.isAcceptableOrUnknown(data['document_path']!, _documentPathMeta));
     }
     if (data.containsKey('screen_index')) {
       context.handle(_screenIndexMeta, screenIndex.isAcceptableOrUnknown(data['screen_index']!, _screenIndexMeta));
@@ -443,6 +456,7 @@ class $ProjectWindowsTable extends ProjectWindows with TableInfo<$ProjectWindows
       name: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       bundleId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}bundle_id']),
       url: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}url']),
+      documentPath: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}document_path']),
       screenIndex: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}screen_index'])!,
       x: attachedDatabase.typeMapping.read(DriftSqlType.double, data['${effectivePrefix}x'])!,
       y: attachedDatabase.typeMapping.read(DriftSqlType.double, data['${effectivePrefix}y'])!,
@@ -464,6 +478,9 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
   final String name;
   final String? bundleId;
   final String? url;
+
+  /// A folder or file to open with [bundleId] — a specific project, not just the app.
+  final String? documentPath;
   final int screenIndex;
   final double x;
   final double y;
@@ -476,6 +493,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
     required this.name,
     this.bundleId,
     this.url,
+    this.documentPath,
     required this.screenIndex,
     required this.x,
     required this.y,
@@ -495,6 +513,9 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
     if (!nullToAbsent || url != null) {
       map['url'] = Variable<String>(url);
     }
+    if (!nullToAbsent || documentPath != null) {
+      map['document_path'] = Variable<String>(documentPath);
+    }
     map['screen_index'] = Variable<int>(screenIndex);
     map['x'] = Variable<double>(x);
     map['y'] = Variable<double>(y);
@@ -511,6 +532,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
       name: Value(name),
       bundleId: bundleId == null && nullToAbsent ? const Value.absent() : Value(bundleId),
       url: url == null && nullToAbsent ? const Value.absent() : Value(url),
+      documentPath: documentPath == null && nullToAbsent ? const Value.absent() : Value(documentPath),
       screenIndex: Value(screenIndex),
       x: Value(x),
       y: Value(y),
@@ -528,6 +550,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
       name: serializer.fromJson<String>(json['name']),
       bundleId: serializer.fromJson<String?>(json['bundleId']),
       url: serializer.fromJson<String?>(json['url']),
+      documentPath: serializer.fromJson<String?>(json['documentPath']),
       screenIndex: serializer.fromJson<int>(json['screenIndex']),
       x: serializer.fromJson<double>(json['x']),
       y: serializer.fromJson<double>(json['y']),
@@ -545,6 +568,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
       'name': serializer.toJson<String>(name),
       'bundleId': serializer.toJson<String?>(bundleId),
       'url': serializer.toJson<String?>(url),
+      'documentPath': serializer.toJson<String?>(documentPath),
       'screenIndex': serializer.toJson<int>(screenIndex),
       'x': serializer.toJson<double>(x),
       'y': serializer.toJson<double>(y),
@@ -560,6 +584,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
     String? name,
     Value<String?> bundleId = const Value.absent(),
     Value<String?> url = const Value.absent(),
+    Value<String?> documentPath = const Value.absent(),
     int? screenIndex,
     double? x,
     double? y,
@@ -572,6 +597,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
     name: name ?? this.name,
     bundleId: bundleId.present ? bundleId.value : this.bundleId,
     url: url.present ? url.value : this.url,
+    documentPath: documentPath.present ? documentPath.value : this.documentPath,
     screenIndex: screenIndex ?? this.screenIndex,
     x: x ?? this.x,
     y: y ?? this.y,
@@ -586,6 +612,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
       name: data.name.present ? data.name.value : this.name,
       bundleId: data.bundleId.present ? data.bundleId.value : this.bundleId,
       url: data.url.present ? data.url.value : this.url,
+      documentPath: data.documentPath.present ? data.documentPath.value : this.documentPath,
       screenIndex: data.screenIndex.present ? data.screenIndex.value : this.screenIndex,
       x: data.x.present ? data.x.value : this.x,
       y: data.y.present ? data.y.value : this.y,
@@ -603,6 +630,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
           ..write('name: $name, ')
           ..write('bundleId: $bundleId, ')
           ..write('url: $url, ')
+          ..write('documentPath: $documentPath, ')
           ..write('screenIndex: $screenIndex, ')
           ..write('x: $x, ')
           ..write('y: $y, ')
@@ -614,7 +642,8 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
   }
 
   @override
-  int get hashCode => Object.hash(id, projectId, name, bundleId, url, screenIndex, x, y, width, height, sortOrder);
+  int get hashCode =>
+      Object.hash(id, projectId, name, bundleId, url, documentPath, screenIndex, x, y, width, height, sortOrder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -624,6 +653,7 @@ class ProjectWindowEntity extends DataClass implements Insertable<ProjectWindowE
           other.name == this.name &&
           other.bundleId == this.bundleId &&
           other.url == this.url &&
+          other.documentPath == this.documentPath &&
           other.screenIndex == this.screenIndex &&
           other.x == this.x &&
           other.y == this.y &&
@@ -638,6 +668,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
   final Value<String> name;
   final Value<String?> bundleId;
   final Value<String?> url;
+  final Value<String?> documentPath;
   final Value<int> screenIndex;
   final Value<double> x;
   final Value<double> y;
@@ -650,6 +681,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
     this.name = const Value.absent(),
     this.bundleId = const Value.absent(),
     this.url = const Value.absent(),
+    this.documentPath = const Value.absent(),
     this.screenIndex = const Value.absent(),
     this.x = const Value.absent(),
     this.y = const Value.absent(),
@@ -663,6 +695,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
     required String name,
     this.bundleId = const Value.absent(),
     this.url = const Value.absent(),
+    this.documentPath = const Value.absent(),
     this.screenIndex = const Value.absent(),
     required double x,
     required double y,
@@ -681,6 +714,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
     Expression<String>? name,
     Expression<String>? bundleId,
     Expression<String>? url,
+    Expression<String>? documentPath,
     Expression<int>? screenIndex,
     Expression<double>? x,
     Expression<double>? y,
@@ -694,6 +728,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
       if (name != null) 'name': name,
       if (bundleId != null) 'bundle_id': bundleId,
       if (url != null) 'url': url,
+      if (documentPath != null) 'document_path': documentPath,
       if (screenIndex != null) 'screen_index': screenIndex,
       if (x != null) 'x': x,
       if (y != null) 'y': y,
@@ -709,6 +744,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
     Value<String>? name,
     Value<String?>? bundleId,
     Value<String?>? url,
+    Value<String?>? documentPath,
     Value<int>? screenIndex,
     Value<double>? x,
     Value<double>? y,
@@ -722,6 +758,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
       name: name ?? this.name,
       bundleId: bundleId ?? this.bundleId,
       url: url ?? this.url,
+      documentPath: documentPath ?? this.documentPath,
       screenIndex: screenIndex ?? this.screenIndex,
       x: x ?? this.x,
       y: y ?? this.y,
@@ -748,6 +785,9 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
     }
     if (url.present) {
       map['url'] = Variable<String>(url.value);
+    }
+    if (documentPath.present) {
+      map['document_path'] = Variable<String>(documentPath.value);
     }
     if (screenIndex.present) {
       map['screen_index'] = Variable<int>(screenIndex.value);
@@ -778,6 +818,7 @@ class ProjectWindowsCompanion extends UpdateCompanion<ProjectWindowEntity> {
           ..write('name: $name, ')
           ..write('bundleId: $bundleId, ')
           ..write('url: $url, ')
+          ..write('documentPath: $documentPath, ')
           ..write('screenIndex: $screenIndex, ')
           ..write('x: $x, ')
           ..write('y: $y, ')
@@ -842,8 +883,17 @@ class $AppLibraryEntriesTable extends AppLibraryEntries with TableInfo<$AppLibra
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _documentPathMeta = const VerificationMeta('documentPath');
   @override
-  List<GeneratedColumn> get $columns => [id, name, bundleId, path, url];
+  late final GeneratedColumn<String> documentPath = GeneratedColumn<String>(
+    'document_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, bundleId, path, url, documentPath];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -870,6 +920,9 @@ class $AppLibraryEntriesTable extends AppLibraryEntries with TableInfo<$AppLibra
     if (data.containsKey('url')) {
       context.handle(_urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
     }
+    if (data.containsKey('document_path')) {
+      context.handle(_documentPathMeta, documentPath.isAcceptableOrUnknown(data['document_path']!, _documentPathMeta));
+    }
     return context;
   }
 
@@ -888,6 +941,7 @@ class $AppLibraryEntriesTable extends AppLibraryEntries with TableInfo<$AppLibra
       bundleId: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}bundle_id']),
       path: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}path']),
       url: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}url']),
+      documentPath: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}document_path']),
     );
   }
 
@@ -903,7 +957,11 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
   final String? bundleId;
   final String? path;
   final String? url;
-  const AppLibraryEntity({required this.id, required this.name, this.bundleId, this.path, this.url});
+
+  /// A folder or file this entry opens with the app — a specific project rather than
+  /// just the app in general.
+  final String? documentPath;
+  const AppLibraryEntity({required this.id, required this.name, this.bundleId, this.path, this.url, this.documentPath});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -918,6 +976,9 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
     if (!nullToAbsent || url != null) {
       map['url'] = Variable<String>(url);
     }
+    if (!nullToAbsent || documentPath != null) {
+      map['document_path'] = Variable<String>(documentPath);
+    }
     return map;
   }
 
@@ -928,6 +989,7 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
       bundleId: bundleId == null && nullToAbsent ? const Value.absent() : Value(bundleId),
       path: path == null && nullToAbsent ? const Value.absent() : Value(path),
       url: url == null && nullToAbsent ? const Value.absent() : Value(url),
+      documentPath: documentPath == null && nullToAbsent ? const Value.absent() : Value(documentPath),
     );
   }
 
@@ -939,6 +1001,7 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
       bundleId: serializer.fromJson<String?>(json['bundleId']),
       path: serializer.fromJson<String?>(json['path']),
       url: serializer.fromJson<String?>(json['url']),
+      documentPath: serializer.fromJson<String?>(json['documentPath']),
     );
   }
   @override
@@ -950,6 +1013,7 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
       'bundleId': serializer.toJson<String?>(bundleId),
       'path': serializer.toJson<String?>(path),
       'url': serializer.toJson<String?>(url),
+      'documentPath': serializer.toJson<String?>(documentPath),
     };
   }
 
@@ -959,12 +1023,14 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
     Value<String?> bundleId = const Value.absent(),
     Value<String?> path = const Value.absent(),
     Value<String?> url = const Value.absent(),
+    Value<String?> documentPath = const Value.absent(),
   }) => AppLibraryEntity(
     id: id ?? this.id,
     name: name ?? this.name,
     bundleId: bundleId.present ? bundleId.value : this.bundleId,
     path: path.present ? path.value : this.path,
     url: url.present ? url.value : this.url,
+    documentPath: documentPath.present ? documentPath.value : this.documentPath,
   );
   AppLibraryEntity copyWithCompanion(AppLibraryEntriesCompanion data) {
     return AppLibraryEntity(
@@ -973,6 +1039,7 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
       bundleId: data.bundleId.present ? data.bundleId.value : this.bundleId,
       path: data.path.present ? data.path.value : this.path,
       url: data.url.present ? data.url.value : this.url,
+      documentPath: data.documentPath.present ? data.documentPath.value : this.documentPath,
     );
   }
 
@@ -983,13 +1050,14 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
           ..write('name: $name, ')
           ..write('bundleId: $bundleId, ')
           ..write('path: $path, ')
-          ..write('url: $url')
+          ..write('url: $url, ')
+          ..write('documentPath: $documentPath')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, bundleId, path, url);
+  int get hashCode => Object.hash(id, name, bundleId, path, url, documentPath);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -998,7 +1066,8 @@ class AppLibraryEntity extends DataClass implements Insertable<AppLibraryEntity>
           other.name == this.name &&
           other.bundleId == this.bundleId &&
           other.path == this.path &&
-          other.url == this.url);
+          other.url == this.url &&
+          other.documentPath == this.documentPath);
 }
 
 class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
@@ -1007,12 +1076,14 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
   final Value<String?> bundleId;
   final Value<String?> path;
   final Value<String?> url;
+  final Value<String?> documentPath;
   const AppLibraryEntriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.bundleId = const Value.absent(),
     this.path = const Value.absent(),
     this.url = const Value.absent(),
+    this.documentPath = const Value.absent(),
   });
   AppLibraryEntriesCompanion.insert({
     this.id = const Value.absent(),
@@ -1020,6 +1091,7 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
     this.bundleId = const Value.absent(),
     this.path = const Value.absent(),
     this.url = const Value.absent(),
+    this.documentPath = const Value.absent(),
   }) : name = Value(name);
   static Insertable<AppLibraryEntity> custom({
     Expression<int>? id,
@@ -1027,6 +1099,7 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
     Expression<String>? bundleId,
     Expression<String>? path,
     Expression<String>? url,
+    Expression<String>? documentPath,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1034,6 +1107,7 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
       if (bundleId != null) 'bundle_id': bundleId,
       if (path != null) 'path': path,
       if (url != null) 'url': url,
+      if (documentPath != null) 'document_path': documentPath,
     });
   }
 
@@ -1043,6 +1117,7 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
     Value<String?>? bundleId,
     Value<String?>? path,
     Value<String?>? url,
+    Value<String?>? documentPath,
   }) {
     return AppLibraryEntriesCompanion(
       id: id ?? this.id,
@@ -1050,6 +1125,7 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
       bundleId: bundleId ?? this.bundleId,
       path: path ?? this.path,
       url: url ?? this.url,
+      documentPath: documentPath ?? this.documentPath,
     );
   }
 
@@ -1071,6 +1147,9 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
     if (url.present) {
       map['url'] = Variable<String>(url.value);
     }
+    if (documentPath.present) {
+      map['document_path'] = Variable<String>(documentPath.value);
+    }
     return map;
   }
 
@@ -1081,7 +1160,8 @@ class AppLibraryEntriesCompanion extends UpdateCompanion<AppLibraryEntity> {
           ..write('name: $name, ')
           ..write('bundleId: $bundleId, ')
           ..write('path: $path, ')
-          ..write('url: $url')
+          ..write('url: $url, ')
+          ..write('documentPath: $documentPath')
           ..write(')'))
         .toString();
   }
@@ -2476,6 +2556,7 @@ typedef $$ProjectWindowsTableCreateCompanionBuilder =
       required String name,
       Value<String?> bundleId,
       Value<String?> url,
+      Value<String?> documentPath,
       Value<int> screenIndex,
       required double x,
       required double y,
@@ -2490,6 +2571,7 @@ typedef $$ProjectWindowsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String?> bundleId,
       Value<String?> url,
+      Value<String?> documentPath,
       Value<int> screenIndex,
       Value<double> x,
       Value<double> y,
@@ -2531,6 +2613,9 @@ class $$ProjectWindowsTableFilterComposer extends Composer<_$AppDatabase, $Proje
       $composableBuilder(column: $table.bundleId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get url => $composableBuilder(column: $table.url, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get documentPath =>
+      $composableBuilder(column: $table.documentPath, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get screenIndex =>
       $composableBuilder(column: $table.screenIndex, builder: (column) => ColumnFilters(column));
@@ -2586,6 +2671,9 @@ class $$ProjectWindowsTableOrderingComposer extends Composer<_$AppDatabase, $Pro
   ColumnOrderings<String> get url =>
       $composableBuilder(column: $table.url, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get documentPath =>
+      $composableBuilder(column: $table.documentPath, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get screenIndex =>
       $composableBuilder(column: $table.screenIndex, builder: (column) => ColumnOrderings(column));
 
@@ -2636,6 +2724,9 @@ class $$ProjectWindowsTableAnnotationComposer extends Composer<_$AppDatabase, $P
   GeneratedColumn<String> get bundleId => $composableBuilder(column: $table.bundleId, builder: (column) => column);
 
   GeneratedColumn<String> get url => $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<String> get documentPath =>
+      $composableBuilder(column: $table.documentPath, builder: (column) => column);
 
   GeneratedColumn<int> get screenIndex => $composableBuilder(column: $table.screenIndex, builder: (column) => column);
 
@@ -2698,6 +2789,7 @@ class $$ProjectWindowsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> bundleId = const Value.absent(),
                 Value<String?> url = const Value.absent(),
+                Value<String?> documentPath = const Value.absent(),
                 Value<int> screenIndex = const Value.absent(),
                 Value<double> x = const Value.absent(),
                 Value<double> y = const Value.absent(),
@@ -2710,6 +2802,7 @@ class $$ProjectWindowsTableTableManager
                 name: name,
                 bundleId: bundleId,
                 url: url,
+                documentPath: documentPath,
                 screenIndex: screenIndex,
                 x: x,
                 y: y,
@@ -2724,6 +2817,7 @@ class $$ProjectWindowsTableTableManager
                 required String name,
                 Value<String?> bundleId = const Value.absent(),
                 Value<String?> url = const Value.absent(),
+                Value<String?> documentPath = const Value.absent(),
                 Value<int> screenIndex = const Value.absent(),
                 required double x,
                 required double y,
@@ -2736,6 +2830,7 @@ class $$ProjectWindowsTableTableManager
                 name: name,
                 bundleId: bundleId,
                 url: url,
+                documentPath: documentPath,
                 screenIndex: screenIndex,
                 x: x,
                 y: y,
@@ -2808,6 +2903,7 @@ typedef $$AppLibraryEntriesTableCreateCompanionBuilder =
       Value<String?> bundleId,
       Value<String?> path,
       Value<String?> url,
+      Value<String?> documentPath,
     });
 typedef $$AppLibraryEntriesTableUpdateCompanionBuilder =
     AppLibraryEntriesCompanion Function({
@@ -2816,6 +2912,7 @@ typedef $$AppLibraryEntriesTableUpdateCompanionBuilder =
       Value<String?> bundleId,
       Value<String?> path,
       Value<String?> url,
+      Value<String?> documentPath,
     });
 
 class $$AppLibraryEntriesTableFilterComposer extends Composer<_$AppDatabase, $AppLibraryEntriesTable> {
@@ -2836,6 +2933,9 @@ class $$AppLibraryEntriesTableFilterComposer extends Composer<_$AppDatabase, $Ap
   ColumnFilters<String> get path => $composableBuilder(column: $table.path, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get url => $composableBuilder(column: $table.url, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get documentPath =>
+      $composableBuilder(column: $table.documentPath, builder: (column) => ColumnFilters(column));
 }
 
 class $$AppLibraryEntriesTableOrderingComposer extends Composer<_$AppDatabase, $AppLibraryEntriesTable> {
@@ -2859,6 +2959,9 @@ class $$AppLibraryEntriesTableOrderingComposer extends Composer<_$AppDatabase, $
 
   ColumnOrderings<String> get url =>
       $composableBuilder(column: $table.url, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get documentPath =>
+      $composableBuilder(column: $table.documentPath, builder: (column) => ColumnOrderings(column));
 }
 
 class $$AppLibraryEntriesTableAnnotationComposer extends Composer<_$AppDatabase, $AppLibraryEntriesTable> {
@@ -2878,6 +2981,9 @@ class $$AppLibraryEntriesTableAnnotationComposer extends Composer<_$AppDatabase,
   GeneratedColumn<String> get path => $composableBuilder(column: $table.path, builder: (column) => column);
 
   GeneratedColumn<String> get url => $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<String> get documentPath =>
+      $composableBuilder(column: $table.documentPath, builder: (column) => column);
 }
 
 class $$AppLibraryEntriesTableTableManager
@@ -2910,7 +3016,15 @@ class $$AppLibraryEntriesTableTableManager
                 Value<String?> bundleId = const Value.absent(),
                 Value<String?> path = const Value.absent(),
                 Value<String?> url = const Value.absent(),
-              }) => AppLibraryEntriesCompanion(id: id, name: name, bundleId: bundleId, path: path, url: url),
+                Value<String?> documentPath = const Value.absent(),
+              }) => AppLibraryEntriesCompanion(
+                id: id,
+                name: name,
+                bundleId: bundleId,
+                path: path,
+                url: url,
+                documentPath: documentPath,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -2918,7 +3032,15 @@ class $$AppLibraryEntriesTableTableManager
                 Value<String?> bundleId = const Value.absent(),
                 Value<String?> path = const Value.absent(),
                 Value<String?> url = const Value.absent(),
-              }) => AppLibraryEntriesCompanion.insert(id: id, name: name, bundleId: bundleId, path: path, url: url),
+                Value<String?> documentPath = const Value.absent(),
+              }) => AppLibraryEntriesCompanion.insert(
+                id: id,
+                name: name,
+                bundleId: bundleId,
+                path: path,
+                url: url,
+                documentPath: documentPath,
+              ),
           withReferenceMapper: (p0) => p0.map((e) => (e.readTable(table), BaseReferences(db, table, e))).toList(),
           prefetchHooksCallback: null,
         ),

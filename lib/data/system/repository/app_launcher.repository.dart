@@ -30,6 +30,11 @@ class AppLauncherRepository {
   /// control side needs to address the right accessibility element.
   Future<int?> launchApp({required String bundleId}) => channel.invoke<int>('launchApp', {'bundleId': bundleId});
 
+  /// Opens [bundleId] with [documentPath] — a specific project, e.g. a folder to open
+  /// in an editor — rather than just the app in general.
+  Future<int?> launchWithDocument({required String bundleId, required String documentPath}) =>
+      channel.invoke<int>('launchAppWithDocument', {'bundleId': bundleId, 'documentPath': documentPath});
+
   /// PNG bytes of each app's icon, keyed by bundle id.
   ///
   /// Apps that cannot be resolved are simply absent from the result rather than
@@ -58,6 +63,16 @@ class AppLauncherRepository {
       bundleId: row['bundleId']?.toString(),
       path: row['path']?.toString(),
     );
+  }
+
+  /// Shows an `NSOpenPanel` restricted to folders, for picking a project to pair with
+  /// an app — as opposed to [chooseApp], which picks the app itself.
+  ///
+  /// Returns `null` if the user cancelled.
+  Future<({String name, String path})?> chooseFolder({String? directory}) async {
+    final row = await channel.invoke<Map<Object?, Object?>>('chooseFolder', {'directory': directory});
+    if (row == null) return null;
+    return (name: row['name']?.toString() ?? '', path: row['path']?.toString() ?? '');
   }
 }
 

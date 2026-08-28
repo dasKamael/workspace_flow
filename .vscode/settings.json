@@ -1,0 +1,17 @@
+{
+    "dart.lineLength": 120,
+    "dart.previewFlutterUiGuides": true,
+    "[dart]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit"
+        },
+        "editor.rulers": [
+            120
+        ]
+    },
+    "files.exclude": {
+        "**/*.freezed.dart": true,
+        "**/*.g.dart": true
+    },
+    "java.configuration.updateBuildConfiguration": "disabled",
+}

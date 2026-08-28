@@ -40,6 +40,25 @@ final appLibraryProvider = StreamProvider<List<AppLibraryEntry>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AppLibraryRef = StreamProviderRef<List<AppLibraryEntry>>;
+String _$appLibraryIconsHash() => r'4767c277ed61b679e4a448f61b52736ef8183ad1';
+
+/// Icons for every app currently in the library, keyed by bundle id — lets a chip show
+/// the real app icon instead of just its name, so several project variants of the same
+/// editor stay easy to tell apart from unrelated apps at a glance.
+///
+/// Copied from [appLibraryIcons].
+@ProviderFor(appLibraryIcons)
+final appLibraryIconsProvider = FutureProvider<Map<String, Uint8List>>.internal(
+  appLibraryIcons,
+  name: r'appLibraryIconsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$appLibraryIconsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AppLibraryIconsRef = FutureProviderRef<Map<String, Uint8List>>;
 String _$selectedProjectHash() => r'39bc55339b8e02f6ec77005f98ad629358b43555';
 
 /// The project the workspace is showing.
@@ -79,7 +98,7 @@ final selectedProjectServiceProvider = NotifierProvider<SelectedProjectService, 
 );
 
 typedef _$SelectedProjectService = Notifier<int?>;
-String _$projectServiceHash() => r'82ed4d0680be0eb3d0035953d843c0fd14c9fee2';
+String _$projectServiceHash() => r'8f33bcfbdfe8aa0ac41c4e0a73b404f0112dfd79';
 
 /// Creating, saving and deleting projects.
 ///
