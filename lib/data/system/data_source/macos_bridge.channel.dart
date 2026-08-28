@@ -51,8 +51,28 @@ class MacosBridgeChannel {
         .toList();
   }
 
-  /// Registers [handler] for calls the native side makes into Dart.
-  void setCallHandler(Future<Object?> Function(MethodCall call) handler) => _channel.setMethodCallHandler(handler);
+  /// Handlers for calls the native side makes back into Dart, keyed by method name.
+  final Map<String, Future<Object?> Function(Map<String, Object?> arguments)> _handlers = {};
+
+  /// Registers a handler for one inbound [method].
+  ///
+  /// Keyed by method rather than replacing a single channel-wide handler: the moment a
+  /// second feature needs a callback, one would silently unregister the other.
+  void onCall(String method, Future<Object?> Function(Map<String, Object?> arguments) handler) {
+    final isFirst = _handlers.isEmpty;
+    _handlers[method] = handler;
+    if (isFirst) _channel.setMethodCallHandler(_dispatch);
+  }
+
+  Future<Object?> _dispatch(MethodCall call) async {
+    final handler = _handlers[call.method];
+    if (handler == null) return null;
+
+    final arguments = call.arguments;
+    return handler(
+      arguments is Map ? arguments.map((key, value) => MapEntry(key.toString(), value)) : const <String, Object?>{},
+    );
+  }
 }
 
 @Riverpod(keepAlive: true)

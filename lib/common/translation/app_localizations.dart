@@ -397,6 +397,12 @@ abstract class AppLocalizations {
   /// **'Use current arrangement'**
   String get project_editor_use_current_arrangement;
 
+  /// No description provided for @project_editor_arrange_on_screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrange on screen'**
+  String get project_editor_arrange_on_screen;
+
   /// No description provided for @project_editor_capture_empty.
   ///
   /// In en, this message translates to:
@@ -415,17 +421,11 @@ abstract class AppLocalizations {
   /// **'Window layout'**
   String get project_editor_layout_label;
 
-  /// No description provided for @project_editor_hint_drag.
+  /// No description provided for @project_editor_library_hint.
   ///
   /// In en, this message translates to:
-  /// **'Drag a chip onto a monitor, then drag tiles freely — they snap flush to edges and to each other.'**
-  String get project_editor_hint_drag;
-
-  /// No description provided for @project_editor_hint_resize.
-  ///
-  /// In en, this message translates to:
-  /// **'Resize from any edge or corner. Hold ⌥ to turn off snapping, or drop a tile outside a monitor to remove it.'**
-  String get project_editor_hint_resize;
+  /// **'The apps a project can draw on. Which of them end up in the layout is settled in \"Arrange on screen\".'**
+  String get project_editor_library_hint;
 
   /// No description provided for @project_editor_monitor_caption.
   ///
@@ -438,6 +438,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{width}×{height}'**
   String project_editor_tile_size(String width, String height);
+
+  /// No description provided for @layout_overlay_save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save layout'**
+  String get layout_overlay_save;
+
+  /// No description provided for @layout_overlay_library_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag an app onto a screen'**
+  String get layout_overlay_library_label;
+
+  /// No description provided for @layout_overlay_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel'**
+  String get layout_overlay_hint;
 
   /// No description provided for @profile_editor_eyebrow.
   ///

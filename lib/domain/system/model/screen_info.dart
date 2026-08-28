@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'screen_info.freezed.dart';
+part 'screen_info.g.dart';
 
 /// A physical display, as reported by `NSScreen`.
 ///
@@ -19,6 +20,9 @@ abstract class ScreenInfo with _$ScreenInfo {
     required bool isMain,
     double? diagonalInches,
   }) = _ScreenInfo;
+
+  /// Read back from the layout overlay, which runs in its own Flutter engine.
+  factory ScreenInfo.fromJson(Map<String, dynamic> json) => _$ScreenInfoFromJson(json);
 
   const ScreenInfo._();
 

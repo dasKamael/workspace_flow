@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'app_library_entry.freezed.dart';
+part 'app_library_entry.g.dart';
 
 /// An app or website available as a chip in the project editor.
 ///
@@ -9,6 +10,9 @@ part 'app_library_entry.freezed.dart';
 @freezed
 abstract class AppLibraryEntry with _$AppLibraryEntry {
   const factory AppLibraryEntry({required String name, String? bundleId, String? path, String? url}) = _AppLibraryEntry;
+
+  /// Read back in the layout overlay, which runs in its own Flutter engine.
+  factory AppLibraryEntry.fromJson(Map<String, dynamic> json) => _$AppLibraryEntryFromJson(json);
 
   const AppLibraryEntry._();
 

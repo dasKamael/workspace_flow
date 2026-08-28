@@ -11,6 +11,7 @@ part of 'app_library_entry.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$AppLibraryEntry {
 
@@ -21,6 +22,8 @@ mixin _$AppLibraryEntry {
 @pragma('vm:prefer-inline')
 $AppLibraryEntryCopyWith<AppLibraryEntry> get copyWith => _$AppLibraryEntryCopyWithImpl<AppLibraryEntry>(this as AppLibraryEntry, _$identity);
 
+  /// Serializes this AppLibraryEntry to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
@@ -28,7 +31,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is AppLibraryEntry&&(identical(other.name, name) || other.name == name)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.path, path) || other.path == path)&&(identical(other.url, url) || other.url == url));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode => Object.hash(runtimeType,name,bundleId,path,url);
 
@@ -206,11 +209,11 @@ return $default(_that.name,_that.bundleId,_that.path,_that.url);case _:
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _AppLibraryEntry extends AppLibraryEntry {
   const _AppLibraryEntry({required this.name, this.bundleId, this.path, this.url}): super._();
-  
+  factory _AppLibraryEntry.fromJson(Map<String, dynamic> json) => _$AppLibraryEntryFromJson(json);
 
 @override final  String name;
 @override final  String? bundleId;
@@ -223,14 +226,17 @@ class _AppLibraryEntry extends AppLibraryEntry {
 @pragma('vm:prefer-inline')
 _$AppLibraryEntryCopyWith<_AppLibraryEntry> get copyWith => __$AppLibraryEntryCopyWithImpl<_AppLibraryEntry>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$AppLibraryEntryToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _AppLibraryEntry&&(identical(other.name, name) || other.name == name)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.path, path) || other.path == path)&&(identical(other.url, url) || other.url == url));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode => Object.hash(runtimeType,name,bundleId,path,url);
 

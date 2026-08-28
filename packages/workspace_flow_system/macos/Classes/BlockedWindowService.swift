@@ -53,9 +53,15 @@ final class BlockedWindowService {
       backing: .buffered,
       defer: false
     )
-    window.contentViewController = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
+    let controller = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
+    // Same as the layout overlay: the Flutter view's own backing is opaque by default,
+    // which would show as a solid rectangle behind the page's rounded corners.
+    controller.backgroundColor = .clear
+
+    window.contentViewController = controller
     window.isOpaque = false
     window.backgroundColor = .clear
+    window.hasShadow = false
     window.level = .floating
     window.center()
     self.window = window

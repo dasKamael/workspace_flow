@@ -1,5 +1,6 @@
+import 'dart:typed_data';
+
 import 'package:flutter/widgets.dart';
-import 'package:workspace_flow/common/translation/translation.extension.dart';
 import 'package:workspace_flow/domain/project/model/project_window.dart';
 import 'package:workspace_flow/domain/project/model/resize_handle.enum.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
@@ -18,7 +19,10 @@ import 'package:workspace_flow/presentation/design_system/molecules/ui_svg_icon.
 class WindowTile extends StatelessWidget {
   const WindowTile({
     required this.window,
+    required this.sizeLabel,
     required this.isSelected,
+    this.icon,
+    this.onDark = false,
     required this.onSelect,
     required this.onRemove,
     required this.onDragStart,
@@ -31,6 +35,21 @@ class WindowTile extends StatelessWidget {
   });
 
   final ProjectWindow window;
+
+  /// The readout under the name. The sheet shows percentages, the full-size overlay
+  /// shows real points — which is the whole reason for arranging at full size.
+  final String sizeLabel;
+
+  /// PNG bytes of the represented app's icon, drawn in the middle of the tile.
+  ///
+  /// At full size a rectangle says nothing about which window it will become; the
+  /// app's own icon does. Null for websites and while the icons are still loading.
+  final Uint8List? icon;
+
+  /// The full-size overlay lies on a darkened desktop: the tile turns translucent so
+  /// what it will cover stays visible, and its text switches to the light palette.
+  final bool onDark;
+
   final bool isSelected;
   final VoidCallback onSelect;
   final VoidCallback onRemove;
@@ -43,13 +62,43 @@ class WindowTile extends StatelessWidget {
   final ValueChanged<Offset> onResizeUpdate;
   final VoidCallback onResizeEnd;
 
-  /// Edge length of a corner grip, as in the design.
-  static const double cornerHandleSize = 14;
+  /// Edge length of a corner grip.
+  ///
+  /// Larger than the design's 14px: a tile here is drawn at the real window's size, so
+  /// the grips have to be findable on a rectangle over a thousand points wide.
+  static const double cornerHandleSize = 22;
 
   /// Thickness of the invisible hit strips along the four sides.
-  static const double edgeHandleThickness = 6;
+  static const double edgeHandleThickness = 10;
 
-  static const double closeSize = 18;
+  /// Edge length of the round close button, and of the glyph inside it.
+  static const double closeSize = 34;
+  static const double closeGlyphSize = 15;
+
+  /// Share of the shorter tile edge the icon takes, and the range it stays inside.
+  static const double iconFraction = 0.28;
+  static const double iconMin = 24;
+  static const double iconMax = 128;
+
+  Color get _fill => switch ((onDark, isSelected)) {
+    // Roughly a quarter opaque: enough to read as a surface, sheer enough to see
+    // through to whatever the window will end up covering.
+    (true, false) => UiColor.white.withValues(alpha: 0.22),
+    (true, true) => UiColor.accent.withValues(alpha: 0.38),
+    (false, false) => UiColor.white,
+    (false, true) => UiColor.bgAccentStrong,
+  };
+
+  Color get _border => switch ((onDark, isSelected)) {
+    (true, false) => UiColor.onDarkAccent,
+    (true, true) => UiColor.accent,
+    (false, false) => UiColor.borderAccent,
+    (false, true) => UiColor.primary,
+  };
+
+  Color get _nameColor => onDark ? UiColor.onDark : UiColor.fgStrong;
+
+  Color get _metaColor => onDark ? UiColor.onDarkMuted : UiColor.fgSubtle;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -68,40 +117,34 @@ class WindowTile extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? UiColor.bgAccentStrong : UiColor.white,
+                color: _fill,
                 borderRadius: UiRadius.allS,
-                border: Border.all(color: isSelected ? UiColor.primary : UiColor.borderAccent),
-                boxShadow: isSelected ? UiShadow.md : const [],
+                border: Border.all(color: _border),
+                boxShadow: isSelected && !onDark ? UiShadow.md : const [],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(right: closeSize),
+                    // Keeps the name clear of the close button and the corner grip.
+                    padding: const EdgeInsets.only(right: closeSize + cornerHandleSize),
                     child: Text(
                       window.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: UiTypography.tileName,
+                      style: UiTypography.tileName.copyWith(color: _nameColor),
                     ),
                   ),
-                  Text(
-                    context.translations.project_editor_tile_size(
-                      window.width.round().toString(),
-                      window.height.round().toString(),
-                    ),
-                    style: UiTypography.tileSize,
-                  ),
+                  Text(sizeLabel, style: UiTypography.tileSize.copyWith(color: _metaColor)),
                 ],
               ),
             ),
           ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: _CloseButton(isSelected: isSelected, onTap: onRemove),
-          ),
+          if (icon != null)
+            Positioned.fill(
+              child: IgnorePointer(child: _CentredIcon(icon: icon!)),
+            ),
           for (final handle in ResizeHandle.values)
             _HandleSlot(
               handle: handle,
@@ -109,6 +152,13 @@ class WindowTile extends StatelessWidget {
               onUpdate: onResizeUpdate,
               onEnd: onResizeEnd,
             ),
+          // After the grips, and clear of the top-right corner: otherwise the corner
+          // grip lies on top of the button and swallows every click meant for it.
+          Positioned(
+            top: 0,
+            right: cornerHandleSize,
+            child: _CloseButton(color: isSelected ? UiColor.primary : _metaColor, onDark: onDark, onTap: onRemove),
+          ),
         ],
       ),
     ),
@@ -163,6 +213,30 @@ class _HandleSlot extends StatelessWidget {
   };
 }
 
+/// The app's own icon, sized to the tile and centred.
+class _CentredIcon extends StatelessWidget {
+  const _CentredIcon({required this.icon});
+
+  final Uint8List icon;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final edge = (constraints.biggest.shortestSide * WindowTile.iconFraction).clamp(
+        WindowTile.iconMin,
+        WindowTile.iconMax,
+      );
+
+      // A tile can be smaller than the icon's minimum; then it simply has no room.
+      if (constraints.biggest.shortestSide < WindowTile.iconMin * 1.5) return const SizedBox.shrink();
+
+      return Center(
+        child: Image.memory(icon, width: edge, height: edge, filterQuality: FilterQuality.medium),
+      );
+    },
+  );
+}
+
 /// The visible corner grip from the design: two 2px edges.
 ///
 /// The design showed a single grip at the bottom right; with four corners each one
@@ -188,25 +262,30 @@ class _CornerGrip extends StatelessWidget {
 }
 
 class _CloseButton extends StatelessWidget {
-  const _CloseButton({required this.isSelected, required this.onTap});
+  const _CloseButton({required this.color, required this.onDark, required this.onTap});
 
-  final bool isSelected;
+  final Color color;
+  final bool onDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => MouseRegion(
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
+      // Opaque so the whole circle answers, not just the strokes of the glyph.
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: SizedBox.square(
-        dimension: WindowTile.closeSize,
+      child: Container(
+        width: WindowTile.closeSize,
+        height: WindowTile.closeSize,
+        decoration: BoxDecoration(
+          // A disc on the dark overlay, where a bare glyph would vanish against
+          // whatever the desktop shows through the translucent tile.
+          color: onDark ? UiColor.bgDark.withValues(alpha: 0.55) : null,
+          shape: BoxShape.circle,
+        ),
         child: Center(
-          child: UiSvgIcon(
-            path: UiIcon.xMark,
-            size: 11,
-            color: isSelected ? UiColor.primary : UiColor.fgSubtle,
-            strokeWidth: 2,
-          ),
+          child: UiSvgIcon(path: UiIcon.xMark, size: WindowTile.closeGlyphSize, color: color, strokeWidth: 2),
         ),
       ),
     ),

@@ -11,6 +11,7 @@ part of 'project_window.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$ProjectWindow {
 
@@ -21,6 +22,8 @@ mixin _$ProjectWindow {
 @pragma('vm:prefer-inline')
 $ProjectWindowCopyWith<ProjectWindow> get copyWith => _$ProjectWindowCopyWithImpl<ProjectWindow>(this as ProjectWindow, _$identity);
 
+  /// Serializes this ProjectWindow to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
@@ -28,7 +31,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is ProjectWindow&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.screenIndex, screenIndex) || other.screenIndex == screenIndex)&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.url, url) || other.url == url)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode => Object.hash(runtimeType,id,name,screenIndex,x,y,width,height,bundleId,url,sortOrder);
 
@@ -212,11 +215,11 @@ return $default(_that.id,_that.name,_that.screenIndex,_that.x,_that.y,_that.widt
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _ProjectWindow extends ProjectWindow {
   const _ProjectWindow({required this.id, required this.name, required this.screenIndex, required this.x, required this.y, required this.width, required this.height, this.bundleId, this.url, this.sortOrder = 0}): super._();
-  
+  factory _ProjectWindow.fromJson(Map<String, dynamic> json) => _$ProjectWindowFromJson(json);
 
 @override final  int id;
 @override final  String name;
@@ -235,14 +238,17 @@ class _ProjectWindow extends ProjectWindow {
 @pragma('vm:prefer-inline')
 _$ProjectWindowCopyWith<_ProjectWindow> get copyWith => __$ProjectWindowCopyWithImpl<_ProjectWindow>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$ProjectWindowToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProjectWindow&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.screenIndex, screenIndex) || other.screenIndex == screenIndex)&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.width, width) || other.width == width)&&(identical(other.height, height) || other.height == height)&&(identical(other.bundleId, bundleId) || other.bundleId == bundleId)&&(identical(other.url, url) || other.url == url)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode => Object.hash(runtimeType,id,name,screenIndex,x,y,width,height,bundleId,url,sortOrder);
 

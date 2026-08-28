@@ -14,11 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProjectEditorState {
 
- String get name; List<ProjectWindow> get windows;/// Index of the selected tile, or null.
- int? get selectedIndex;/// Index of the tile currently being dragged or resized, or null.
- int? get draggingIndex;/// Percent positions of the magnets the dragged tile is currently sitting on.
-/// Drawn as alignment guides, and cleared the moment the drag ends.
- List<double> get guidesX; List<double> get guidesY;/// Null while creating a new project.
+ String get name; List<ProjectWindow> get windows;/// Null while creating a new project.
  int? get projectId; bool get isLoaded;
 /// Create a copy of ProjectEditorState
 /// with the given fields replaced by the non-null parameter values.
@@ -30,16 +26,16 @@ $ProjectEditorStateCopyWith<ProjectEditorState> get copyWith => _$ProjectEditorS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProjectEditorState&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.windows, windows)&&(identical(other.selectedIndex, selectedIndex) || other.selectedIndex == selectedIndex)&&(identical(other.draggingIndex, draggingIndex) || other.draggingIndex == draggingIndex)&&const DeepCollectionEquality().equals(other.guidesX, guidesX)&&const DeepCollectionEquality().equals(other.guidesY, guidesY)&&(identical(other.projectId, projectId) || other.projectId == projectId)&&(identical(other.isLoaded, isLoaded) || other.isLoaded == isLoaded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProjectEditorState&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.windows, windows)&&(identical(other.projectId, projectId) || other.projectId == projectId)&&(identical(other.isLoaded, isLoaded) || other.isLoaded == isLoaded));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(windows),selectedIndex,draggingIndex,const DeepCollectionEquality().hash(guidesX),const DeepCollectionEquality().hash(guidesY),projectId,isLoaded);
+int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(windows),projectId,isLoaded);
 
 @override
 String toString() {
-  return 'ProjectEditorState(name: $name, windows: $windows, selectedIndex: $selectedIndex, draggingIndex: $draggingIndex, guidesX: $guidesX, guidesY: $guidesY, projectId: $projectId, isLoaded: $isLoaded)';
+  return 'ProjectEditorState(name: $name, windows: $windows, projectId: $projectId, isLoaded: $isLoaded)';
 }
 
 
@@ -50,7 +46,7 @@ abstract mixin class $ProjectEditorStateCopyWith<$Res>  {
   factory $ProjectEditorStateCopyWith(ProjectEditorState value, $Res Function(ProjectEditorState) _then) = _$ProjectEditorStateCopyWithImpl;
 @useResult
 $Res call({
- String name, List<ProjectWindow> windows, int? selectedIndex, int? draggingIndex, List<double> guidesX, List<double> guidesY, int? projectId, bool isLoaded
+ String name, List<ProjectWindow> windows, int? projectId, bool isLoaded
 });
 
 
@@ -67,15 +63,11 @@ class _$ProjectEditorStateCopyWithImpl<$Res>
 
 /// Create a copy of ProjectEditorState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? windows = null,Object? selectedIndex = freezed,Object? draggingIndex = freezed,Object? guidesX = null,Object? guidesY = null,Object? projectId = freezed,Object? isLoaded = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? windows = null,Object? projectId = freezed,Object? isLoaded = null,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,windows: null == windows ? _self.windows : windows // ignore: cast_nullable_to_non_nullable
-as List<ProjectWindow>,selectedIndex: freezed == selectedIndex ? _self.selectedIndex : selectedIndex // ignore: cast_nullable_to_non_nullable
-as int?,draggingIndex: freezed == draggingIndex ? _self.draggingIndex : draggingIndex // ignore: cast_nullable_to_non_nullable
-as int?,guidesX: null == guidesX ? _self.guidesX : guidesX // ignore: cast_nullable_to_non_nullable
-as List<double>,guidesY: null == guidesY ? _self.guidesY : guidesY // ignore: cast_nullable_to_non_nullable
-as List<double>,projectId: freezed == projectId ? _self.projectId : projectId // ignore: cast_nullable_to_non_nullable
+as List<ProjectWindow>,projectId: freezed == projectId ? _self.projectId : projectId // ignore: cast_nullable_to_non_nullable
 as int?,isLoaded: null == isLoaded ? _self.isLoaded : isLoaded // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -162,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  List<ProjectWindow> windows,  int? selectedIndex,  int? draggingIndex,  List<double> guidesX,  List<double> guidesY,  int? projectId,  bool isLoaded)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  List<ProjectWindow> windows,  int? projectId,  bool isLoaded)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProjectEditorState() when $default != null:
-return $default(_that.name,_that.windows,_that.selectedIndex,_that.draggingIndex,_that.guidesX,_that.guidesY,_that.projectId,_that.isLoaded);case _:
+return $default(_that.name,_that.windows,_that.projectId,_that.isLoaded);case _:
   return orElse();
 
 }
@@ -183,10 +175,10 @@ return $default(_that.name,_that.windows,_that.selectedIndex,_that.draggingIndex
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  List<ProjectWindow> windows,  int? selectedIndex,  int? draggingIndex,  List<double> guidesX,  List<double> guidesY,  int? projectId,  bool isLoaded)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  List<ProjectWindow> windows,  int? projectId,  bool isLoaded)  $default,) {final _that = this;
 switch (_that) {
 case _ProjectEditorState():
-return $default(_that.name,_that.windows,_that.selectedIndex,_that.draggingIndex,_that.guidesX,_that.guidesY,_that.projectId,_that.isLoaded);case _:
+return $default(_that.name,_that.windows,_that.projectId,_that.isLoaded);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +195,10 @@ return $default(_that.name,_that.windows,_that.selectedIndex,_that.draggingIndex
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  List<ProjectWindow> windows,  int? selectedIndex,  int? draggingIndex,  List<double> guidesX,  List<double> guidesY,  int? projectId,  bool isLoaded)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  List<ProjectWindow> windows,  int? projectId,  bool isLoaded)?  $default,) {final _that = this;
 switch (_that) {
 case _ProjectEditorState() when $default != null:
-return $default(_that.name,_that.windows,_that.selectedIndex,_that.draggingIndex,_that.guidesX,_that.guidesY,_that.projectId,_that.isLoaded);case _:
+return $default(_that.name,_that.windows,_that.projectId,_that.isLoaded);case _:
   return null;
 
 }
@@ -218,7 +210,7 @@ return $default(_that.name,_that.windows,_that.selectedIndex,_that.draggingIndex
 
 
 class _ProjectEditorState extends ProjectEditorState {
-  const _ProjectEditorState({this.name = '', final  List<ProjectWindow> windows = const [], this.selectedIndex, this.draggingIndex, final  List<double> guidesX = const [], final  List<double> guidesY = const [], this.projectId, this.isLoaded = false}): _windows = windows,_guidesX = guidesX,_guidesY = guidesY,super._();
+  const _ProjectEditorState({this.name = '', final  List<ProjectWindow> windows = const [], this.projectId, this.isLoaded = false}): _windows = windows,super._();
   
 
 @override@JsonKey() final  String name;
@@ -227,28 +219,6 @@ class _ProjectEditorState extends ProjectEditorState {
   if (_windows is EqualUnmodifiableListView) return _windows;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_windows);
-}
-
-/// Index of the selected tile, or null.
-@override final  int? selectedIndex;
-/// Index of the tile currently being dragged or resized, or null.
-@override final  int? draggingIndex;
-/// Percent positions of the magnets the dragged tile is currently sitting on.
-/// Drawn as alignment guides, and cleared the moment the drag ends.
- final  List<double> _guidesX;
-/// Percent positions of the magnets the dragged tile is currently sitting on.
-/// Drawn as alignment guides, and cleared the moment the drag ends.
-@override@JsonKey() List<double> get guidesX {
-  if (_guidesX is EqualUnmodifiableListView) return _guidesX;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_guidesX);
-}
-
- final  List<double> _guidesY;
-@override@JsonKey() List<double> get guidesY {
-  if (_guidesY is EqualUnmodifiableListView) return _guidesY;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_guidesY);
 }
 
 /// Null while creating a new project.
@@ -265,16 +235,16 @@ _$ProjectEditorStateCopyWith<_ProjectEditorState> get copyWith => __$ProjectEdit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProjectEditorState&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other._windows, _windows)&&(identical(other.selectedIndex, selectedIndex) || other.selectedIndex == selectedIndex)&&(identical(other.draggingIndex, draggingIndex) || other.draggingIndex == draggingIndex)&&const DeepCollectionEquality().equals(other._guidesX, _guidesX)&&const DeepCollectionEquality().equals(other._guidesY, _guidesY)&&(identical(other.projectId, projectId) || other.projectId == projectId)&&(identical(other.isLoaded, isLoaded) || other.isLoaded == isLoaded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProjectEditorState&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other._windows, _windows)&&(identical(other.projectId, projectId) || other.projectId == projectId)&&(identical(other.isLoaded, isLoaded) || other.isLoaded == isLoaded));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_windows),selectedIndex,draggingIndex,const DeepCollectionEquality().hash(_guidesX),const DeepCollectionEquality().hash(_guidesY),projectId,isLoaded);
+int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_windows),projectId,isLoaded);
 
 @override
 String toString() {
-  return 'ProjectEditorState(name: $name, windows: $windows, selectedIndex: $selectedIndex, draggingIndex: $draggingIndex, guidesX: $guidesX, guidesY: $guidesY, projectId: $projectId, isLoaded: $isLoaded)';
+  return 'ProjectEditorState(name: $name, windows: $windows, projectId: $projectId, isLoaded: $isLoaded)';
 }
 
 
@@ -285,7 +255,7 @@ abstract mixin class _$ProjectEditorStateCopyWith<$Res> implements $ProjectEdito
   factory _$ProjectEditorStateCopyWith(_ProjectEditorState value, $Res Function(_ProjectEditorState) _then) = __$ProjectEditorStateCopyWithImpl;
 @override @useResult
 $Res call({
- String name, List<ProjectWindow> windows, int? selectedIndex, int? draggingIndex, List<double> guidesX, List<double> guidesY, int? projectId, bool isLoaded
+ String name, List<ProjectWindow> windows, int? projectId, bool isLoaded
 });
 
 
@@ -302,15 +272,11 @@ class __$ProjectEditorStateCopyWithImpl<$Res>
 
 /// Create a copy of ProjectEditorState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? windows = null,Object? selectedIndex = freezed,Object? draggingIndex = freezed,Object? guidesX = null,Object? guidesY = null,Object? projectId = freezed,Object? isLoaded = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? windows = null,Object? projectId = freezed,Object? isLoaded = null,}) {
   return _then(_ProjectEditorState(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,windows: null == windows ? _self._windows : windows // ignore: cast_nullable_to_non_nullable
-as List<ProjectWindow>,selectedIndex: freezed == selectedIndex ? _self.selectedIndex : selectedIndex // ignore: cast_nullable_to_non_nullable
-as int?,draggingIndex: freezed == draggingIndex ? _self.draggingIndex : draggingIndex // ignore: cast_nullable_to_non_nullable
-as int?,guidesX: null == guidesX ? _self._guidesX : guidesX // ignore: cast_nullable_to_non_nullable
-as List<double>,guidesY: null == guidesY ? _self._guidesY : guidesY // ignore: cast_nullable_to_non_nullable
-as List<double>,projectId: freezed == projectId ? _self.projectId : projectId // ignore: cast_nullable_to_non_nullable
+as List<ProjectWindow>,projectId: freezed == projectId ? _self.projectId : projectId // ignore: cast_nullable_to_non_nullable
 as int?,isLoaded: null == isLoaded ? _self.isLoaded : isLoaded // ignore: cast_nullable_to_non_nullable
 as bool,
   ));

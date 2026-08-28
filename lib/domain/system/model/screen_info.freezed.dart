@@ -11,6 +11,7 @@ part of 'screen_info.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
+
 /// @nodoc
 mixin _$ScreenInfo {
 
@@ -21,6 +22,8 @@ mixin _$ScreenInfo {
 @pragma('vm:prefer-inline')
 $ScreenInfoCopyWith<ScreenInfo> get copyWith => _$ScreenInfoCopyWithImpl<ScreenInfo>(this as ScreenInfo, _$identity);
 
+  /// Serializes this ScreenInfo to a JSON map.
+  Map<String, dynamic> toJson();
 
 
 @override
@@ -28,7 +31,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is ScreenInfo&&(identical(other.index, index) || other.index == index)&&(identical(other.visibleX, visibleX) || other.visibleX == visibleX)&&(identical(other.visibleY, visibleY) || other.visibleY == visibleY)&&(identical(other.visibleWidth, visibleWidth) || other.visibleWidth == visibleWidth)&&(identical(other.visibleHeight, visibleHeight) || other.visibleHeight == visibleHeight)&&(identical(other.isMain, isMain) || other.isMain == isMain)&&(identical(other.diagonalInches, diagonalInches) || other.diagonalInches == diagonalInches));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode => Object.hash(runtimeType,index,visibleX,visibleY,visibleWidth,visibleHeight,isMain,diagonalInches);
 
@@ -209,11 +212,11 @@ return $default(_that.index,_that.visibleX,_that.visibleY,_that.visibleWidth,_th
 }
 
 /// @nodoc
-
+@JsonSerializable()
 
 class _ScreenInfo extends ScreenInfo {
   const _ScreenInfo({required this.index, required this.visibleX, required this.visibleY, required this.visibleWidth, required this.visibleHeight, required this.isMain, this.diagonalInches}): super._();
-  
+  factory _ScreenInfo.fromJson(Map<String, dynamic> json) => _$ScreenInfoFromJson(json);
 
 @override final  int index;
 @override final  double visibleX;
@@ -229,14 +232,17 @@ class _ScreenInfo extends ScreenInfo {
 @pragma('vm:prefer-inline')
 _$ScreenInfoCopyWith<_ScreenInfo> get copyWith => __$ScreenInfoCopyWithImpl<_ScreenInfo>(this, _$identity);
 
-
+@override
+Map<String, dynamic> toJson() {
+  return _$ScreenInfoToJson(this, );
+}
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScreenInfo&&(identical(other.index, index) || other.index == index)&&(identical(other.visibleX, visibleX) || other.visibleX == visibleX)&&(identical(other.visibleY, visibleY) || other.visibleY == visibleY)&&(identical(other.visibleWidth, visibleWidth) || other.visibleWidth == visibleWidth)&&(identical(other.visibleHeight, visibleHeight) || other.visibleHeight == visibleHeight)&&(identical(other.isMain, isMain) || other.isMain == isMain)&&(identical(other.diagonalInches, diagonalInches) || other.diagonalInches == diagonalInches));
 }
 
-
+@JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode => Object.hash(runtimeType,index,visibleX,visibleY,visibleWidth,visibleHeight,isMain,diagonalInches);
 

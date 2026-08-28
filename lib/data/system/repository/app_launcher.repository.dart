@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/system/data_source/macos_bridge.channel.dart';
@@ -27,6 +29,21 @@ class AppLauncherRepository {
   /// Opens the app with [bundleId] and returns its process id, which the window
   /// control side needs to address the right accessibility element.
   Future<int?> launchApp({required String bundleId}) => channel.invoke<int>('launchApp', {'bundleId': bundleId});
+
+  /// PNG bytes of each app's icon, keyed by bundle id.
+  ///
+  /// Apps that cannot be resolved are simply absent from the result rather than
+  /// failing the whole batch.
+  Future<Map<String, Uint8List>> getAppIcons(List<String> bundleIds, {double size = 128}) async {
+    if (bundleIds.isEmpty) return const {};
+
+    final result = await channel.invoke<Map<Object?, Object?>>('getAppIcons', {'bundleIds': bundleIds, 'size': size});
+
+    return {
+      for (final entry in (result ?? const {}).entries)
+        if (entry.value case final Uint8List bytes) entry.key.toString(): bytes,
+    };
+  }
 
   /// Opens [url] in the default browser.
   Future<void> openUrl(String url) => channel.invoke<void>('openUrl', {'url': url});

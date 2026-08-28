@@ -79,11 +79,11 @@
   "project_editor_sources_label": "Apps & websites",
   "project_editor_choose_from_finder": "Choose from Finder…",
   "project_editor_use_current_arrangement": "Use current arrangement",
+  "project_editor_arrange_on_screen": "Arrange on screen",
   "project_editor_capture_empty": "No windows to capture. Grant Accessibility access, or open the apps you want to save.",
   "project_editor_website_placeholder": "example.com",
   "project_editor_layout_label": "Window layout",
-  "project_editor_hint_drag": "Drag a chip onto a monitor, then drag tiles freely — they snap flush to edges and to each other.",
-  "project_editor_hint_resize": "Resize from any edge or corner. Hold ⌥ to turn off snapping, or drop a tile outside a monitor to remove it.",
+  "project_editor_library_hint": "The apps a project can draw on. Which of them end up in the layout is settled in \"Arrange on screen\".",
   "project_editor_monitor_caption": "Monitor {index} · {inches}″",
   "@project_editor_monitor_caption": {
     "placeholders": {
@@ -98,6 +98,10 @@
       "height": { "type": "String" }
     }
   },
+
+  "layout_overlay_save": "Save layout",
+  "layout_overlay_library_label": "Drag an app onto a screen",
+  "layout_overlay_hint": "Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel",
 
   "profile_editor_eyebrow": "Settings · Profile",
   "profile_editor_title_new": "New profile",

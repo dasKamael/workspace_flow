@@ -51,14 +51,20 @@ void main() {
     expect(find.text('Choose from Finder…'.toUpperCase()), findsOneWidget);
   });
 
-  testWidgets('Given two attached displays, '
+  testWidgets('Given a project library, '
       'when the editor is opened, '
-      'then it draws one monitor stage per display', (tester) async {
+      'then the apps are listed on the right and no monitor preview is drawn', (tester) async {
     // Given / When
     await pumpOverlayRoute(tester, container: container, child: const ProjectEditorScreen(projectId: null));
 
-    // Then — the rounded diagonal, and a dash where the system reports no size
-    expect(find.text('Monitor 1 · 27″'), findsOneWidget);
-    expect(find.text('Monitor 2 · —″'), findsOneWidget);
+    // Then — the two concerns are separated: where windows go, and which apps exist
+    expect(find.text('WINDOW LAYOUT'), findsOneWidget);
+    expect(find.text('ARRANGE ON SCREEN'), findsOneWidget);
+    expect(find.text('USE CURRENT ARRANGEMENT'), findsOneWidget);
+
+    // ... and the library sits under "apps & websites", not in a section of its own
+    expect(find.text('APPS & WEBSITES'), findsOneWidget);
+    expect(find.text('APP LIBRARY'), findsNothing);
+    expect(find.text('SHOW PREVIEW'), findsNothing);
   });
 }

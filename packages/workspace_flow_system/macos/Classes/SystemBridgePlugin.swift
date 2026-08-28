@@ -24,6 +24,12 @@ final class SystemBridgePlugin {
       NSApp.activate(ignoringOtherApps: true)
     }
 
+    // The overlay runs in its own engine; its result has to travel back to the main
+    // one, which only this channel can reach.
+    LayoutOverlayService.shared.configure { [weak self] method, arguments in
+      self?.channel.invokeMethod(method, arguments: arguments)
+    }
+
     channel.setMethodCallHandler { [weak self] call, result in
       self?.handle(call, result: result)
     }
@@ -38,6 +44,11 @@ final class SystemBridgePlugin {
 
     case "getInstalledApps":
       result(AppLauncherService.installedApps())
+
+    case "getAppIcons":
+      let bundleIds = arguments["bundleIds"] as? [String] ?? []
+      let size = arguments["size"] as? Double ?? 128
+      result(AppLauncherService.icons(forBundleIds: bundleIds, size: CGFloat(size)))
 
     case "launchApp":
       guard let bundleId = arguments["bundleId"] as? String else {
@@ -109,6 +120,14 @@ final class SystemBridgePlugin {
       } catch {
         result(FlutterError(code: "login_item_failed", message: error.localizedDescription, details: nil))
       }
+
+    case "showLayoutOverlay":
+      LayoutOverlayService.shared.show(payload: arguments)
+      result(nil)
+
+    case "hideLayoutOverlay":
+      LayoutOverlayService.shared.hide()
+      result(nil)
 
     case "showBlockedWindow":
       BlockedWindowService.shared.show(payload: arguments)

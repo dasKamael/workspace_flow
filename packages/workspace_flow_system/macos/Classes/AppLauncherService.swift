@@ -1,4 +1,5 @@
 import Cocoa
+import FlutterMacOS
 
 /// Launches apps and websites, and discovers what is installed.
 enum AppLauncherService {
@@ -46,6 +47,43 @@ enum AppLauncherService {
     NSWorkspace.shared.openApplication(at: url, configuration: configuration) { application, _ in
       completion(application.map { Int($0.processIdentifier) })
     }
+  }
+
+  /// PNG data of each app's icon, keyed by bundle id.
+  ///
+  /// The layout overlay runs in a second engine with no plugins registered, so it
+  /// cannot ask for these itself — the main engine fetches them and passes them along
+  /// with the rest of the payload.
+  static func icons(forBundleIds bundleIds: [String], size: CGFloat) -> [String: FlutterStandardTypedData] {
+    var icons: [String: FlutterStandardTypedData] = [:]
+
+    for bundleId in bundleIds {
+      guard
+        let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId),
+        let png = pngData(of: NSWorkspace.shared.icon(forFile: url.path), size: size)
+      else { continue }
+      icons[bundleId] = FlutterStandardTypedData(bytes: png)
+    }
+
+    return icons
+  }
+
+  /// Redraws the icon at the requested size — `NSImage.size` only changes the reported
+  /// size, not the bitmap, so scaling has to go through a fresh image.
+  private static func pngData(of image: NSImage, size: CGFloat) -> Data? {
+    let target = NSSize(width: size, height: size)
+    let resized = NSImage(size: target)
+
+    resized.lockFocus()
+    image.draw(in: NSRect(origin: .zero, size: target), from: .zero, operation: .sourceOver, fraction: 1)
+    resized.unlockFocus()
+
+    guard
+      let tiff = resized.tiffRepresentation,
+      let bitmap = NSBitmapImageRep(data: tiff)
+    else { return nil }
+
+    return bitmap.representation(using: .png, properties: [:])
   }
 
   static func open(url string: String) {

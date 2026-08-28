@@ -187,6 +187,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get project_editor_use_current_arrangement => 'Use current arrangement';
 
   @override
+  String get project_editor_arrange_on_screen => 'Arrange on screen';
+
+  @override
   String get project_editor_capture_empty =>
       'No windows to capture. Grant Accessibility access, or open the apps you want to save.';
 
@@ -197,12 +200,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get project_editor_layout_label => 'Window layout';
 
   @override
-  String get project_editor_hint_drag =>
-      'Drag a chip onto a monitor, then drag tiles freely — they snap flush to edges and to each other.';
-
-  @override
-  String get project_editor_hint_resize =>
-      'Resize from any edge or corner. Hold ⌥ to turn off snapping, or drop a tile outside a monitor to remove it.';
+  String get project_editor_library_hint =>
+      'The apps a project can draw on. Which of them end up in the layout is settled in \"Arrange on screen\".';
 
   @override
   String project_editor_monitor_caption(int index, String inches) {
@@ -213,6 +212,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String project_editor_tile_size(String width, String height) {
     return '$width×$height';
   }
+
+  @override
+  String get layout_overlay_save => 'Save layout';
+
+  @override
+  String get layout_overlay_library_label => 'Drag an app onto a screen';
+
+  @override
+  String get layout_overlay_hint => 'Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel';
 
   @override
   String get profile_editor_eyebrow => 'Settings · Profile';
