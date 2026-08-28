@@ -1,0 +1,7 @@
+import 'package:mocktail/mocktail.dart';
+import 'package:workspace_flow/data/system/repository/app_launcher.repository.dart';
+import 'package:workspace_flow/data/system/repository/window_control.repository.dart';
+
+class MockAppLauncherRepository extends Mock implements AppLauncherRepository {}
+
+class MockWindowControlRepository extends Mock implements WindowControlRepository {}

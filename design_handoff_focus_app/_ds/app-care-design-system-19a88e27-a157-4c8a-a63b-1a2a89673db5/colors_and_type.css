@@ -1,0 +1,214 @@
+/* ============================================================================
+   App-Care Design System — Colors & Type
+   Source of truth: website/tailwind.config.mjs, src/styles/global.css, docs/ci.md
+   Brand: App-Care by coodoo GmbH, Mainz. German B2B-SaaS for mobile app care.
+   Single accent color: Brand-Blue. Neutrals: Tailwind "slate". No second accent.
+   ============================================================================ */
+
+/* Brand fonts — both self-hosted (brand uploads). No CDN dependency. */
+
+/* Inter — self-hosted variable font */
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/InterVariable.woff2') format('woff2-variations'),
+       url('fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* JetBrains Mono — self-hosted variable font */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('fonts/JetBrainsMono_wght_.ttf') format('truetype-variations'),
+       url('fonts/JetBrainsMono_wght_.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ---- BRAND BLUE (the only accent — used at varying intensities) ---------- */
+  --brand-50:  #eff6ff;  /* backgrounds, hover surfaces */
+  --brand-100: #dbeafe;  /* badges, tint surfaces */
+  --brand-200: #bfdbfe;  /* borders */
+  --brand-300: #93c5fd;  /* decorative */
+  --brand-400: #60a5fa;  /* links hover, accents on dark surfaces */
+  --brand-500: #3b82f6;  /* secondary links, focus ring */
+  --brand-600: #2563eb;  /* PRIMARY — CTAs, buttons, main brand color */
+  --brand-700: #1d4ed8;  /* hover state */
+  --brand-800: #1e40af;  /* active state, deep accents */
+  --brand-900: #1e3a8a;  /* dark text */
+  --brand-950: #172554;  /* dark sections (hero/CTA/team) — NEVER black/gray */
+
+  /* ---- SLATE NEUTRALS (cool blue undertone) -------------------------------- */
+  --slate-50:  #f8fafc;  /* section dividers, light surfaces */
+  --slate-100: #f1f5f9;  /* badge backgrounds */
+  --slate-200: #e2e8f0;  /* borders, dividers (default border) */
+  --slate-300: #cbd5e1;  /* disabled states */
+  --slate-400: #94a3b8;  /* placeholder / muted text */
+  --slate-500: #64748b;  /* secondary text */
+  --slate-600: #475569;  /* body text (cards) */
+  --slate-700: #334155;  /* default body text */
+  --slate-800: #1e293b;  /* secondary headings */
+  --slate-900: #0f172a;  /* primary headings */
+  --slate-950: #020617;  /* footer background */
+
+  --white: #ffffff;
+
+  /* ---- SEMANTIC COLOR ROLES ------------------------------------------------ */
+  --bg:            var(--white);   /* page base — white-first */
+  --bg-subtle:     var(--slate-50);/* alternating sections */
+  --bg-dark:       var(--brand-950);/* dark sections */
+  --bg-footer:     var(--slate-950);
+
+  --fg:            var(--slate-700);/* body copy */
+  --fg-strong:     var(--slate-900);/* headings */
+  --fg-muted:      var(--slate-500);/* subtitles, secondary */
+  --fg-subtle:     var(--slate-400);/* labels, placeholders */
+  --fg-on-dark:        var(--white);
+  --fg-on-dark-muted:  var(--slate-400);
+  --fg-accent:     var(--brand-600);/* links, eyebrows */
+  --fg-accent-dark:var(--brand-400);/* accent on dark surfaces */
+
+  --border:        var(--slate-200);
+  --border-strong: var(--slate-300);
+  --border-accent: var(--brand-200);
+  --border-dark:   rgba(255,255,255,0.10);/* borders on dark surfaces */
+
+  --primary:       var(--brand-600);
+  --primary-hover: var(--brand-700);
+  --primary-active:var(--brand-800);
+  --focus-ring:    var(--brand-500);
+
+  /* ---- TYPE FAMILIES ------------------------------------------------------- */
+  --font-display: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace; /* headlines, buttons, labels, eyebrows */
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;               /* body copy */
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;                   /* code, data, KPI values */
+
+  /* ---- TYPE SCALE (px @ 16 root) ------------------------------------------- */
+  --text-xs:   0.75rem;   /* 12 — labels, badges, eyebrows */
+  --text-sm:   0.875rem;  /* 14 — small body, nav, buttons */
+  --text-base: 1rem;      /* 16 — body */
+  --text-lg:   1.125rem;  /* 18 — large body / subtitle */
+  --text-xl:   1.25rem;   /* 20 — lead */
+  --text-2xl:  1.5rem;    /* 24 */
+  --text-3xl:  1.875rem;  /* 30 — section title (mobile) */
+  --text-4xl:  2.25rem;   /* 36 */
+  --text-5xl:  3rem;      /* 48 — section title (desktop) */
+  --text-6xl:  3.75rem;   /* 60 — hero */
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-extrabold:800;
+
+  --leading-tight:   1.05; /* hero headlines */
+  --leading-snug:    1.2;  /* headings */
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65; /* body */
+
+  --tracking-tight:   -0.02em; /* headlines */
+  --tracking-normal:  0;
+  --tracking-wide:    0.05em;  /* buttons */
+  --tracking-widest:  0.15em;  /* eyebrows / labels (uppercase) */
+
+  /* ---- RADII --------------------------------------------------------------- */
+  --radius-lg:   0.5rem;  /* buttons, inputs */
+  --radius-xl:   0.75rem; /* cards, panels */
+  --radius-2xl:  1rem;    /* large feature panels */
+  --radius-full: 9999px;  /* badges (pills), dots */
+
+  /* ---- ELEVATION (shadows appear mostly on hover) -------------------------- */
+  --shadow-sm: 0 1px 2px 0 rgba(15,23,42,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.08), 0 2px 4px -2px rgba(15,23,42,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(15,23,42,0.08), 0 4px 6px -4px rgba(15,23,42,0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(15,23,42,0.10), 0 8px 10px -6px rgba(15,23,42,0.05);
+
+  /* ---- MOTION -------------------------------------------------------------- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 200ms;   /* buttons, links */
+  --dur-base: 300ms;   /* cards */
+  --lift-sm: -1px;     /* button hover translateY */
+  --lift-md: -4px;     /* card hover translateY */
+
+  /* ---- LAYOUT -------------------------------------------------------------- */
+  --container-max: 80rem;   /* max-w-7xl = 1280px */
+  --section-pad-y: 5rem;    /* py-20; desktop -> 8rem (py-32) */
+}
+
+/* ============================================================================
+   SEMANTIC TYPE CLASSES — mirror the website's .section-title etc.
+   ============================================================================ */
+
+.ds-eyebrow {            /* uppercase mono label above a heading */
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--fg-accent);
+}
+
+.ds-h1 {                 /* hero headline */
+  font-family: var(--font-display);
+  font-weight: var(--weight-extrabold);
+  font-size: clamp(2.25rem, 1.5rem + 4vw, var(--text-6xl));
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-strong);
+}
+
+.ds-h2 {                 /* section title */
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: clamp(1.875rem, 1.2rem + 2.5vw, var(--text-5xl));
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-strong);
+}
+
+.ds-h3 {                 /* card / sub heading */
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+  color: var(--fg-strong);
+}
+
+.ds-subtitle {           /* lead paragraph under a heading */
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--fg-muted);
+}
+
+.ds-body {               /* default body copy */
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-relaxed);
+  color: var(--fg);
+}
+
+.ds-small {              /* small print / captions */
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.ds-label {              /* button / form label text */
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.ds-data {               /* KPI numerals / monospace data */
+  font-family: var(--font-mono);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-strong);
+}

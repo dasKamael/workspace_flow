@@ -1,0 +1,144 @@
+{
+  "@@locale": "en",
+
+  "common_save": "Save",
+  "common_cancel": "Cancel",
+  "common_delete": "Delete",
+  "common_add": "Add",
+  "common_edit": "Edit",
+  "common_new": "+ New",
+  "common_kind_site": "site",
+  "common_kind_app": "app",
+
+  "window_title_idle": "Focus — {projectName}",
+  "@window_title_idle": {
+    "placeholders": { "projectName": { "type": "String" } }
+  },
+  "window_title_running": "In focus",
+
+  "projects_label": "Projects",
+  "projects_subtitle": "{count, plural, =1{1 app · saved layout} other{{count} apps · saved layout}}",
+  "@projects_subtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "projects_footer_hint": "A project is a saved window layout. Launching it opens the same apps in the same places, every time.",
+
+  "workspace_launch": "Launch workspace",
+  "workspace_launching": "Opening…",
+  "workspace_rearrange": "Re-arrange",
+  "workspace_window_state_pending": "—",
+  "workspace_window_state_opening": "opening…",
+  "workspace_window_state_open": "open",
+  "workspace_window_state_failed": "failed",
+
+  "focus_session_label": "Focus session",
+  "focus_session_hint_idle": "Drag the dial to set the length",
+  "focus_session_hint_dragging": "Release to keep {minutes} min",
+  "@focus_session_hint_dragging": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "focus_session_ends_at": "ends {time}",
+  "@focus_session_ends_at": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "focus_session_no_end_time": "no end time",
+  "focus_session_open_end_symbol": "∞",
+  "focus_session_start": "Start focus",
+  "focus_session_pause": "Pause",
+  "focus_session_resume": "Resume",
+  "focus_session_stop": "Stop",
+  "focus_session_stats": "{sessions, plural, =1{1 session today} other{{sessions} sessions today}} · {blocked} blocked",
+  "@focus_session_stats": {
+    "placeholders": {
+      "sessions": { "type": "int" },
+      "blocked": { "type": "int" }
+    }
+  },
+  "focus_preset_pomodoro": "Pomodoro",
+  "focus_preset_deep_work": "Deep work",
+  "focus_preset_long_haul": "Long haul",
+  "focus_preset_open_end": "Open end",
+  "focus_preset_minutes": "{minutes} min",
+  "@focus_preset_minutes": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "focus_running_badge": "In focus",
+
+  "blocker_label": "App blocker",
+  "blocker_profile_label": "Profile",
+  "blocker_add_placeholder": "add app or domain",
+  "blocker_blocked_today_label": "Blocked today",
+  "blocker_blocked_today_caption": "Attempts intercepted while a profile was armed.",
+
+  "project_editor_eyebrow": "Settings · Project",
+  "project_editor_title_new": "New project",
+  "project_editor_title_edit": "Edit project",
+  "project_editor_name_label": "Name",
+  "project_editor_name_placeholder": "Project name",
+  "project_editor_untitled": "Untitled project",
+  "project_editor_sources_label": "Apps & websites",
+  "project_editor_choose_from_finder": "Choose from Finder…",
+  "project_editor_use_current_arrangement": "Use current arrangement",
+  "project_editor_capture_empty": "No windows to capture. Grant Accessibility access, or open the apps you want to save.",
+  "project_editor_website_placeholder": "example.com",
+  "project_editor_layout_label": "Window layout",
+  "project_editor_hint_drag": "Drag a chip onto a monitor, then drag tiles freely — they snap flush to edges and to each other.",
+  "project_editor_hint_resize": "Resize from any edge or corner. Hold ⌥ to turn off snapping, or drop a tile outside a monitor to remove it.",
+  "project_editor_monitor_caption": "Monitor {index} · {inches}″",
+  "@project_editor_monitor_caption": {
+    "placeholders": {
+      "index": { "type": "int" },
+      "inches": { "type": "String" }
+    }
+  },
+  "project_editor_tile_size": "{width}×{height}",
+  "@project_editor_tile_size": {
+    "placeholders": {
+      "width": { "type": "String" },
+      "height": { "type": "String" }
+    }
+  },
+
+  "profile_editor_eyebrow": "Settings · Profile",
+  "profile_editor_title_new": "New profile",
+  "profile_editor_title_edit": "Edit profile",
+  "profile_editor_name_label": "Name",
+  "profile_editor_name_placeholder": "Profile name",
+  "profile_editor_untitled": "Untitled profile",
+  "profile_editor_items_label": "Blocked apps & sites",
+  "profile_editor_add_entry": "+ Add entry",
+  "profile_editor_entry_placeholder": "app or domain",
+
+  "blocked_page_eyebrow": "{target} is blocked · {profile}",
+  "@blocked_page_eyebrow": {
+    "placeholders": {
+      "target": { "type": "String" },
+      "profile": { "type": "String" }
+    }
+  },
+  "blocked_page_headline": "Session runs until {time}.",
+  "@blocked_page_headline": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "blocked_page_headline_open_end": "Session is running.",
+  "blocked_page_meta": "{project} · {profile} · {remaining} left",
+  "@blocked_page_meta": {
+    "placeholders": {
+      "project": { "type": "String" },
+      "profile": { "type": "String" },
+      "remaining": { "type": "String" }
+    }
+  },
+  "blocked_page_back_to_work": "Back to work",
+  "blocked_page_unlock": "Unlock {minutes} min · {left} left",
+  "@blocked_page_unlock": {
+    "placeholders": {
+      "minutes": { "type": "int" },
+      "left": { "type": "int" }
+    }
+  },
+
+  "permission_accessibility_title": "Accessibility permission required",
+  "permission_accessibility_body": "Focus needs Accessibility access to move and resize the windows of other apps. Grant it in System Settings › Privacy & Security › Accessibility.",
+  "permission_accessibility_open_settings": "Open System Settings"
+}

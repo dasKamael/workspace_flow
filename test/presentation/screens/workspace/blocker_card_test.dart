@@ -1,0 +1,111 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:workspace_flow/data/blocker/data_source/blocker.dao.dart';
+import 'package:workspace_flow/data/blocker/repository/blocker_profile.repository.dart';
+import 'package:workspace_flow/data/focus/data_source/focus.dao.dart';
+import 'package:workspace_flow/data/focus/repository/focus_session.repository.dart';
+import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
+import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
+import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
+import 'package:workspace_flow/presentation/design_system/molecules/ui_switch.dart';
+import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_card.dart';
+import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_lock_overlay.dart';
+
+import '../../../database.test_util.dart';
+import '../../../riverpod.test_util.dart';
+import '../../../widgettest.test_util.dart';
+
+void main() {
+  late ProviderContainer container;
+  late BlockerProfileRepository profiles;
+
+  setUp(() async {
+    final database = createTestDatabase();
+    profiles = BlockerProfileRepository(dao: BlockerDao(database));
+    await profiles.createProfile(
+      name: 'Deep Work',
+      items: const [
+        BlockedItem(id: 0, name: 'youtube.com', kind: BlockedItemKind.site),
+        BlockedItem(id: 0, name: 'Slack', kind: BlockedItemKind.app),
+      ],
+    );
+
+    container = createContainer(
+      overrides: [
+        blockerProfileRepositoryProvider.overrideWithValue(profiles),
+        focusSessionRepositoryProvider.overrideWithValue(FocusSessionRepository(dao: FocusDao(database))),
+      ],
+    );
+  });
+
+  testWidgets('Given a profile with two entries, '
+      'when the blocker card is shown, '
+      'then it lists both with their kinds', (tester) async {
+    // Given / When
+    await pumpAppWidget(
+      tester,
+      container: container,
+      child: const SizedBox(width: 320, child: BlockerCard()),
+    );
+
+    // Then
+    expect(find.text('youtube.com'), findsOneWidget);
+    expect(find.text('Slack'), findsOneWidget);
+    expect(find.text('site'), findsOneWidget);
+    expect(find.text('app'), findsOneWidget);
+  });
+
+  testWidgets('Given an idle blocker card, '
+      'when the switch is turned on, '
+      'then the card goes dark and the lock animation plays', (tester) async {
+    // Given
+    await pumpAppWidget(
+      tester,
+      container: container,
+      child: const SizedBox(width: 320, child: BlockerCard()),
+    );
+    expect(container.read(blockerServiceProvider), isFalse);
+
+    // When
+    await tester.tap(find.byType(UiSwitch));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Then
+    expect(container.read(blockerServiceProvider), isTrue);
+    expect(find.byType(BlockerLockOverlay), findsOneWidget);
+
+    final card = tester.widget<AnimatedContainer>(
+      find.descendant(of: find.byType(BlockerCard), matching: find.byType(AnimatedContainer)).first,
+    );
+    final decoration = card.decoration! as BoxDecoration;
+    expect(decoration.color, UiColor.bgDark);
+
+    // ... and once the animation has played the overlay stops drawing, so it does
+    // not sit on the card as a transparent layer
+    await tester.pumpAndSettle();
+    expect(find.descendant(of: find.byType(BlockerLockOverlay), matching: find.byType(Opacity)), findsNothing);
+  });
+
+  testWidgets('Given an enabled entry, '
+      'when its row is tapped, '
+      'then it is excluded from the profile', (tester) async {
+    // Given
+    await pumpAppWidget(
+      tester,
+      container: container,
+      child: const SizedBox(width: 320, child: BlockerCard()),
+    );
+
+    // When
+    await tester.tap(find.text('Slack'));
+    await tester.pumpAndSettle();
+
+    // Then
+    final profile = (await profiles.watchProfiles().first).single;
+    expect(profile.items.firstWhere((item) => item.name == 'Slack').enabled, isFalse);
+    expect(profile.enabledItems.map((item) => item.name), ['youtube.com']);
+  });
+}

@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/app-care-design-system-19a88e27-a157-4c8a-a63b-1a2a89673db5/colors_and_type.css">
+<link rel="stylesheet" href="_ds/app-care-design-system-19a88e27-a157-4c8a-a63b-1a2a89673db5/ui_kits/website/styles.css">
+<script src="_ds/app-care-design-system-19a88e27-a157-4c8a-a63b-1a2a89673db5/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--slate-100); font-family: var(--font-sans); }
+  a { color: var(--brand-600); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  a:hover { color: var(--brand-700); }
+  * { box-sizing: border-box; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 9999px; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes focusIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
+  @keyframes sheetIn { from { opacity: 0; transform: translateY(-18px) scale(0.985); } to { opacity: 1; transform: none; } }
+  @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+  @keyframes tickIn { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+  @keyframes lockInA { 0% { background: var(--brand-50); border-color: var(--brand-300); transform: translateX(-3px); } 100% { background: transparent; border-color: var(--slate-200); transform: none; } }
+  @keyframes lockInB { 0% { background: var(--brand-50); border-color: var(--brand-300); transform: translateX(-3px); } 100% { background: transparent; border-color: var(--slate-200); transform: none; } }
+  @keyframes statusInA { from { opacity: 0.2; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+  @keyframes statusInB { from { opacity: 0.2; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+  @keyframes shieldSweepA { from { transform: scaleX(0); opacity: 0.9; } to { transform: scaleX(1); opacity: 0; } }
+  @keyframes shieldSweepB { from { transform: scaleX(0); opacity: 0.9; } to { transform: scaleX(1); opacity: 0; } }
+  @keyframes lockPopA { 0% { opacity: 0; transform: scale(0.7); } 35% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+  @keyframes lockPopB { 0% { opacity: 0; transform: scale(0.7); } 35% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.04); } }
+  @keyframes ringOutA { from { opacity: 0.45; transform: scale(0.5); } to { opacity: 0; transform: scale(2.1); } }
+  @keyframes ringOutB { from { opacity: 0.45; transform: scale(0.5); } to { opacity: 0; transform: scale(2.1); } }
+  @keyframes shackleA { 0% { transform: translateY(-5px); opacity: 0; } 45% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(0); opacity: 0; } }
+  @keyframes shackleB { 0% { transform: translateY(-5px); opacity: 0; } 45% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(0); opacity: 0; } }
+  @keyframes numPopA { from { transform: scale(1.07); } to { transform: scale(1); } }
+  @keyframes numPopB { from { transform: scale(1.07); } to { transform: scale(1); } }
+  @keyframes startBurstA { from { transform: scale(0.05); opacity: 1; } to { transform: scale(2.6); opacity: 0; } }
+  @keyframes startBurstB { from { transform: scale(0.05); opacity: 1; } to { transform: scale(2.6); opacity: 0; } }
+  @keyframes rowInA { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes rowInB { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes barGrow { from { width: 0%; } to { width: 100%; } }
+  @keyframes digitA { from { opacity: 0.5; } to { opacity: 1; } }
+  @keyframes digitB { from { opacity: 0.5; } to { opacity: 1; } }
+  @keyframes btnPulseA { from { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); } to { box-shadow: 0 0 0 11px rgba(37,99,235,0); } }
+  @keyframes btnPulseB { from { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); } to { box-shadow: 0 0 0 11px rgba(37,99,235,0); } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: var(--slate-100); padding: 44px; display: flex; flex-direction: column; gap: 18px; align-items: flex-start;">
+
+  <div style="display: flex; align-items: baseline; gap: 16px;">
+    <span class="ds-eyebrow">PROTOTYPE · PROJECTS · BLOCKER · SESSION</span>
+    <span class="ds-small">Three features, nothing else. Pick a project, kill the noise, start the clock.</span>
+  </div>
+
+  <div style="width: 1240px; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-xl); border: 1px solid var(--slate-200); background: var(--slate-50); position: relative;">
+
+    <div style="{{ titleBar }}">
+      <div style="display: flex; gap: 8px;">
+        <span style="width: 12px; height: 12px; border-radius: 9999px; background: #ff5f57;"></span>
+        <span style="width: 12px; height: 12px; border-radius: 9999px; background: #febc2e;"></span>
+        <span style="width: 12px; height: 12px; border-radius: 9999px; background: #28c840;"></span>
+      </div>
+      <div style="{{ titleText }}">{{ windowTitle }}</div>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <sc-if value="{{ running }}" hint-placeholder-val="{{ false }}">
+      <div style="position: relative; overflow: hidden; height: 736px; background: var(--brand-950); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; animation: focusIn 420ms var(--ease) both;">
+        <div style="{{ startBurst }}"></div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="width: 8px; height: 8px; border-radius: 9999px; background: var(--brand-400); animation: pulseDot 2.6s var(--ease) infinite;"></span>
+          <span style="font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brand-400);">In focus</span>
+        </div>
+        <div style="position: relative; width: 340px; height: 340px;">
+          <svg width="340" height="340" viewBox="0 0 200 200" style="display: block;">
+            <circle cx="100" cy="100" r="91" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="3"></circle>
+            <circle cx="100" cy="100" r="91" fill="none" stroke="var(--brand-500)" stroke-width="3" stroke-linecap="round" transform="rotate(-90 100 100)" style="{{ focusArc }}"></circle>
+          </svg>
+          <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+            <span style="{{ focusClock }}">{{ clock }}</span>
+          </div>
+        </div>
+        <button onClick="{{ endSession }}" style="font-family: var(--font-display); font-size: 11.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.7); background: transparent; border: 2px solid rgba(255,255,255,0.16); border-radius: 8px; padding: 13px 30px; cursor: pointer; transition: all 200ms var(--ease);" style-hover="border-color: rgba(255,255,255,0.4); color: var(--white);">Stop</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ idle }}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 16px; padding: 16px; height: 736px; background: var(--slate-50);">
+
+      <!-- CARD 1 · PROJECTS -->
+      <div style="background: var(--white); border: 1px solid var(--slate-200); border-radius: 14px; padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span style="font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400);">Projects</span>
+          <span onClick="{{ newProject }}" style="font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-600); cursor: pointer;" style-hover="color: var(--brand-800);">+ New</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+            <div onClick="{{ p.select }}" style="{{ p.card }}" style-hover="border-color: var(--brand-300); transform: translateY(-2px); box-shadow: var(--shadow-md);">
+              <div style="display: flex; align-items: center; gap: 9px;">
+                <span style="{{ p.dot }}"></span>
+                <span style="font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--slate-900);">{{ p.name }}</span>
+                <span onClick="{{ p.edit }}" style="margin-left: auto; font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-400); cursor: pointer; transition: color 200ms var(--ease);" style-hover="color: var(--brand-600);">Edit</span>
+              </div>
+              <div style="font-family: var(--font-mono); font-size: 11px; color: var(--slate-400); margin-top: 6px; padding-left: 17px;">{{ p.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top: auto; border-top: 1px solid var(--slate-200); padding-top: 16px;">
+          <div class="ds-small">A project is a saved window layout. Launching it opens the same apps in the same places, every time.</div>
+        </div>
+      </div>
+
+      <!-- CARD 2 · WORKSPACE + SESSION -->
+      <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+
+        <div style="background: var(--white); border: 1px solid var(--slate-200); border-radius: 14px; padding: 20px 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; color: var(--slate-900);">{{ activeName }}</div>
+            <button onClick="{{ launch }}" style="{{ launchBtn }}" style-hover="transform: translateY(-1px); box-shadow: var(--shadow-md);">{{ launchLabel }}</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 12px;">
+            <sc-for list="{{ appRows }}" as="a" hint-placeholder-count="4">
+              <div style="{{ a.rowStyle }}" style-hover="background: var(--slate-50);">
+                <span style="{{ a.tick }}">
+                  <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+                </span>
+                <span style="font-size: 13.5px; color: var(--slate-800);">{{ a.name }}</span>
+                <span style="{{ a.stateStyle }}">{{ a.state }}</span>
+                <span style="{{ a.barTrack }}"><span style="{{ a.barFill }}"></span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="{{ sessionPanel }}">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="{{ sessionLabel }}">Focus session</span>
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--slate-400);">{{ dialHint }}</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 32px; margin-top: 18px;">
+            <div ref="{{ setDialRef }}" onMouseDown="{{ onDialDown }}" style="position: relative; width: 182px; height: 182px; flex: 0 0 182px; cursor: grab; user-select: none;">
+              <svg width="182" height="182" viewBox="0 0 200 200" style="display: block; overflow: visible;">
+                <circle cx="100" cy="100" r="91" fill="none" stroke="var(--slate-100)" stroke-width="1"></circle>
+                <circle cx="100" cy="100" r="91" fill="none" stroke="var(--brand-600)" stroke-width="3" stroke-linecap="round" transform="rotate(-90 100 100)" style="{{ arcStyle }}"></circle>
+                <sc-for list="{{ dialTicks }}" as="tk" hint-placeholder-count="24">
+                  <line x1="{{ tk.x1 }}" y1="{{ tk.y1 }}" x2="{{ tk.x2 }}" y2="{{ tk.y2 }}" stroke-linecap="round" style="{{ tk.style }}"></line>
+                </sc-for>
+                <circle r="8" fill="var(--white)" stroke="var(--slate-200)" stroke-width="1" style="{{ knobStyle }}"></circle>
+                <circle r="3.4" fill="var(--brand-600)" style="{{ knobStyle }}"></circle>
+              </svg>
+              <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; pointer-events: none;">
+                <div style="{{ dialNumber }}">{{ clock }}</div>
+                <div style="font-family: var(--font-mono); font-size: 11.5px; color: var(--slate-400);">{{ endsLine }}</div>
+              </div>
+            </div>
+
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+              <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+                <button onClick="{{ p.pick }}" style="{{ p.style }}">
+                  <span>{{ p.label }}</span>
+                  <span style="{{ p.metaStyle }}">{{ p.meta }}</span>
+                </button>
+              </sc-for>
+              <button onClick="{{ toggleRun }}" style="{{ primaryBtn }}" style-hover="transform: translateY(-1px); box-shadow: var(--shadow-md);">{{ runLabel }}</button>
+              <span style="{{ statLine }}">{{ statsText }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 3 · BLOCKER -->
+      <div style="{{ blockerCard }}">
+        <div style="{{ lockBurst }}">
+          <span style="{{ lockRing }}"></span>
+          <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--brand-400)" stroke-width="1.4">
+            <path d="M7.5 10.5V7.5a4.5 4.5 0 019 0v3" stroke-linecap="round" style="{{ shackle }}"></path>
+            <rect x="5" y="10.5" width="14" height="9.5" rx="2.2"></rect>
+            <circle cx="12" cy="15.2" r="1.15" fill="var(--brand-400)" stroke="none"></circle>
+          </svg>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="{{ blockerLabel }}">App blocker</span>
+          <div onClick="{{ toggleBlocking }}" style="{{ blockSwitch }}">
+            <span style="{{ knob }}"></span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between;">
+            <span style="{{ blockerSubLabel }}">Profile</span>
+            <div style="{{ profileLinks }}">
+              <span onClick="{{ editProfile }}" style="{{ mutedLink }}">Edit</span>
+              <span onClick="{{ newProfile }}" style="{{ accentLink }}">+ New</span>
+            </div>
+          </div>
+          <div style="height: 30px; display: flex; align-items: center;">
+            <sc-if value="{{ blockerIdle }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; gap: 6px;">
+                <sc-for list="{{ profileChips }}" as="p" hint-placeholder-count="3">
+                  <button onClick="{{ p.select }}" style="{{ p.style }}">{{ p.name }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ blockingOn }}" hint-placeholder-val="{{ false }}">
+              <div style="font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white);">{{ profileName }}</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="position: relative; height: 2px;">
+          <div style="{{ sweepStyle }}"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <sc-for list="{{ blockRows }}" as="b" hint-placeholder-count="6">
+            <div onClick="{{ b.toggle }}" style="{{ b.row }}">
+              <span style="{{ b.box }}">
+                <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path></svg>
+              </span>
+              <span style="{{ b.nameStyle }}">{{ b.name }}</span>
+              <span style="{{ b.kindStyle }}">{{ b.kind }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="{{ addRow }}">
+          <input value="{{ newItem }}" onChange="{{ onNewItem }}" onKeyDown="{{ onNewItemKey }}" placeholder="add app or domain" style="{{ blockerInput }}">
+          <button onClick="{{ addItem }}" style="{{ blockerAddBtn }}">Add</button>
+        </div>
+
+        <div style="{{ statTile }}">
+          <div style="{{ blockerLabel }}">Blocked today</div>
+          <div style="{{ statValue }}">{{ attempts }}</div>
+          <div style="{{ statCaption }}">{{ topOffender }}</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ editorOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 36px; animation: backdropIn 200ms var(--ease) both;">
+        <div style="{{ sheetStyle }}">
+          <div class="ds-eyebrow">{{ editorEyebrow }}</div>
+          <div style="font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; color: var(--slate-900); margin-top: 8px;">{{ editorTitle }}</div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 22px;">
+            <span style="font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400);">Name</span>
+            <input value="{{ draftName }}" onChange="{{ onDraftName }}" placeholder="{{ namePlaceholder }}" style="border: 1px solid var(--slate-200); border-radius: 8px; padding: 11px 13px; font-size: 14px; color: var(--slate-800); outline: none; transition: all 200ms var(--ease);" style-focus="border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(59,130,246,0.18);">
+          </div>
+
+          <!-- project fields -->
+          <sc-if value="{{ isProjectEditor }}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: 268px minmax(0, 1fr); gap: 26px; margin-top: 20px; align-items: start;">
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <span style="font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400);">Apps &amp; websites</span>
+                <button onClick="{{ openFinder }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-700); background: var(--white); border: 2px solid var(--slate-200); border-radius: 8px; padding: 10px 14px; cursor: pointer; transition: all 200ms var(--ease);" style-hover="border-color: var(--brand-400); color: var(--brand-700);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  Choose from Finder…
+                </button>
+                <div style="display: flex; gap: 6px;">
+                  <input value="{{ newAppName }}" onChange="{{ onNewAppName }}" onKeyDown="{{ onNewAppKey }}" placeholder="Website, e.g. app-care.de" style="flex: 1; min-width: 0; border: 1px solid var(--slate-200); border-radius: 8px; padding: 8px 11px; font-size: 12.5px; outline: none; transition: all 200ms var(--ease);" style-focus="border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(59,130,246,0.18);">
+                  <button onClick="{{ addLibraryApp }}" style="font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); background: var(--brand-600); border: 0; border-radius: 8px; padding: 0 12px; cursor: pointer; transition: all 200ms var(--ease);" style-hover="background: var(--brand-700);">Add</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 10px; background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px;">
+                  <sc-for list="{{ appLibrary }}" as="app" hint-placeholder-count="12">
+                    <div draggable="{{ app.draggable }}" onDragStart="{{ app.onDragStart }}" onDragEnd="{{ app.onDragEnd }}" style="{{ app.style }}">{{ app.name }}</div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <span style="font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400);">Window layout</span>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <sc-for list="{{ monitors }}" as="m" hint-placeholder-count="2">
+                    <div style="{{ m.wrapStyle }}">
+                      <div style="{{ m.style }}" ref="{{ m.setRef }}" onDragOver="{{ m.onDragOver }}" onDrop="{{ m.onDrop }}">
+                        <sc-for list="{{ m.tiles }}" as="t" hint-placeholder-count="2">
+                          <div onMouseDown="{{ t.onMouseDown }}" style="{{ t.style }}">
+                            <div style="{{ t.nameStyle }}">{{ t.name }}</div>
+                            <div style="{{ t.sizeStyle }}">{{ t.size }}</div>
+                            <span onMouseDown="{{ t.onRemove }}" style="{{ t.removeStyle }}" style-hover="color: var(--slate-700);">×</span>
+                            <div onMouseDown="{{ t.onResizeDown }}" style="{{ t.handleStyle }}"></div>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <div style="font-family: var(--font-mono); font-size: 10px; color: var(--slate-400); text-align: center;">{{ m.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div class="ds-small">{{ stageHint }}</div>
+                <div class="ds-small" style="color: var(--slate-400);">Blocker profiles and the timer live outside a project — this only stores apps and their window positions.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- profile fields -->
+          <sc-if value="{{ isProfileEditor }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 22px;">
+              <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                <span style="font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400);">Blocked apps &amp; sites</span>
+                <span onClick="{{ addDraftItem }}" style="font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-600); cursor: pointer;" style-hover="color: var(--brand-800);">+ Add entry</span>
+              </div>
+              <sc-for list="{{ draftItems }}" as="i" hint-placeholder-count="4">
+                <div style="display: flex; gap: 8px; align-items: center; animation: fadeUp 240ms var(--ease) both;">
+                  <input value="{{ i.name }}" onChange="{{ i.onName }}" placeholder="x.com or Slack" style="flex: 1; min-width: 0; border: 1px solid var(--slate-200); border-radius: 8px; padding: 9px 12px; font-family: var(--font-mono); font-size: 12.5px; outline: none; transition: all 200ms var(--ease);" style-focus="border-color: var(--brand-500); box-shadow: 0 0 0 3px rgba(59,130,246,0.18);">
+                  <button onClick="{{ i.toggleKind }}" style="{{ i.kindStyle }}">{{ i.kind }}</button>
+                  <span onClick="{{ i.remove }}" style="font-family: var(--font-mono); font-size: 15px; color: var(--slate-300); cursor: pointer; padding: 0 4px; transition: color 200ms var(--ease);" style-hover="color: var(--slate-700);">×</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--slate-200);">
+            <button onClick="{{ saveEditor }}" style="font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); background: var(--brand-600); border: 0; border-radius: 8px; padding: 12px 20px; cursor: pointer; transition: all 200ms var(--ease);" style-hover="background: var(--brand-700); transform: translateY(-1px); box-shadow: var(--shadow-md);">Save</button>
+            <button onClick="{{ closeEditor }}" style="font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-600); background: var(--white); border: 2px solid var(--slate-200); border-radius: 8px; padding: 12px 20px; cursor: pointer; transition: all 200ms var(--ease);" style-hover="border-color: var(--slate-300);">Cancel</button>
+            <span onClick="{{ deleteEditor }}" style="{{ deleteStyle }}">{{ deleteLabel }}</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ finderOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 96px; animation: backdropIn 180ms var(--ease) both;">
+        <div style="width: 700px; background: var(--white); border: 1px solid var(--slate-200); border-radius: 12px; box-shadow: var(--shadow-xl); overflow: hidden; animation: sheetIn 240ms var(--ease) both;">
+          <div style="height: 42px; background: var(--slate-50); border-bottom: 1px solid var(--slate-200); display: flex; align-items: center; padding: 0 14px; gap: 12px;">
+            <div style="display: flex; gap: 7px;">
+              <span style="width: 11px; height: 11px; border-radius: 9999px; background: #ff5f57;"></span>
+              <span style="width: 11px; height: 11px; border-radius: 9999px; background: #febc2e;"></span>
+              <span style="width: 11px; height: 11px; border-radius: 9999px; background: #28c840;"></span>
+            </div>
+            <span style="flex: 1; text-align: center; font-family: var(--font-display); font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate-500);">Open — {{ finderDir }}</span>
+            <span style="width: 40px;"></span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 176px 1fr; height: 320px;">
+            <div style="border-right: 1px solid var(--slate-200); background: var(--slate-50); padding: 14px 10px; display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-family: var(--font-display); font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400); padding: 0 10px 6px;">Favourites</span>
+              <sc-for list="{{ finderPlaces }}" as="pl" hint-placeholder-count="4">
+                <div onClick="{{ pl.select }}" style="{{ pl.style }}" style-hover="background: var(--slate-100);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                  {{ pl.name }}
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display: flex; flex-direction: column; min-width: 0;">
+              <div style="display: grid; grid-template-columns: 1.4fr 1fr 0.9fr 0.6fr; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--slate-200); font-family: var(--font-display); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--slate-400);">
+                <span>Name</span><span>Date modified</span><span>Kind</span><span>Size</span>
+              </div>
+              <div style="flex: 1; overflow-y: auto;">
+                <sc-for list="{{ finderRows }}" as="f" hint-placeholder-count="8">
+                  <div onClick="{{ f.select }}" onDoubleClick="{{ f.confirm }}" style="{{ f.style }}">
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ f.name }}</span>
+                    <span style="{{ f.metaStyle }}">{{ f.date }}</span>
+                    <span style="{{ f.metaStyle }}">{{ f.kind }}</span>
+                    <span style="{{ f.metaStyle }}">{{ f.size }}</span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ finderEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 40px 0; text-align: center; font-size: 12.5px; color: var(--slate-400);">Empty folder</div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--slate-200); background: var(--slate-50);">
+            <span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--slate-500);">{{ finderSelLabel }}</span>
+            <button onClick="{{ closeFinder }}" style="margin-left: auto; font-family: var(--font-display); font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-600); background: var(--white); border: 2px solid var(--slate-200); border-radius: 8px; padding: 9px 16px; cursor: pointer; transition: all 200ms var(--ease);" style-hover="border-color: var(--slate-300);">Cancel</button>
+            <button onClick="{{ finderConfirm }}" style="{{ finderOpenBtn }}">Open</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <span style="font-family: var(--font-display); font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--slate-400);">What you see when you slip</span>
+    <div style="width: 700px; height: 340px; background: var(--brand-950); border-radius: 14px; box-shadow: var(--shadow-xl); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;">
+      <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(37,99,235,0.2); display: flex; align-items: center; justify-content: center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--brand-400)" stroke-width="1.8"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round"></path></svg>
+      </div>
+      <div style="font-family: var(--font-display); font-size: 9.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--brand-400); margin-top: 16px;">{{ blockedHeader }}</div>
+      <div style="font-family: var(--font-display); font-weight: 800; font-size: 28px; letter-spacing: -0.02em; color: var(--white); margin-top: 10px;">Session runs until {{ endsAt }}.</div>
+      <div style="font-size: 14.5px; color: rgba(255,255,255,0.6); margin-top: 8px;">{{ activeName }} · {{ profileName }} · {{ clock }} left</div>
+      <div style="display: flex; gap: 10px; margin-top: 24px;">
+        <button style="font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); background: var(--brand-600); border: 0; border-radius: 8px; padding: 12px 20px; cursor: pointer;" style-hover="background: var(--brand-700);">Back to work</button>
+        <button style="font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.7); background: transparent; border: 2px solid rgba(255,255,255,0.16); border-radius: 8px; padding: 12px 20px; cursor: pointer;" style-hover="border-color: rgba(255,255,255,0.35); color: var(--white);">Unlock 2 min · 1 left</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1340,&quot;height&quot;:1300},&quot;showBlockedPage&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+const FINDER = {
+  Applications: [
+    ["Calendar", "Application", "12,4 MB"], ["Chrome", "Application", "512,1 MB"],
+    ["Figma", "Application", "1,2 GB"], ["Linear", "Application", "184,6 MB"],
+    ["Mail", "Application", "28,9 MB"], ["Messages", "Application", "44,2 MB"],
+    ["Notion", "Application", "372,8 MB"], ["Numbers", "Application", "512,4 MB"],
+    ["Slack", "Application", "428,3 MB"], ["Spotify", "Application", "318,7 MB"],
+    ["Terminal", "Application", "9,8 MB"], ["Ulysses", "Application", "96,5 MB"],
+    ["VS Code", "Application", "642,9 MB"], ["Xcode", "Application", "7,8 GB"]
+  ],
+  Desktop: [
+    ["Screenshots", "Folder", "—"], ["Sprint Board", "Web location", "1 KB"],
+    ["app-care.de", "Web location", "1 KB"]
+  ],
+  Documents: [["Specs", "Folder", "—"], ["Retro Notes", "Pages document", "2,4 MB"]],
+  Downloads: []
+};
+const APP_LIBRARY = ["VS Code", "Figma", "Chrome", "Terminal", "Slack", "Mail", "Calendar", "Notion", "Ulysses", "Spotify", "Numbers", "Messages"];
+const PRESETS = [
+  { label: "Pomodoro", min: 25 },
+  { label: "Deep work", min: 50 },
+  { label: "Long haul", min: 90 },
+  { label: "Open end", min: 0 }
+];
+const DIAL_MAX = 120;
+const DAY_START = 9 * 60 + 38;
+
+class Component extends DCLogic {
+  state = {
+    profiles: [
+      { name: "Deep Work", items: [["x.com", "site"], ["youtube.com", "site"], ["reddit.com", "site"], ["news.ycombinator.com", "site"], ["Slack", "app"], ["Mail", "app"], ["Messages", "app"]] },
+      { name: "Code", items: [["x.com", "site"], ["youtube.com", "site"], ["Slack", "app"], ["Mail", "app"]] },
+      { name: "Admin light", items: [["youtube.com", "site"], ["Messages", "app"]] }
+    ],
+    projects: [
+      {
+        name: "App-Care Sprint",
+        apps: [
+          { name: "VS Code", mon: 0, x: 0, y: 0, w: 62.5, h: 100 },
+          { name: "Figma", mon: 0, x: 62.5, y: 0, w: 37.5, h: 100 },
+          { name: "Chrome", mon: 1, x: 0, y: 0, w: 100, h: 60 },
+          { name: "Terminal", mon: 1, x: 0, y: 60, w: 100, h: 40 }
+        ]
+      },
+      {
+        name: "Deep Writing",
+        apps: [
+          { name: "Ulysses", mon: 0, x: 12.5, y: 0, w: 75, h: 100 },
+          { name: "Chrome", mon: 1, x: 0, y: 0, w: 100, h: 70 },
+          { name: "Spotify", mon: 1, x: 0, y: 70, w: 100, h: 30 }
+        ]
+      },
+      {
+        name: "Admin & Inbox",
+        apps: [
+          { name: "Mail", mon: 0, x: 0, y: 0, w: 50, h: 100 },
+          { name: "Calendar", mon: 0, x: 50, y: 0, w: 50, h: 100 },
+          { name: "Numbers", mon: 1, x: 0, y: 0, w: 100, h: 100 }
+        ]
+      }
+    ],
+    activeIdx: 0,
+    profileIdx: 1,
+    launchStep: -1,
+    launched: false,
+    running: false,
+    minutes: 50,
+    dialPulse: 0,
+    dialActive: false,
+    finderPulse: 0,
+    secondsLeft: 50 * 60,
+    elapsed: 0,
+    sessions: 1,
+    blockingOn: true,
+    off: {},
+    attempts: 9,
+    newItem: "",
+    editor: null,
+    customApps: [],
+    newAppName: "",
+    blockPulse: 0,
+    finderOpen: false,
+    finderDir: "Applications",
+    finderSel: null
+  };
+
+  monEls = [null, null];
+
+  startDrag = (mode, i, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const win = this.state.editor.draft.apps[i];
+    const el = this.monEls[win.mon];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    this.drag = {
+      mode, i,
+      grabX: ((e.clientX - r.left) / r.width) * 100 - win.x,
+      grabY: ((e.clientY - r.top) / r.height) * 100 - win.y
+    };
+    this.setState({ selWin: i });
+  };
+
+  dialFromEvent(e) {
+    if (!this.dialEl) return;
+    const r = this.dialEl.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    const deg = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+    const raw = (deg / 360) * DIAL_MAX;
+    const minutes = Math.max(5, Math.round(raw / 5) * 5);
+    this.setState(s => minutes === s.minutes
+      ? null
+      : { minutes, secondsLeft: minutes * 60, elapsed: 0, dialPulse: s.dialPulse + 1 });
+  }
+
+  onDocMove = e => {
+    if (this.drag && this.drag.mode === "dial") { this.dialFromEvent(e); return; }
+    if (!this.drag || !this.state.editor) return;
+    const { mode, i } = this.drag;
+    const win = this.state.editor.draft.apps[i];
+    if (!win) return;
+    const snap = v => Math.round(v / 2.5) * 2.5;
+    let mon = win.mon;
+    if (mode === "move") {
+      const hit = this.monEls.findIndex(el => {
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      });
+      this.drag.outside = hit < 0;
+      if (hit >= 0) mon = hit;
+    }
+    const el = this.monEls[mon];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width) * 100;
+    const py = ((e.clientY - r.top) / r.height) * 100;
+    if (mode === "move") {
+      const x = Math.max(0, Math.min(100 - win.w, snap(px - this.drag.grabX)));
+      const y = Math.max(0, Math.min(100 - win.h, snap(py - this.drag.grabY)));
+      this.patchWin(i, { mon, x, y });
+    } else {
+      const w = Math.max(15, Math.min(100 - win.x, snap(px - win.x)));
+      const h = Math.max(15, Math.min(100 - win.y, snap(py - win.y)));
+      this.patchWin(i, { w, h });
+    }
+  };
+  onDocUp = () => {
+    if (this.state.dialActive) this.setState({ dialActive: false });
+    if (this.drag && this.drag.mode === "move" && this.drag.outside) {
+      const i = this.drag.i;
+      this.setState({ selWin: null });
+      this.removeRow("apps", i);
+    }
+    this.drag = null;
+  };
+
+  finderConfirm(name) {
+    this.setState({ finderOpen: false, finderSel: null });
+    this.addLibraryApp(name);
+  }
+
+  addLibraryApp(raw) {
+    const name = (raw || "").trim();
+    if (!name || !this.state.editor) return;
+    this.setState(s => {
+      const known = APP_LIBRARY.concat(s.customApps).includes(name);
+      const already = s.editor.draft.apps.some(w => w.name === name);
+      return {
+        newAppName: "",
+        customApps: known ? s.customApps : [...s.customApps, name],
+        selWin: already ? s.selWin : s.editor.draft.apps.length,
+        editor: already ? s.editor : {
+          ...s.editor,
+          draft: { ...s.editor.draft, apps: [...s.editor.draft.apps, { name, mon: 0, x: 0, y: 0, w: 50, h: 100 }] }
+        }
+      };
+    });
+  }
+
+  dropApp(mon, e) {
+    e.preventDefault();
+    const name = this.paletteDrag;
+    if (!name || !this.state.editor) return;
+    const el = this.monEls[mon];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const snap = v => Math.round(v / 2.5) * 2.5;
+    const w = 50, h = 100;
+    const x = Math.max(0, Math.min(100 - w, snap(((e.clientX - r.left) / r.width) * 100 - w / 2)));
+    const y = Math.max(0, Math.min(100 - h, snap(((e.clientY - r.top) / r.height) * 100 - h / 2)));
+    this.paletteDrag = null;
+    this.setState(s => ({
+      selWin: s.editor.draft.apps.length,
+      editor: { ...s.editor, draft: { ...s.editor.draft, apps: [...s.editor.draft.apps, { name, mon, x, y, w, h }] } }
+    }));
+  }
+
+  patchWin(i, patch) {
+    this.setState(s => ({
+      editor: {
+        ...s.editor,
+        draft: { ...s.editor.draft, apps: s.editor.draft.apps.map((w, wi) => wi === i ? { ...w, ...patch } : w) }
+      }
+    }));
+  }
+  addWin() {
+    this.setState(s => ({
+      selWin: s.editor.draft.apps.length,
+      editor: {
+        ...s.editor,
+        draft: { ...s.editor.draft, apps: [...s.editor.draft.apps, { name: "", mon: 0, x: 0, y: 0, w: 50, h: 100 }] }
+      }
+    }));
+  }
+
+  componentDidMount() {
+    document.addEventListener("mousemove", this.onDocMove);
+    document.addEventListener("mouseup", this.onDocUp);
+    this.tick = setInterval(() => {
+      if (!this.state.running) return;
+      this.setState(s => {
+        if (s.minutes === 0) return { elapsed: s.elapsed + 1 };
+        if (s.secondsLeft <= 1) return { running: false, secondsLeft: 0, sessions: s.sessions + 1 };
+        return { secondsLeft: s.secondsLeft - 1, elapsed: s.elapsed + 1 };
+      });
+    }, 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.tick);
+    clearInterval(this.launcher);
+    document.removeEventListener("mousemove", this.onDocMove);
+    document.removeEventListener("mouseup", this.onDocUp);
+  }
+
+  fmt(sec) {
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+  key(name) { return this.state.profileIdx + "|" + name; }
+
+  selectProject = i => this.setState({ activeIdx: i, launchStep: -1, launched: false });
+
+  launchNow = () => {
+    clearInterval(this.launcher);
+    const count = this.state.projects[this.state.activeIdx].apps.length;
+    this.setState({ launchStep: 0, launched: false });
+    this.launcher = setInterval(() => {
+      this.setState(s => {
+        if (s.launchStep + 1 >= count) { clearInterval(this.launcher); return { launchStep: count, launched: true }; }
+        return { launchStep: s.launchStep + 1 };
+      });
+    }, 520);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const p = s.projects[s.activeIdx];
+    const prof = s.profiles[s.profileIdx];
+    const open = s.minutes === 0;
+    const clock = open ? (s.running ? this.fmt(s.elapsed) : "∞") : this.fmt(s.secondsLeft);
+    const pct = open ? Math.min(100, (s.elapsed / (90 * 60)) * 100) : (1 - s.secondsLeft / (s.minutes * 60)) * 100;
+    const activeItems = prof.items.filter(([n]) => !s.off[this.key(n)]);
+    const blockingLive = s.blockingOn && s.running;
+    const endMinutes = DAY_START + Math.round(s.secondsLeft / 60);
+    const endsAt = String(Math.floor(endMinutes / 60) % 24).padStart(2, "0") + ":" + String(endMinutes % 60).padStart(2, "0");
+    const C = 2 * Math.PI * 86;
+    const frac = open ? 1 : Math.min(1, s.minutes / DIAL_MAX);
+    const theta = frac * 2 * Math.PI;
+
+    const sw = on => ({
+      width: "44px", height: "24px", borderRadius: "9999px", cursor: "pointer",
+      display: "flex", alignItems: "center", padding: "2px",
+      justifyContent: on ? "flex-end" : "flex-start",
+      background: on ? "var(--brand-600)" : "var(--slate-200)",
+      border: "1px solid " + (on ? "var(--brand-600)" : "var(--slate-200)"),
+      transition: "all 200ms var(--ease)"
+    });
+    const box = on => ({
+      width: "17px", height: "17px", flex: "0 0 17px", borderRadius: "5px",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      border: on ? "1px solid var(--brand-600)" : "1px solid var(--slate-300)",
+      background: on ? "var(--brand-600)" : "transparent",
+      color: on ? "#fff" : "transparent", transition: "all 200ms var(--ease)"
+    });
+
+    return {
+      clock,
+      running: s.running,
+      idle: !s.running,
+      titleBar: {
+        height: "46px", display: "flex", alignItems: "center", padding: "0 16px",
+        background: s.running ? "var(--brand-950)" : "var(--white)",
+        borderBottom: "1px solid " + (s.running ? "rgba(255,255,255,0.08)" : "var(--slate-200)"),
+        transition: "background 300ms var(--ease)"
+      },
+      titleText: {
+        flex: 1, textAlign: "center", fontFamily: "var(--font-display)", fontSize: "12px",
+        fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+        color: s.running ? "rgba(255,255,255,0.45)" : "var(--slate-500)"
+      },
+      windowTitle: s.running ? "In focus" : "Focus — " + p.name,
+      activeName: p.name,
+      profileName: prof.name,
+      headline: s.running
+        ? "Session running. Everything else is off."
+        : s.launched ? "Workspace ready. Start the clock." : "Open the project, then focus.",
+      subline: s.running
+        ? activeItems.length + " distractions blocked · " + p.apps.length + " apps arranged"
+        : "Launching " + p.name + " opens " + p.apps.length + " apps in their saved positions. Blocker and timer stay where you set them.",
+      menuChip: {
+        display: "flex", alignItems: "center", gap: "7px", padding: "3px 9px", borderRadius: "6px",
+        background: s.running ? "rgba(37,99,235,0.35)" : "rgba(255,255,255,0.08)"
+      },
+      menuDot: { width: "6px", height: "6px", borderRadius: "9999px", background: s.running ? "var(--brand-400)" : "rgba(255,255,255,0.4)" },
+
+      projects: s.projects.map((pr, i) => ({
+        name: pr.name,
+        meta: pr.apps.length + " apps · saved layout",
+        select: () => this.selectProject(i),
+        edit: e => { e.stopPropagation(); this.openProjectEditor(i); },
+        dot: { width: "8px", height: "8px", borderRadius: "9999px", flex: "0 0 8px", background: i === s.activeIdx ? "var(--brand-600)" : "var(--slate-300)" },
+        card: {
+          border: "1px solid " + (i === s.activeIdx ? "var(--brand-300)" : "var(--slate-200)"),
+          background: i === s.activeIdx ? "var(--brand-50)" : "var(--white)",
+          borderRadius: "12px", padding: "14px", cursor: "pointer", transition: "all 200ms var(--ease)",
+          animation: "fadeUp 320ms var(--ease) both", animationDelay: i * 60 + "ms"
+        }
+      })),
+
+      startBurst: {
+        position: "absolute", width: "300px", height: "300px", borderRadius: "9999px",
+        background: "var(--brand-600)", pointerEvents: "none",
+        animation: (s.sessions % 2 ? "startBurstA" : "startBurstB") + " 620ms var(--ease) both"
+      },
+      focusClock: {
+        fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "72px", lineHeight: 1,
+        letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums", color: "var(--white)"
+      },
+      focusArc: {
+        strokeDasharray: C,
+        strokeDashoffset: C * (open
+          ? 1 - Math.min(1, s.elapsed / (90 * 60))
+          : 1 - Math.max(0, Math.min(1, s.secondsLeft / (s.minutes * 60)))),
+        transition: "stroke-dashoffset 1000ms linear"
+      },
+      appRows: p.apps.map((w, i) => {
+        const done = s.launched || i < s.launchStep;
+        const busy = !s.launched && i === s.launchStep;
+        return {
+          rowStyle: {
+            position: "relative", display: "flex", alignItems: "center", gap: "12px",
+            padding: "8px 6px", borderRadius: "8px",
+            animation: (s.activeIdx % 2 ? "rowInA" : "rowInB") + " 300ms var(--ease) both",
+            animationDelay: i * 40 + "ms"
+          },
+          barTrack: {
+            position: "absolute", left: "6px", right: "6px", bottom: "1px", height: "2px",
+            borderRadius: "9999px", overflow: "hidden", background: "var(--slate-100)",
+            display: busy ? "block" : "none"
+          },
+          barFill: {
+            display: "block", height: "100%", background: "var(--brand-500)",
+            animation: "barGrow 520ms linear both"
+          },
+          name: w.name,
+          place: "M" + (w.mon + 1) + " · " + Math.round(w.w) + "×" + Math.round(w.h) + "%",
+          tick: done ? { ...box(true), animation: "tickIn 260ms var(--ease) both" } : box(false),
+          state: done ? "open" : busy ? "opening…" : "—",
+          stateStyle: {
+            fontFamily: "var(--font-mono)", fontSize: "10.5px", marginLeft: "auto", textAlign: "right",
+            color: done ? "var(--brand-600)" : busy ? "var(--slate-600)" : "var(--slate-300)"
+          }
+        };
+      }),
+      launch: this.launchNow,
+      launchLabel: s.launched ? "Re-arrange" : s.launchStep >= 0 ? "Opening…" : "Launch workspace",
+      launchBtn: {
+        fontFamily: "var(--font-display)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", color: "#fff", border: 0, borderRadius: "8px",
+        padding: "9px 16px", cursor: "pointer", transition: "all 200ms var(--ease)",
+        background: s.launched ? "var(--slate-400)" : "var(--brand-600)"
+      },
+
+      dialHint: s.dialActive ? "Release to keep " + (open ? "open end" : s.minutes + " min") : "Drag the dial to set the length",
+      setDialRef: el => { this.dialEl = el; },
+      onDialDown: e => { e.preventDefault(); this.drag = { mode: "dial" }; this.setState({ dialActive: true }); this.dialFromEvent(e); },
+      dialNumber: {
+        fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "34px", letterSpacing: "-0.03em",
+        fontVariantNumeric: "tabular-nums", color: "var(--slate-900)",
+        animation: s.dialPulse > 0 ? (s.dialPulse % 2 ? "numPopA" : "numPopB") + " 220ms var(--ease)" : "none"
+      },
+      arcStyle: { strokeDasharray: C, strokeDashoffset: C * (1 - frac), transition: "stroke-dashoffset 180ms var(--ease)" },
+      dialTicks: Array.from({ length: 24 }, (_, i) => {
+        const a = (i / 24) * 2 * Math.PI;
+        const active = open || i * 5 < s.minutes;
+        const inner = active ? 68 : 72;
+        return {
+          x1: (100 + inner * Math.sin(a)).toFixed(2),
+          y1: (100 - inner * Math.cos(a)).toFixed(2),
+          x2: (100 + 80 * Math.sin(a)).toFixed(2),
+          y2: (100 - 80 * Math.cos(a)).toFixed(2),
+          style: {
+            stroke: active ? "var(--brand-500)" : "var(--slate-200)",
+            strokeWidth: active ? 2.6 : 2,
+            transition: "stroke 220ms var(--ease), stroke-width 220ms var(--ease)"
+          }
+        };
+      }),
+      knobStyle: {
+        transform: "translate(" + (100 + 91 * Math.sin(theta)).toFixed(2) + "px," + (100 - 91 * Math.cos(theta)).toFixed(2) + "px)"
+          + " scale(" + (s.dialActive ? 1.22 : 1) + ")",
+        transition: "transform 180ms var(--ease)"
+      },
+      endsLine: open ? "no end time" : "ends " + endsAt,
+      presets: PRESETS.map(pp => ({
+        label: pp.label,
+        meta: pp.min === 0 ? "∞" : pp.min + " min",
+        pick: () => this.setState({ minutes: pp.min, secondsLeft: pp.min * 60, elapsed: 0 }),
+        metaStyle: {
+          fontFamily: "var(--font-mono)", fontSize: "11px", textTransform: "none", letterSpacing: 0,
+          color: s.minutes === pp.min ? "var(--brand-600)" : "var(--slate-400)"
+        },
+        style: {
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          fontFamily: "var(--font-display)", fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em",
+          textTransform: "uppercase", cursor: "pointer", borderRadius: "8px", padding: "11px 14px",
+          transition: "all 200ms var(--ease)", background: s.minutes === pp.min ? "var(--brand-50)" : "var(--white)",
+          border: "1px solid " + (s.minutes === pp.min ? "var(--brand-600)" : "var(--slate-200)"),
+          color: s.minutes === pp.min ? "var(--brand-700)" : "var(--slate-600)"
+        }
+      })),
+      sessionPanel: {
+        border: "1px solid " + (s.running ? "var(--brand-950)" : "var(--slate-200)"),
+        background: s.running ? "var(--brand-950)" : "var(--white)",
+        marginTop: "auto", borderRadius: "14px", padding: "18px 22px",
+        transition: "background 300ms var(--ease)"
+      },
+      sessionLabel: {
+        fontFamily: "var(--font-display)", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em",
+        textTransform: "uppercase", color: s.running ? "var(--brand-400)" : "var(--slate-400)"
+      },
+      timerStyle: {
+        fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "54px", letterSpacing: "-0.03em",
+        fontVariantNumeric: "tabular-nums", color: s.running ? "#fff" : "var(--slate-900)"
+      },
+      barTrack: {
+        height: "6px", borderRadius: "9999px", overflow: "hidden",
+        background: s.running ? "rgba(255,255,255,0.14)" : "var(--slate-100)"
+      },
+      barFill: { display: "block", height: "100%", width: Math.max(0, Math.min(100, pct)) + "%", background: s.running ? "var(--brand-500)" : "var(--brand-300)", transition: "width 900ms linear" },
+      underBar: { fontFamily: "var(--font-mono)", fontSize: "11.5px", marginTop: "10px", color: s.running ? "rgba(255,255,255,0.55)" : "var(--slate-400)" },
+      progressLine: open
+        ? "open end · " + Math.round(s.elapsed / 60) + " min elapsed"
+        : Math.round(pct) + "% done · ends " + endsAt,
+      toggleRun: () => this.setState(st => ({ running: !st.running, elapsed: st.running ? st.elapsed : 0 })),
+      runLabel: s.running ? "Pause" : "Start focus",
+      primaryBtn: {
+        fontFamily: "var(--font-display)", fontSize: "11.5px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", color: "#fff", border: 0, borderRadius: "8px", padding: "12px 20px",
+        cursor: "pointer", transition: "all 200ms var(--ease)", background: "var(--brand-600)"
+      },
+      endSession: () => this.setState(st => ({
+        running: false, secondsLeft: st.minutes * 60, elapsed: 0,
+        sessions: st.running ? st.sessions + 1 : st.sessions
+      })),
+      ghostBtn: {
+        fontFamily: "var(--font-display)", fontSize: "11.5px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", borderRadius: "8px", padding: "12px 20px", cursor: "pointer",
+        background: "transparent",
+        border: "2px solid " + (s.running ? "rgba(255,255,255,0.18)" : "var(--slate-200)"),
+        color: s.running ? "rgba(255,255,255,0.75)" : "var(--slate-600)"
+      },
+      statLine: {
+        marginLeft: "auto", alignSelf: "center", fontFamily: "var(--font-mono)", fontSize: "11.5px",
+        color: s.running ? "rgba(255,255,255,0.5)" : "var(--slate-400)"
+      },
+      statsText: s.sessions + " sessions today · " + (s.blockingOn ? activeItems.length + " blocked" : "blocker off"),
+
+      profileChips: s.profiles.map((pr, i) => ({
+        name: pr.name,
+        select: () => this.setState({ profileIdx: i }),
+        style: {
+          fontFamily: "var(--font-display)", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em",
+          textTransform: "uppercase", cursor: "pointer", borderRadius: "9999px", padding: "6px 11px",
+          transition: "all 200ms var(--ease)", background: "transparent",
+          border: "1px solid " + (i === s.profileIdx
+            ? (s.blockingOn ? "var(--brand-500)" : "var(--brand-600)")
+            : (s.blockingOn ? "rgba(255,255,255,0.14)" : "var(--slate-200)")),
+          color: i === s.profileIdx
+            ? (s.blockingOn ? "var(--white)" : "var(--brand-700)")
+            : (s.blockingOn ? "rgba(255,255,255,0.55)" : "var(--slate-500)"),
+          backgroundColor: i === s.profileIdx
+            ? (s.blockingOn ? "rgba(37,99,235,0.35)" : "var(--brand-50)")
+            : "transparent"
+        }
+      })),
+      toggleBlocking: () => this.setState(st => ({
+        blockingOn: !st.blockingOn,
+        blockPulse: st.blockingOn ? st.blockPulse : st.blockPulse + 1
+      })),
+      blockerIdle: !s.blockingOn,
+      blockingOn: s.blockingOn,
+      addRow: {
+        display: "flex", gap: "8px", transition: "opacity 200ms var(--ease)",
+        opacity: s.blockingOn ? 0 : 1,
+        pointerEvents: s.blockingOn ? "none" : "auto"
+      },
+      profileLinks: {
+        display: "flex", gap: "10px", transition: "opacity 200ms var(--ease)",
+        opacity: s.blockingOn ? 0 : 1,
+        pointerEvents: s.blockingOn ? "none" : "auto"
+      },
+      blockerCard: {
+        position: "relative", overflow: "hidden", borderRadius: "14px", padding: "20px 18px",
+        display: "flex", flexDirection: "column", gap: "14px",
+        transition: "background 320ms var(--ease), border-color 320ms var(--ease)",
+        background: s.blockingOn ? "var(--brand-950)" : "var(--white)",
+        border: "1px solid " + (s.blockingOn ? "var(--brand-950)" : "var(--slate-200)")
+      },
+      lockBurst: {
+        position: "absolute", inset: 0, display: s.blockingOn && s.blockPulse > 0 ? "flex" : "none",
+        alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 3,
+        animation: (s.blockPulse % 2 ? "lockPopA" : "lockPopB") + " 900ms var(--ease) both"
+      },
+      lockRing: {
+        position: "absolute", width: "150px", height: "150px", borderRadius: "9999px",
+        border: "2px solid var(--brand-500)",
+        animation: (s.blockPulse % 2 ? "ringOutA" : "ringOutB") + " 900ms var(--ease) both"
+      },
+      shackle: {
+        transformOrigin: "center",
+        animation: (s.blockPulse % 2 ? "shackleA" : "shackleB") + " 900ms var(--ease) both"
+      },
+      blockerLabel: {
+        fontFamily: "var(--font-display)", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em",
+        textTransform: "uppercase", transition: "color 320ms var(--ease)",
+        color: s.blockingOn ? "var(--brand-400)" : "var(--slate-400)"
+      },
+      blockerSubLabel: {
+        fontFamily: "var(--font-display)", fontSize: "9.5px", fontWeight: 700, letterSpacing: "0.15em",
+        textTransform: "uppercase", color: s.blockingOn ? "rgba(255,255,255,0.45)" : "var(--slate-400)"
+      },
+      mutedLink: {
+        fontFamily: "var(--font-display)", fontSize: "9.5px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", cursor: "pointer", transition: "color 200ms var(--ease)",
+        color: s.blockingOn ? "rgba(255,255,255,0.5)" : "var(--slate-400)"
+      },
+      accentLink: {
+        fontFamily: "var(--font-display)", fontSize: "9.5px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", cursor: "pointer",
+        color: s.blockingOn ? "var(--brand-400)" : "var(--brand-600)"
+      },
+      blockerInput: {
+        flex: 1, minWidth: 0, borderRadius: "8px", padding: "9px 11px", outline: "none",
+        fontFamily: "var(--font-mono)", fontSize: "12.5px", transition: "all 200ms var(--ease)",
+        border: "1px solid " + (s.blockingOn ? "rgba(255,255,255,0.16)" : "var(--slate-200)"),
+        background: s.blockingOn ? "rgba(255,255,255,0.06)" : "var(--white)",
+        color: s.blockingOn ? "var(--white)" : "var(--slate-800)"
+      },
+      blockerAddBtn: {
+        fontFamily: "var(--font-display)", fontSize: "10.5px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", borderRadius: "8px", padding: "0 12px", cursor: "pointer",
+        transition: "all 200ms var(--ease)", background: "transparent",
+        border: "2px solid " + (s.blockingOn ? "rgba(255,255,255,0.16)" : "var(--slate-200)"),
+        color: s.blockingOn ? "rgba(255,255,255,0.75)" : "var(--slate-600)"
+      },
+      statTile: {
+        marginTop: "auto", borderRadius: "12px", padding: "16px",
+        transition: "all 320ms var(--ease)",
+        border: "1px solid " + (s.blockingOn ? "rgba(255,255,255,0.12)" : "var(--slate-200)")
+      },
+      statValue: {
+        fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "28px", marginTop: "8px",
+        fontVariantNumeric: "tabular-nums", color: s.blockingOn ? "var(--white)" : "var(--slate-900)"
+      },
+      statCaption: {
+        fontFamily: "var(--font-sans)", fontSize: "13px", marginTop: "2px",
+        color: s.blockingOn ? "rgba(255,255,255,0.5)" : "var(--slate-500)"
+      },
+      sweepStyle: {
+        position: "absolute", left: 0, right: 0, top: 0, height: "2px", transformOrigin: "left center",
+        background: "var(--brand-500)", borderRadius: "9999px", pointerEvents: "none",
+        animation: (s.blockPulse % 2 ? "shieldSweepA" : "shieldSweepB") + " 620ms var(--ease) both",
+        display: s.blockingOn && s.blockPulse > 0 ? "block" : "none"
+      },
+      blockSwitch: sw(s.blockingOn),
+      knob: { width: "18px", height: "18px", borderRadius: "9999px", background: "#fff", boxShadow: "var(--shadow-sm)", display: "block" },
+      blockStatus: {
+        borderRadius: "10px", padding: "12px 14px", fontSize: "13px", lineHeight: 1.5,
+        animation: s.blockPulse > 0 ? (s.blockPulse % 2 ? "statusInA" : "statusInB") + " 320ms var(--ease)" : "none",
+        border: "1px solid " + (s.blockingOn ? "rgba(96,165,250,0.35)" : "var(--slate-200)"),
+        background: s.blockingOn ? "rgba(37,99,235,0.22)" : "var(--slate-50)",
+        color: s.blockingOn ? "var(--white)" : "var(--slate-500)"
+      },
+      blockStatusText: !s.blockingOn
+        ? "Blocker off. Nothing is filtered."
+        : blockingLive
+          ? prof.name + " live. " + activeItems.length + " items blocked until " + endsAt + "."
+          : prof.name + " armed. Starts with the session, ends with it.",
+      blockRows: prof.items.map(([name, kind], i) => {
+        const on = !s.off[this.key(name)];
+        const anim = s.blockingOn && s.blockPulse > 0;
+        return {
+          name, kind,
+          toggle: () => this.setState(st => ({ off: { ...st.off, [this.key(name)]: on } })),
+          box: s.blockingOn
+            ? {
+                width: "17px", height: "17px", flex: "0 0 17px", borderRadius: "5px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 200ms var(--ease)",
+                border: "1px solid " + (on ? "var(--brand-500)" : "rgba(255,255,255,0.25)"),
+                background: on ? "var(--brand-500)" : "transparent",
+                color: on ? "var(--white)" : "transparent"
+              }
+            : box(on),
+          kindStyle: {
+            marginLeft: "auto", fontFamily: "var(--font-mono)", fontSize: "10.5px",
+            color: s.blockingOn ? "rgba(255,255,255,0.35)" : "var(--slate-400)"
+          },
+          row: {
+            display: "flex", alignItems: "center", gap: "11px", padding: "9px 11px",
+            border: "1px solid " + (s.blockingOn
+              ? (on ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)")
+              : (on ? "var(--slate-200)" : "var(--slate-100)")),
+            borderRadius: "9px", cursor: "pointer", transition: "all 200ms var(--ease)",
+            animation: anim ? (s.blockPulse % 2 ? "lockInA" : "lockInB") + " 380ms var(--ease)" : "none",
+            animationDelay: anim ? i * 45 + "ms" : "0ms"
+          },
+          nameStyle: {
+            fontFamily: "var(--font-mono)", fontSize: "12.5px",
+            color: s.blockingOn
+              ? (on ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)")
+              : (on ? "var(--slate-700)" : "var(--slate-400)"),
+            textDecoration: on ? "none" : "line-through"
+          }
+        };
+      }),
+      newItem: s.newItem,
+      onNewItem: e => this.setState({ newItem: e.target.value }),
+      onNewItemKey: e => { if (e.key === "Enter") this.addItemNow(); },
+      addItem: () => this.addItemNow(),
+      attempts: s.attempts,
+      topOffender: "x.com leads with 4 attempts",
+
+      newProject: () => this.openProjectEditor(null),
+      editProfile: () => this.openProfileEditor(s.profileIdx),
+      newProfile: () => this.openProfileEditor(null),
+      editorOpen: !!s.editor,
+      sheetStyle: {
+        width: s.editor && s.editor.kind === "project" ? "900px" : "600px",
+        maxHeight: "calc(100% - 110px)", overflowY: "auto",
+        background: "var(--white)", border: "1px solid var(--slate-200)", borderRadius: "14px",
+        boxShadow: "var(--shadow-xl)", padding: "26px 30px", animation: "sheetIn 260ms var(--ease) both"
+      },
+      isProjectEditor: !!s.editor && s.editor.kind === "project",
+      isProfileEditor: !!s.editor && s.editor.kind === "profile",
+      editorEyebrow: s.editor
+        ? (s.editor.kind === "project" ? "SETTINGS · PROJECT" : "SETTINGS · FOCUS PROFILE")
+        : "SETTINGS",
+      editorTitle: s.editor
+        ? (s.editor.idx === null
+            ? (s.editor.kind === "project" ? "New project" : "New focus profile")
+            : (s.editor.kind === "project" ? "Edit project" : "Edit focus profile"))
+        : "",
+      namePlaceholder: s.editor && s.editor.kind === "project" ? "e.g. App-Care Sprint" : "e.g. Deep Work",
+      draftName: s.editor ? s.editor.draft.name : "",
+      onDraftName: e => this.patchDraft({ name: e.target.value }),
+      draftApps: (s.editor && s.editor.draft.apps ? s.editor.draft.apps : []).map((w, i) => ({
+        name: w.name,
+        place: "Monitor " + (w.mon + 1) + " · " + Math.round(w.w) + "×" + Math.round(w.h) + "%",
+        onName: e => this.patchWin(i, { name: e.target.value }),
+        remove: () => this.removeRow("apps", i),
+        select: () => this.setState({ selWin: i }),
+        rowStyle: {
+          display: "flex", gap: "8px", alignItems: "center", padding: "7px 9px", borderRadius: "8px",
+          cursor: "pointer", transition: "all 200ms var(--ease)",
+          border: "1px solid " + (s.selWin === i ? "var(--brand-300)" : "transparent"),
+          background: s.selWin === i ? "var(--brand-50)" : "transparent"
+        }
+      })),
+      addDraftApp: () => this.addWin(),
+      newAppName: s.newAppName,
+      onNewAppName: e => this.setState({ newAppName: e.target.value }),
+      onNewAppKey: e => { if (e.key === "Enter") this.addLibraryApp(this.state.newAppName); },
+      addLibraryApp: () => this.addLibraryApp(this.state.newAppName),
+
+      finderOpen: s.finderOpen,
+      openFinder: () => this.setState({ finderOpen: true, finderSel: null, finderDir: "Applications" }),
+      closeFinder: () => this.setState({ finderOpen: false, finderSel: null }),
+      finderDir: s.finderDir,
+      finderPlaces: ["Applications", "Desktop", "Documents", "Downloads"].map(name => ({
+        name,
+        select: () => this.setState({ finderDir: name, finderSel: null }),
+        style: {
+          display: "flex", alignItems: "center", gap: "8px", padding: "7px 10px", borderRadius: "7px",
+          fontSize: "12.5px", cursor: "pointer", transition: "all 200ms var(--ease)",
+          color: name === s.finderDir ? "var(--brand-800)" : "var(--slate-600)",
+          background: name === s.finderDir ? "var(--brand-50)" : "transparent"
+        }
+      })),
+      finderRows: FINDER[s.finderDir].map(([name, kind, size], i) => ({
+        name, kind, size,
+        date: "2" + (i % 7 + 1) + " Aug 2026 · 0" + (i % 8 + 1) + ":1" + (i % 6) ,
+        select: () => this.setState(st => ({ finderSel: name, finderPulse: st.finderPulse + 1 })),
+        confirm: () => { if (kind !== "Folder") this.finderConfirm(name); },
+        style: {
+          display: "grid", gridTemplateColumns: "1.4fr 1fr 0.9fr 0.6fr", alignItems: "center", gap: "10px",
+          padding: "8px 12px", cursor: "default", fontSize: "12.5px",
+          transition: "background 160ms var(--ease), transform 160ms var(--ease)",
+          transform: name === s.finderSel ? "translateX(3px)" : "none",
+          background: name === s.finderSel ? "var(--brand-600)" : "transparent",
+          color: name === s.finderSel ? "var(--white)" : (kind === "Folder" ? "var(--slate-500)" : "var(--slate-800)")
+        },
+        metaStyle: {
+          fontFamily: "var(--font-mono)", fontSize: "11px",
+          color: name === s.finderSel ? "rgba(255,255,255,0.75)" : "var(--slate-400)"
+        }
+      })),
+      finderEmpty: FINDER[s.finderDir].length === 0,
+      finderSelLabel: s.finderSel || "No selection",
+      finderConfirm: () => { if (s.finderSel) this.finderConfirm(s.finderSel); },
+      finderOpenBtn: {
+        fontFamily: "var(--font-display)", fontSize: "10.5px", fontWeight: 700, letterSpacing: "0.1em",
+        textTransform: "uppercase", border: 0, borderRadius: "8px", padding: "10px 18px",
+        transition: "all 200ms var(--ease)",
+        cursor: s.finderSel ? "pointer" : "default",
+        background: s.finderSel ? "var(--brand-600)" : "var(--slate-200)",
+        color: s.finderSel ? "var(--white)" : "var(--slate-400)",
+        animation: s.finderSel ? (s.finderPulse % 2 ? "btnPulseA" : "btnPulseB") + " 620ms var(--ease)" : "none"
+      },
+      appLibrary: APP_LIBRARY.concat(s.customApps).map(name => {
+        const placed = !!(s.editor && s.editor.draft.apps || []).some(w => w.name === name);
+        return {
+          name,
+          draggable: !placed,
+          onDragStart: () => { if (!placed) this.paletteDrag = name; },
+          onDragEnd: () => { this.paletteDrag = null; },
+          style: {
+            fontFamily: "var(--font-sans)", fontSize: "11.5px", userSelect: "none",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center",
+            borderRadius: "9999px", padding: "6px 9px", transition: "all 200ms var(--ease)",
+            cursor: placed ? "default" : "grab",
+            border: "1px solid " + (placed ? "var(--slate-100)" : "var(--slate-200)"),
+            background: placed ? "var(--slate-100)" : "var(--white)",
+            color: placed ? "var(--slate-300)" : "var(--slate-700)"
+          }
+        };
+      }),
+      monitors: [0, 1].map(m => ({
+        onDragOver: e => e.preventDefault(),
+        onDrop: e => this.dropApp(m, e),
+        label: m === 0 ? "Monitor 1 · 27″" : "Monitor 2 · 14″",
+        setRef: el => { this.monEls[m] = el; },
+        wrapStyle: { flex: m === 0 ? 1.6 : 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 },
+        style: {
+          position: "relative", width: "100%", aspectRatio: "16 / 10",
+          background: "var(--slate-50)", border: "2px solid var(--brand-950)",
+          borderRadius: "10px", overflow: "hidden"
+        },
+        tiles: (s.editor && s.editor.draft.apps ? s.editor.draft.apps : [])
+          .map((w, i) => ({ w, i }))
+          .filter(t => t.w.mon === m)
+          .map(({ w, i }) => ({
+            name: w.name || "Untitled",
+            size: Math.round(w.w) + "×" + Math.round(w.h),
+            onMouseDown: e => this.startDrag("move", i, e),
+            onResizeDown: e => this.startDrag("resize", i, e),
+            onRemove: e => { e.preventDefault(); e.stopPropagation(); this.setState({ selWin: null }); this.removeRow("apps", i); },
+            removeStyle: {
+              position: "absolute", right: "4px", top: "3px", width: "18px", height: "18px",
+              display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "9999px",
+              fontFamily: "var(--font-mono)", fontSize: "13px", lineHeight: 1, cursor: "pointer",
+              transition: "all 200ms var(--ease)",
+              background: s.selWin === i ? "var(--brand-600)" : "var(--slate-100)",
+              color: s.selWin === i ? "var(--white)" : "var(--slate-500)"
+            },
+            style: {
+              position: "absolute", left: w.x + "%", top: w.y + "%", width: w.w + "%", height: w.h + "%",
+              padding: "8px 10px", cursor: "grab", userSelect: "none", overflow: "hidden",
+              borderRadius: "7px", transition: "border-color 200ms var(--ease), box-shadow 200ms var(--ease)",
+              border: "1px solid " + (s.selWin === i ? "var(--brand-600)" : "var(--brand-200)"),
+              background: s.selWin === i ? "var(--brand-100)" : "var(--white)",
+              boxShadow: s.selWin === i ? "var(--shadow-md)" : "none"
+            },
+            nameStyle: {
+              fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "11.5px",
+              color: "var(--slate-900)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+            },
+            sizeStyle: { fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--slate-400)", marginTop: "2px" },
+            handleStyle: {
+              position: "absolute", right: "2px", bottom: "2px", width: "14px", height: "14px",
+              borderRight: "2px solid var(--brand-600)", borderBottom: "2px solid var(--brand-600)",
+              borderBottomRightRadius: "5px", cursor: "nwse-resize", opacity: s.selWin === i ? 1 : 0.35
+            }
+          }))
+      })),
+      snaps: [
+        ["Left ½", { x: 0, y: 0, w: 50, h: 100 }],
+        ["Right ½", { x: 50, y: 0, w: 50, h: 100 }],
+        ["Top ½", { x: 0, y: 0, w: 100, h: 50 }],
+        ["Full", { x: 0, y: 0, w: 100, h: 100 }]
+      ].map(([label, geo]) => ({
+        label,
+        apply: () => { if (s.selWin != null) this.patchWin(s.selWin, geo); },
+        style: this.chip(false, "8px")
+      })),
+      stageHint: s.selWin != null && s.editor && s.editor.draft.apps && s.editor.draft.apps[s.selWin]
+        ? "Selected: " + (s.editor.draft.apps[s.selWin].name || "Untitled") + " — pull the corner to scale, drag it off the monitors or hit × to remove it."
+        : "Drag an app onto a monitor. Move it across monitors, pull its corner to scale, drag it off the monitors or hit × to remove it.",
+      draftItems: (s.editor && s.editor.draft.items ? s.editor.draft.items : []).map((row, i) => ({
+        name: row[0], kind: row[1],
+        onName: e => this.patchRow("items", i, 0, e.target.value),
+        toggleKind: () => this.patchRow("items", i, 1, row[1] === "site" ? "app" : "site"),
+        kindStyle: {
+          fontFamily: "var(--font-display)", fontSize: "9.5px", fontWeight: 700, letterSpacing: "0.1em",
+          textTransform: "uppercase", cursor: "pointer", borderRadius: "9999px", padding: "7px 12px",
+          width: "62px", transition: "all 200ms var(--ease)",
+          border: "1px solid var(--slate-200)", background: "var(--white)",
+          color: row[1] === "site" ? "var(--brand-700)" : "var(--slate-500)"
+        },
+        remove: () => this.removeRow("items", i)
+      })),
+      addDraftItem: () => this.addRow("items", ["", "site"]),
+      saveEditor: () => this.saveEditor(),
+      closeEditor: () => this.setState({ editor: null }),
+      deleteEditor: () => this.deleteEntity(),
+      deleteLabel: s.editor && s.editor.idx !== null ? "Delete" : "",
+      deleteStyle: {
+        marginLeft: "auto", fontFamily: "var(--font-display)", fontSize: "10.5px", fontWeight: 700,
+        letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--slate-400)",
+        cursor: "pointer", display: s.editor && s.editor.idx !== null ? "inline" : "none"
+      },
+
+      blockedHeader: (activeItems[0] ? activeItems[0][0] : "x.com") + " is blocked · " + prof.name,
+      endsAt
+    };
+  }
+
+  chip(on, radius) {
+    return {
+      fontFamily: "var(--font-display)", fontSize: "10.5px", fontWeight: 700, letterSpacing: "0.08em",
+      textTransform: "uppercase", cursor: "pointer", borderRadius: radius, padding: "7px 12px",
+      transition: "all 200ms var(--ease)",
+      border: "1px solid " + (on ? "var(--brand-600)" : "var(--slate-200)"),
+      color: on ? "var(--brand-700)" : "var(--slate-500)",
+      background: on ? "var(--brand-50)" : "var(--white)"
+    };
+  }
+  openProjectEditor(idx) {
+    const p = idx === null
+      ? { name: "", apps: [] }
+      : { ...this.state.projects[idx], apps: this.state.projects[idx].apps.map(w => ({ ...w })) };
+    this.setState({ editor: { kind: "project", idx, draft: p }, selWin: null });
+  }
+  openProfileEditor(idx) {
+    const p = idx === null
+      ? { name: "", items: [["", "site"]] }
+      : { ...this.state.profiles[idx], items: this.state.profiles[idx].items.map(r => [...r]) };
+    this.setState({ editor: { kind: "profile", idx, draft: p } });
+  }
+  patchDraft(patch) {
+    this.setState(s => ({ editor: { ...s.editor, draft: { ...s.editor.draft, ...patch } } }));
+  }
+  patchRow(field, i, col, value) {
+    this.setState(s => ({
+      editor: {
+        ...s.editor,
+        draft: {
+          ...s.editor.draft,
+          [field]: s.editor.draft[field].map((r, ri) => ri === i ? r.map((c, ci) => ci === col ? value : c) : r)
+        }
+      }
+    }));
+  }
+  addRow(field, blank) {
+    this.setState(s => ({
+      editor: { ...s.editor, draft: { ...s.editor.draft, [field]: [...s.editor.draft[field], blank] } }
+    }));
+  }
+  removeRow(field, i) {
+    this.setState(s => ({
+      editor: { ...s.editor, draft: { ...s.editor.draft, [field]: s.editor.draft[field].filter((_, ri) => ri !== i) } }
+    }));
+  }
+  saveEditor() {
+    const ed = this.state.editor;
+    if (!ed) return;
+    if (ed.kind === "project") {
+      const draft = {
+        name: ed.draft.name.trim() || "Untitled project",
+        apps: ed.draft.apps.filter(w => w.name.trim()).map(w => ({ ...w, name: w.name.trim() }))
+      };
+      this.setState(s => {
+        const projects = ed.idx === null ? [...s.projects, draft] : s.projects.map((p, i) => i === ed.idx ? draft : p);
+        return {
+          projects, editor: null,
+          activeIdx: ed.idx === null ? projects.length - 1 : ed.idx,
+          launchStep: -1, launched: false
+        };
+      });
+    } else {
+      const draft = {
+        name: ed.draft.name.trim() || "Untitled profile",
+        items: ed.draft.items.filter(r => r[0].trim()).map(r => [r[0].trim(), r[1]])
+      };
+      this.setState(s => {
+        const profiles = ed.idx === null ? [...s.profiles, draft] : s.profiles.map((p, i) => i === ed.idx ? draft : p);
+        return { profiles, editor: null, profileIdx: ed.idx === null ? profiles.length - 1 : ed.idx };
+      });
+    }
+  }
+  deleteEntity() {
+    const ed = this.state.editor;
+    if (!ed || ed.idx === null) return;
+    if (ed.kind === "project") {
+      this.setState(s => {
+        if (s.projects.length <= 1) return { editor: null };
+        const projects = s.projects.filter((_, i) => i !== ed.idx);
+        return { projects, editor: null, activeIdx: 0, launchStep: -1, launched: false };
+      });
+    } else {
+      this.setState(s => {
+        if (s.profiles.length <= 1) return { editor: null };
+        return { profiles: s.profiles.filter((_, i) => i !== ed.idx), editor: null, profileIdx: 0 };
+      });
+    }
+  }
+  addItemNow() {
+    const raw = this.state.newItem.trim();
+    if (!raw) return;
+    const kind = raw.includes(".") ? "site" : "app";
+    this.setState(s => ({
+      newItem: "",
+      profiles: s.profiles.map((p, i) => i === s.profileIdx ? { ...p, items: [...p.items, [raw, kind]] } : p)
+    }));
+  }
+}
+
+</script>
+</body>
+</html>
