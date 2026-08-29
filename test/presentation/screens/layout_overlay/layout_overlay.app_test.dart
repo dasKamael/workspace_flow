@@ -25,6 +25,7 @@ void main() {
   );
 
   const window = ProjectWindow(id: -1, name: 'VS Code', screenIndex: 0, x: 0, y: 0, width: 62.5, height: 100);
+  const otherWindow = ProjectWindow(id: -1, name: 'Figma', screenIndex: 0, x: 25, y: 0, width: 50, height: 100);
 
   late List<MethodCall> outgoing;
 
@@ -41,13 +42,13 @@ void main() {
   });
 
   /// Sends the payload the way the native side does.
-  Future<void> sendPayload(WidgetTester tester) async {
+  Future<void> sendPayload(WidgetTester tester, {List<ProjectWindow> windows = const [window]}) async {
     await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
       channel.name,
       channel.codec.encodeMethodCall(
         MethodCall('update', {
           'screens': [screen.toJson()],
-          'windows': [window.toJson()],
+          'windows': [for (final window in windows) window.toJson()],
         }),
       ),
       (_) {},
@@ -108,6 +109,31 @@ void main() {
     final windows = (payload['windows']! as List).cast<Map<Object?, Object?>>();
     expect(windows, hasLength(1));
     expect(ProjectWindow.fromJson(windows.single.map((k, v) => MapEntry(k.toString(), v))), window);
+  });
+
+  testWidgets('Given the overlay was already used once this session, '
+      'when a second, unrelated project sends its own — different — windows, '
+      'then the second payload is what actually shows, not leftovers from the first', (tester) async {
+    // Given — the native window and engine are reused rather than recreated, so the
+    // very first payload this test sends must not linger once a second one arrives.
+    await pumpApp(tester);
+    await sendPayload(tester);
+    expect(find.text('VS Code'), findsOneWidget);
+
+    // When
+    await sendPayload(tester, windows: const [otherWindow]);
+
+    // Then
+    expect(find.text('Figma'), findsOneWidget);
+    expect(find.text('VS Code'), findsNothing);
+
+    // And saving sends back the second project's window, not the first's
+    await tester.tap(find.text('SAVE LAYOUT'));
+    await tester.pumpAndSettle();
+    final payload = outgoing.firstWhere((call) => call.method == 'apply').arguments as Map;
+    final windows = (payload['windows']! as List).cast<Map<Object?, Object?>>();
+    expect(windows, hasLength(1));
+    expect(ProjectWindow.fromJson(windows.single.map((k, v) => MapEntry(k.toString(), v))), otherWindow);
   });
 
   testWidgets('Given the overlay is showing, '

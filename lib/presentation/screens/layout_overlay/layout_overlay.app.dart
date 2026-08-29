@@ -26,13 +26,28 @@ class _LayoutOverlayAppState extends State<LayoutOverlayApp> {
   List<AppLibraryEntry> _library = const [];
   Map<String, Uint8List> _icons = const {};
 
+  /// Bumped on every `update`, and used as [LayoutOverlayScreen]'s key.
+  ///
+  /// The overlay window and its engine are reused across separate "Arrange on
+  /// screen" sessions rather than recreated, so without a changing key Flutter
+  /// would treat each `update` as a mere prop change to the *same* element —
+  /// leaving `_LayoutOverlayScreenState`'s `late final _windows` (copied from
+  /// `widget.initialWindows` exactly once) stuck on whichever project's windows
+  /// happened to be the first ever shown this session.
+  int _revision = 0;
+
   @override
   void initState() {
     super.initState();
     _channel.setMethodCallHandler((call) async {
       if (call.method != 'update') return null;
       final arguments = call.arguments;
-      if (arguments is Map) setState(() => _read(arguments));
+      if (arguments is Map) {
+        setState(() {
+          _read(arguments);
+          _revision++;
+        });
+      }
       return null;
     });
   }
@@ -74,6 +89,7 @@ class _LayoutOverlayAppState extends State<LayoutOverlayApp> {
           // Nothing to arrange yet — the payload follows within a frame or two.
           ? const SizedBox.shrink()
           : LayoutOverlayScreen(
+              key: ValueKey(_revision),
               screens: _screens,
               initialWindows: _windows,
               library: _library,

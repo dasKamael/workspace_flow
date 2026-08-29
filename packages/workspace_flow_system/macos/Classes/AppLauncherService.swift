@@ -45,20 +45,26 @@ enum AppLauncherService {
   /// An app that is already running is activated rather than started twice.
   static func launch(bundleId: String, completion: @escaping (Int?) -> Void) {
     if let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).first {
+      NSLog("[AppLauncher] \(bundleId) already running, pid=\(running.processIdentifier)")
       running.activate(options: [])
       completion(Int(running.processIdentifier))
       return
     }
 
     guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) else {
+      NSLog("[AppLauncher] \(bundleId) has no installed application URL")
       completion(nil)
       return
     }
 
     let configuration = NSWorkspace.OpenConfiguration()
     configuration.activates = true
-    NSWorkspace.shared.openApplication(at: url, configuration: configuration) { application, _ in
-      completion(application.map { Int($0.processIdentifier) })
+    NSLog("[AppLauncher] \(bundleId) launching fresh from \(url)")
+    NSWorkspace.shared.openApplication(at: url, configuration: configuration) { application, error in
+      if let error { NSLog("[AppLauncher] \(bundleId) openApplication error: \(error)") }
+      let pid = application.map { Int($0.processIdentifier) }
+      NSLog("[AppLauncher] \(bundleId) openApplication completion pid=\(String(describing: pid))")
+      completion(pid)
     }
   }
 
