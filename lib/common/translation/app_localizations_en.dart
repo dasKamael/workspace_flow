@@ -151,12 +151,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get blocker_profile_label => 'Profile';
 
   @override
-  String get blocker_add_placeholder => 'add app or domain';
-
-  @override
-  String get blocker_choose_app => 'Choose app…';
-
-  @override
   String get blocker_blocked_today_label => 'Blocked today';
 
   @override

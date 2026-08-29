@@ -5,7 +5,6 @@ import 'package:workspace_flow/data/database/app_database.dart';
 import 'package:workspace_flow/data/blocker/data_source/blocker.dao.dart';
 import 'package:workspace_flow/data/blocker/repository/mapper/blocker.entity_mapper.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
-import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 
 part 'blocker_profile.repository.g.dart';
@@ -36,22 +35,6 @@ class BlockerProfileRepository {
   }
 
   Future<void> deleteProfile(int id) => dao.deleteProfile(id);
-
-  /// Appends a single entry, as the blocker card's add row does.
-  Future<void> addItem({required int profileId, required String name, required BlockedItemKind kind}) => dao.addItem(
-    BlockedItemsCompanion.insert(profileId: profileId, name: name, kind: BlockedItemEntityMapper.kindToStorage(kind)),
-  );
-
-  /// Appends an app picked through the Finder picker, with its bundle id — as opposed
-  /// to [addItem], which classifies free-typed text and never has one.
-  Future<void> addApp({required int profileId, required String name, required String bundleId}) => dao.addItem(
-    BlockedItemsCompanion.insert(
-      profileId: profileId,
-      name: name,
-      kind: BlockedItemEntityMapper.kindToStorage(BlockedItemKind.app),
-      bundleId: Value(bundleId),
-    ),
-  );
 
   /// Includes or excludes one entry for its profile.
   Future<void> setItemEnabled({required int itemId, required bool enabled}) =>

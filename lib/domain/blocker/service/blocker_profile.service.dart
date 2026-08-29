@@ -3,7 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/blocker/repository/blocker_profile.repository.dart';
 import 'package:workspace_flow/data/system/repository/app_launcher.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
-import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
 
@@ -65,34 +64,8 @@ class BlockerProfileService extends _$BlockerProfileService {
     await repository.deleteProfile(id);
   }
 
-  /// Adds an entry from the card's add row. A value containing a dot becomes a site.
-  Future<void> addEntry({required int profileId, required String raw}) async {
-    final name = raw.trim();
-    if (name.isEmpty) return;
-    await ref
-        .read(blockerProfileRepositoryProvider)
-        .addItem(profileId: profileId, name: name, kind: BlockedItemKind.fromInput(name));
-  }
-
-  /// Adds an app picked through the Finder picker, carrying its bundle id so
-  /// enforcement can match the running process reliably.
-  Future<void> addApp({required int profileId, required AppLibraryEntry entry}) => ref
-      .read(blockerProfileRepositoryProvider)
-      .addApp(profileId: profileId, name: entry.name, bundleId: entry.bundleId ?? entry.name);
-
-  /// Opens the Finder picker and adds the chosen app to [profileId].
-  ///
-  /// Returns the picked entry, or `null` if the user cancelled or the picker failed —
-  /// same shape as the project editor's `chooseFromFinder`.
-  Future<AppLibraryEntry?> chooseApp({required int profileId}) async {
-    final entry = await pickApp();
-    if (entry == null) return null;
-    await addApp(profileId: profileId, entry: entry);
-    return entry;
-  }
-
-  /// Opens the Finder picker without persisting anything — for the profile editor's
-  /// draft, which only writes to the database on Save.
+  /// Opens the Finder picker without persisting anything — adding an app only happens
+  /// through the profile editor's draft, which writes to the database on Save.
   Future<AppLibraryEntry?> pickApp() async {
     try {
       return await ref.read(appLauncherRepositoryProvider).chooseApp();

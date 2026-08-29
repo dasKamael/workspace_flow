@@ -325,18 +325,6 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get blocker_profile_label;
 
-  /// No description provided for @blocker_add_placeholder.
-  ///
-  /// In en, this message translates to:
-  /// **'add app or domain'**
-  String get blocker_add_placeholder;
-
-  /// No description provided for @blocker_choose_app.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose app…'**
-  String get blocker_choose_app;
-
   /// No description provided for @blocker_blocked_today_label.
   ///
   /// In en, this message translates to:

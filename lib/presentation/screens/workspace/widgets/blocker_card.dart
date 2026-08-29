@@ -19,7 +19,6 @@ import 'package:workspace_flow/presentation/design_system/molecules/ui_chip.dart
 import 'package:workspace_flow/presentation/design_system/molecules/ui_hover_region.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_link_label.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_switch.dart';
-import 'package:workspace_flow/presentation/design_system/molecules/ui_text_field.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_tick_box.dart';
 import 'package:workspace_flow/presentation/design_system/organisms/ui_card.dart';
 import 'package:workspace_flow/presentation/router.dart';
@@ -27,8 +26,9 @@ import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_lo
 
 /// The right column: profiles, their entries, and the arming switch.
 ///
-/// While armed the card goes dark and profile switching, the edit links and the add row
-/// fade out — faded, not removed, so nothing in the layout shifts.
+/// While armed the card goes dark and profile switching and the edit links fade out —
+/// faded, not removed, so nothing in the layout shifts. Adding entries only happens in
+/// the profile editor now; the overview is just profiles, items, and the switch.
 class BlockerCard extends ConsumerStatefulWidget {
   const BlockerCard({super.key});
 
@@ -37,34 +37,12 @@ class BlockerCard extends ConsumerStatefulWidget {
 }
 
 class _BlockerCardState extends ConsumerState<BlockerCard> {
-  final TextEditingController _addController = TextEditingController();
-
   /// Bumped on every arming so the lock animation replays.
   int _armCount = 0;
-
-  @override
-  void dispose() {
-    _addController.dispose();
-    super.dispose();
-  }
 
   Future<void> _toggleArmed({required bool armed, required BlockerProfile? profile}) async {
     if (armed) setState(() => _armCount++);
     await ref.read(blockerServiceProvider.notifier).setArmed(armed: armed);
-  }
-
-  Future<void> _addEntry(BlockerProfile profile) async {
-    final raw = _addController.text;
-    if (raw.trim().isEmpty) return;
-    _addController.clear();
-    await ref.read(blockerProfileServiceProvider.notifier).addEntry(profileId: profile.id, raw: raw);
-    await ref.read(blockerServiceProvider.notifier).reapply();
-  }
-
-  Future<void> _chooseApp(BlockerProfile profile) async {
-    final entry = await ref.read(blockerProfileServiceProvider.notifier).chooseApp(profileId: profile.id);
-    if (entry == null) return;
-    await ref.read(blockerServiceProvider.notifier).reapply();
   }
 
   @override
@@ -103,44 +81,6 @@ class _BlockerCardState extends ConsumerState<BlockerCard> {
               UiSpacer.s,
               Expanded(
                 child: _ItemList(key: ValueKey('$_armCount|${profile?.id}'), profile: profile, isArmed: isArmed),
-              ),
-              UiSpacer.s,
-              AnimatedOpacity(
-                duration: UiMotion.slow,
-                curve: UiMotion.ease,
-                opacity: isArmed ? 0 : 1,
-                child: IgnorePointer(
-                  ignoring: isArmed,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: UiTextField(
-                              controller: _addController,
-                              placeholder: context.translations.blocker_add_placeholder,
-                              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-                              onSubmitted: (_) => profile == null ? null : _addEntry(profile),
-                            ),
-                          ),
-                          UiSpacer.s,
-                          UiLinkLabel(
-                            label: context.translations.common_add,
-                            onTap: profile == null ? null : () => _addEntry(profile),
-                          ),
-                        ],
-                      ),
-                      UiSpacer.xs,
-                      UiLinkLabel(
-                        label: context.translations.blocker_choose_app,
-                        color: UiColor.fgSubtle,
-                        hoverColor: UiColor.fgAccent,
-                        onTap: profile == null ? null : () => _chooseApp(profile),
-                      ),
-                    ],
-                  ),
-                ),
               ),
               UiSpacer.ml,
               _BlockedTodayTile(count: stats.blockedToday, isArmed: isArmed),

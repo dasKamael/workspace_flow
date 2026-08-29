@@ -53,8 +53,6 @@ class BlockerDao extends DatabaseAccessor<AppDatabase> with _$BlockerDaoMixin {
     await batch((batch) => batch.insertAll(blockedItems, items));
   });
 
-  Future<void> addItem(BlockedItemsCompanion item) => into(blockedItems).insert(item);
-
   /// Toggles whether a single entry is enforced.
   Future<void> setItemEnabled(int itemId, {required bool enabled}) =>
       (update(blockedItems)..where((i) => i.id.equals(itemId))).write(BlockedItemsCompanion(enabled: Value(enabled)));

@@ -57,32 +57,17 @@ void main() {
     expect(after.items.last.enabled, isTrue);
   });
 
-  test('Given a profile, '
-      'when an entry is appended from the card\'s add row, '
-      'then it joins the existing entries', () async {
-    // Given
-    final id = await repository.createProfile(name: 'Admin light', items: [item('Messages')]);
-
-    // When
-    await repository.addItem(profileId: id, name: 'reddit.com', kind: BlockedItemKind.site);
-
-    // Then
-    final profile = (await repository.watchProfiles().first).single;
-    expect(profile.items.map((i) => i.name), ['Messages', 'reddit.com']);
-  });
-
-  test('Given a profile, '
-      'when an app is added through the Finder picker, '
-      'then it is stored as an app with its bundle id', () async {
-    // Given
-    final id = await repository.createProfile(name: 'Deep Work', items: []);
-
-    // When
-    await repository.addApp(profileId: id, name: 'Slack', bundleId: 'com.tinyspeck.slackmacgap');
+  test('Given an app entry with a bundle id, '
+      'when it is read back, '
+      'then the bundle id survives the round trip', () async {
+    // Given / When
+    await repository.createProfile(
+      name: 'Deep Work',
+      items: [item('Slack').copyWith(bundleId: 'com.tinyspeck.slackmacgap')],
+    );
 
     // Then
     final profile = (await repository.watchProfiles().first).single;
-    expect(profile.items.single.kind, BlockedItemKind.app);
     expect(profile.items.single.bundleId, 'com.tinyspeck.slackmacgap');
   });
 
