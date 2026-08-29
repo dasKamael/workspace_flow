@@ -4,7 +4,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/focus/repository/focus_session.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocked_window.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocker_enforcement.repository.dart';
+import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
+import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
 
 part 'blocker.service.g.dart';
@@ -53,7 +55,7 @@ class BlockerService extends _$BlockerService {
 
     final profile = await _selectedProfile();
     unlocksRemaining = kBlockerUnlocksPerSession;
-    await enforcement.arm(profile?.enabledItems ?? const []);
+    await enforcement.arm(profile?.enabledItems ?? const [], blockedPageBaseUrl: await _blockedPageBaseUrl());
     _attempts = enforcement.attempts.listen((target) => _handleAttempt(target, profile));
     _unlockRequests = enforcement.unlockRequests.listen(unlock);
     state = true;
@@ -63,8 +65,12 @@ class BlockerService extends _$BlockerService {
   Future<void> reapply() async {
     if (!state) return;
     final profile = await _selectedProfile();
-    await ref.read(blockerEnforcementRepositoryProvider).arm(profile?.enabledItems ?? const []);
+    await ref
+        .read(blockerEnforcementRepositoryProvider)
+        .arm(profile?.enabledItems ?? const [], blockedPageBaseUrl: await _blockedPageBaseUrl());
   }
+
+  Future<String> _blockedPageBaseUrl() => ref.read(blockedPageServerServiceProvider.future);
 
   /// Exempts [target] from enforcement for [kBlockerUnlockDuration], as long as a use
   /// remains. Called both from the blocked page's own "Unlock" button (via
@@ -84,6 +90,15 @@ class BlockerService extends _$BlockerService {
 
   void _handleAttempt(String target, BlockerProfile? profile) {
     unawaited(ref.read(focusSessionRepositoryProvider).recordBlockedAttempt(target: target, profileId: profile?.id));
+
+    // A site's redirect already lands the browser on the blocked page itself — no
+    // separate window is needed, and popping one would pull focus over to this app
+    // exactly the way switching apps to see it would. An app has no such page, so it
+    // still gets the floating overlay; an unresolved target (should not normally
+    // happen) falls back to showing it too, rather than blocking silently.
+    final kind = profile?.items.where((item) => item.name == target).firstOrNull?.kind;
+    if (kind == BlockedItemKind.site) return;
+
     unawaited(
       ref
           .read(blockedWindowRepositoryProvider)

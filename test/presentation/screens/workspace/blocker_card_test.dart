@@ -10,6 +10,7 @@ import 'package:workspace_flow/data/system/repository/app_launcher.repository.da
 import 'package:workspace_flow/data/system/repository/blocker_enforcement.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
@@ -21,6 +22,13 @@ import '../../../database.test_util.dart';
 import '../../../mocks/system.mock.dart';
 import '../../../riverpod.test_util.dart';
 import '../../../widgettest.test_util.dart';
+
+/// A real `HttpServer.bind` never resolves inside a widget test's fake clock, so
+/// arming never has to actually start one here.
+class _FakeBlockedPageServerService extends BlockedPageServerService {
+  @override
+  Future<String> build() async => 'http://127.0.0.1:0';
+}
 
 void main() {
   late ProviderContainer container;
@@ -48,6 +56,8 @@ void main() {
         blockerProfileRepositoryProvider.overrideWithValue(profiles),
         focusSessionRepositoryProvider.overrideWithValue(FocusSessionRepository(dao: FocusDao(database))),
         blockerEnforcementRepositoryProvider.overrideWith((ref) => FakeBlockerEnforcementRepository()),
+        // A real HttpServer bind never resolves inside the widget test's fake clock.
+        blockedPageServerServiceProvider.overrideWith(() => _FakeBlockedPageServerService()),
         appLauncherRepositoryProvider.overrideWithValue(launcher),
       ],
     );

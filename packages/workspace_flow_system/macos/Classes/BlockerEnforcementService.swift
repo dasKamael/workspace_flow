@@ -32,11 +32,12 @@ enum BlockerEnforcementService {
   private static var activationObserver: NSObjectProtocol?
   private static var pollTimer: Timer?
 
-  /// Domains currently sitting on `about:blank` because they were just blocked, so a
-  /// tab that has not navigated away yet is not re-blocked (and re-reported) every tick.
-  private static var blankedDomains: Set<String> = []
+  /// Where a blocked domain's tab is redirected to — a local page the Dart side serves
+  /// and owns entirely; this only ever needs the base URL to send the browser to.
+  private static var blockedPageBaseUrl: String?
 
-  /// The URL a domain pointed at right before it was blanked, so "Unlock" can restore it.
+  /// The URL a domain pointed at right before it was redirected, so "Unlock" can
+  /// restore it.
   private static var lastUrlByDomain: [String: String] = [:]
 
   /// Apps/domains temporarily exempt from enforcement, and until when.
@@ -50,7 +51,7 @@ enum BlockerEnforcementService {
     self.callback = callback
   }
 
-  static func arm(items: [[String: Any]]) {
+  static func arm(items: [[String: Any]], blockedPageBaseUrl: String?) {
     armedApps = items.compactMap { item in
       guard (item["kind"] as? String) == "app", let name = item["name"] as? String else { return nil }
       return ArmedApp(bundleId: item["bundleId"] as? String, name: name)
@@ -58,6 +59,7 @@ enum BlockerEnforcementService {
     armedDomains = items.compactMap { item in
       (item["kind"] as? String) == "site" ? (item["name"] as? String)?.lowercased() : nil
     }
+    self.blockedPageBaseUrl = blockedPageBaseUrl
 
     if activationObserver == nil {
       activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
@@ -83,7 +85,6 @@ enum BlockerEnforcementService {
   static func disarm() {
     armedApps = []
     armedDomains = []
-    blankedDomains = []
     lastUrlByDomain = [:]
     temporarilyAllowedUntil = [:]
 
@@ -111,7 +112,6 @@ enum BlockerEnforcementService {
     }
 
     let domain = target.lowercased()
-    blankedDomains.remove(domain)
     guard let url = lastUrlByDomain[domain] else { return }
     for bundleId in browserBundleIds {
       guard NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).first != nil else { continue }
@@ -145,6 +145,12 @@ enum BlockerEnforcementService {
 
   // ---------------------------------------------------------------------- websites
 
+  /// Checked and re-blocked on every tick with no "already redirected" debounce: the
+  /// redirect below happens synchronously within the same tick it is detected in, so
+  /// the next tick already sees the new (blocked-page) URL and naturally does nothing —
+  /// *unless* the tab left the blocked page again, which is exactly the case that
+  /// matters: the browser's own back button lands right back on the real domain, and
+  /// that has to be caught and redirected again just like a fresh visit would be.
   private static func checkFrontmostBrowser() {
     guard
       let frontmost = NSWorkspace.shared.frontmostApplication,
@@ -159,12 +165,20 @@ enum BlockerEnforcementService {
       !isTemporarilyAllowed(domain)
     else { return }
 
-    if blankedDomains.contains(domain) { return }
-    blankedDomains.insert(domain)
     lastUrlByDomain[domain] = url
-
-    _ = runAppleScript(navigateScript(bundleId: bundleId, url: "about:blank"))
+    _ = runAppleScript(navigateScript(bundleId: bundleId, url: blockedPageUrl(target: domain, returnUrl: url)))
     callback?("blockedAttempt", ["target": domain])
+  }
+
+  /// The local page a blocked tab is redirected to — content and "Unlock" are entirely
+  /// the Dart side's concern (`BlockedPageServerService`); this just points there.
+  /// Falls back to a blank tab in the unexpected case the server was never armed with.
+  private static func blockedPageUrl(target: String, returnUrl: String) -> String {
+    guard let baseUrl = blockedPageBaseUrl else { return "about:blank" }
+    let allowed = CharacterSet.urlQueryAllowed
+    let encodedTarget = target.addingPercentEncoding(withAllowedCharacters: allowed) ?? target
+    let encodedReturnUrl = returnUrl.addingPercentEncoding(withAllowedCharacters: allowed) ?? returnUrl
+    return "\(baseUrl)/blocked?target=\(encodedTarget)&returnUrl=\(encodedReturnUrl)"
   }
 
   private static func urlScript(bundleId: String) -> String {

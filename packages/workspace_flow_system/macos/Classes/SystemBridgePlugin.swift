@@ -167,7 +167,10 @@ final class SystemBridgePlugin {
       result(nil)
 
     case "armBlocker":
-      BlockerEnforcementService.arm(items: arguments["items"] as? [[String: Any]] ?? [])
+      BlockerEnforcementService.arm(
+        items: arguments["items"] as? [[String: Any]] ?? [],
+        blockedPageBaseUrl: arguments["blockedPageBaseUrl"] as? String
+      )
       result(nil)
 
     case "disarmBlocker":

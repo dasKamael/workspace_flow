@@ -15,7 +15,11 @@ part 'blocker_enforcement.repository.g.dart';
 abstract interface class BlockerEnforcementRepository {
   /// Starts enforcing [items]. Called when the blocker switch is turned on and again
   /// whenever the armed profile or its entries change.
-  Future<void> arm(List<BlockedItem> items);
+  ///
+  /// [blockedPageBaseUrl] is where a blocked site's tab is redirected — the content is
+  /// entirely the Dart side's concern; enforcement only needs somewhere to send the
+  /// browser.
+  Future<void> arm(List<BlockedItem> items, {required String blockedPageBaseUrl});
 
   /// Stops enforcing.
   Future<void> disarm();
@@ -43,11 +47,17 @@ class FakeBlockerEnforcementRepository implements BlockerEnforcementRepository {
   /// The entries the last [arm] call was given — read by tests and the debug view.
   List<BlockedItem> armedItems = const [];
 
+  /// The `blockedPageBaseUrl` the last [arm] call was given — read by tests.
+  String? lastBlockedPageBaseUrl;
+
   /// The last [allowTemporarily] call, if any — read by tests.
   (String target, Duration duration)? lastAllowedTemporarily;
 
   @override
-  Future<void> arm(List<BlockedItem> items) async => armedItems = items;
+  Future<void> arm(List<BlockedItem> items, {required String blockedPageBaseUrl}) async {
+    armedItems = items;
+    lastBlockedPageBaseUrl = blockedPageBaseUrl;
+  }
 
   @override
   Future<void> disarm() async => armedItems = const [];
@@ -98,11 +108,13 @@ class MacosBlockerEnforcementRepository implements BlockerEnforcementRepository 
   final StreamController<String> _unlockRequests = StreamController<String>.broadcast();
 
   @override
-  Future<void> arm(List<BlockedItem> items) => channel.invoke<void>('armBlocker', {
-    'items': [
-      for (final item in items) {'name': item.name, 'kind': item.kind.name, 'bundleId': item.bundleId},
-    ],
-  });
+  Future<void> arm(List<BlockedItem> items, {required String blockedPageBaseUrl}) =>
+      channel.invoke<void>('armBlocker', {
+        'items': [
+          for (final item in items) {'name': item.name, 'kind': item.kind.name, 'bundleId': item.bundleId},
+        ],
+        'blockedPageBaseUrl': blockedPageBaseUrl,
+      });
 
   @override
   Future<void> disarm() => channel.invoke<void>('disarmBlocker');
