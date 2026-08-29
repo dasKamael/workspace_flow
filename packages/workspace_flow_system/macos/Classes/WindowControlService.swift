@@ -53,25 +53,19 @@ enum WindowControlService {
     completion: @escaping (Bool) -> Void
   ) {
     guard isTrusted() else {
-      NSLog("[WindowControl] pid=\(processId) aborted: not trusted for accessibility")
       completion(false)
       return
     }
 
-    let startedAt = Date()
-    let graceDeadline = startedAt.addingTimeInterval(newWindowGrace)
-    let deadline = startedAt.addingTimeInterval(Double(timeoutMs) / 1000)
+    let graceDeadline = Date().addingTimeInterval(newWindowGrace)
+    let deadline = Date().addingTimeInterval(Double(timeoutMs) / 1000)
     let element = AXUIElementCreateApplication(pid_t(processId))
     let before = AppLauncherService.consumePreOpenSnapshot(processId: processId)
-    NSLog("[WindowControl] pid=\(processId) start rect=\(rect) timeoutMs=\(timeoutMs) before.count=\(before.count)")
 
     func attempt() {
-      let elapsed = Date().timeIntervalSince(startedAt)
       let allowFallback = before.isEmpty || Date() >= graceDeadline
       if let window = resolveWindow(of: element, excluding: before, allowFallback: allowFallback) {
-        NSLog("[WindowControl] pid=\(processId) resolved a window after \(elapsed)s")
         let succeeded = apply(rect: rect, to: window)
-        NSLog("[WindowControl] pid=\(processId) apply succeeded=\(succeeded)")
         completion(succeeded)
 
         if succeeded {
@@ -84,7 +78,6 @@ enum WindowControlService {
         return
       }
       guard Date() < deadline else {
-        NSLog("[WindowControl] pid=\(processId) timed out after \(elapsed)s with no window at all")
         completion(false)
         return
       }
@@ -189,11 +182,7 @@ enum WindowControlService {
     guard
       AXUIElementCopyAttributeValue(application, kAXWindowsAttribute as CFString, &value) == .success,
       let windows = value as? [AXUIElement]
-    else {
-      NSLog("[WindowControl] kAXWindowsAttribute unavailable for this application element")
-      return nil
-    }
-    NSLog("[WindowControl] windows.count=\(windows.count) before.count=\(before.count) allowFallback=\(allowFallback)")
+    else { return nil }
 
     // Only meaningful when `before` is non-empty: against an empty snapshot, every
     // window trivially "isn't in it", so this would just return `windows.first` under
@@ -202,25 +191,19 @@ enum WindowControlService {
     // already running with more than one window, e.g. a second project's plain
     // `launchApp` (no document) activating an app that some other project also uses.
     if !before.isEmpty, let fresh = windows.first(where: { candidate in !before.contains { CFEqual($0, candidate) } }) {
-      NSLog("[WindowControl] resolveWindow: picked a fresh window not in the before-snapshot")
       return fresh
     }
 
-    guard before.isEmpty || allowFallback else {
-      NSLog("[WindowControl] resolveWindow: no fresh window yet, fallback not allowed — will keep polling")
-      return nil
-    }
+    guard before.isEmpty || allowFallback else { return nil }
 
     var focusedValue: AnyObject?
     if
       AXUIElementCopyAttributeValue(application, kAXFocusedWindowAttribute as CFString, &focusedValue) == .success,
       let focusedWindow = focusedValue
     {
-      NSLog("[WindowControl] resolveWindow: picked the focused window")
       return (focusedWindow as! AXUIElement)
     }
 
-    NSLog("[WindowControl] resolveWindow: no focused window either, falling back to windows.first (count=\(windows.count))")
     return windows.first
   }
 
@@ -237,10 +220,6 @@ enum WindowControlService {
     // otherwise be pushed off the target screen before it shrinks.
     let sizeResult = AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, sizeValue)
     let positionResult = AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, positionValue)
-
-    if sizeResult != .success || positionResult != .success {
-      NSLog("[WindowControl] apply failed: sizeResult=\(sizeResult.rawValue) positionResult=\(positionResult.rawValue)")
-    }
 
     return sizeResult == .success && positionResult == .success
   }
