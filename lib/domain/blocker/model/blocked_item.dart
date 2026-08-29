@@ -14,5 +14,10 @@ abstract class BlockedItem with _$BlockedItem {
     required String name,
     required BlockedItemKind kind,
     @Default(true) bool enabled,
+
+    /// Set for an app added through the Finder picker, so enforcement can match the
+    /// running process reliably instead of by display name alone. Always `null` for a
+    /// site, and for an app typed in by hand rather than picked.
+    String? bundleId,
   }) = _BlockedItem;
 }

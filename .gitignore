@@ -44,5 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Generated Dart files (build_runner: freezed, json_serializable, riverpod_generator, drift, ...)
 /lib/**/*.freezed.dart
 /lib/**/*.g.dart
+packages/**/lib/**/*.freezed.dart
+packages/**/lib/**/*.g.dart

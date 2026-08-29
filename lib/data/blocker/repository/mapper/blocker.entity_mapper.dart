@@ -28,8 +28,13 @@ class BlockedItemEntityMapper implements EntityMapper<BlockedItem, BlockedItemEn
   const BlockedItemEntityMapper();
 
   @override
-  BlockedItem toModel(BlockedItemEntity entity) =>
-      BlockedItem(id: entity.id, name: entity.name, kind: kindFromStorage(entity.kind), enabled: entity.enabled);
+  BlockedItem toModel(BlockedItemEntity entity) => BlockedItem(
+    id: entity.id,
+    name: entity.name,
+    kind: kindFromStorage(entity.kind),
+    enabled: entity.enabled,
+    bundleId: entity.bundleId,
+  );
 
   /// Reads the persisted representation. Unknown values fall back to
   /// [BlockedItemKind.app] so a future kind never makes a profile unreadable.

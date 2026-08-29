@@ -17,7 +17,15 @@ final class BlockedWindowService {
   private static let windowSize = NSSize(width: 700, height: 340)
   private static let channelName = "de.coodoo.workspace_flow/blocked_page"
 
+  /// Reports "Unlock" back to the main engine over the shared channel — the same
+  /// pattern `LayoutOverlayService` uses to return its own result.
+  private var callback: ((String, [String: Any]) -> Void)?
+
   private init() {}
+
+  func configure(callback: @escaping (String, [String: Any]) -> Void) {
+    self.callback = callback
+  }
 
   func show(payload: [String: Any]) {
     if window == nil {
@@ -40,8 +48,17 @@ final class BlockedWindowService {
 
     let channel = FlutterMethodChannel(name: Self.channelName, binaryMessenger: engine.binaryMessenger)
     channel.setMethodCallHandler { [weak self] call, result in
-      if call.method == "dismiss" {
+      switch call.method {
+      case "dismiss":
         self?.hide()
+
+      case "unlock":
+        let target = (call.arguments as? [String: Any])?["target"] as? String ?? ""
+        self?.hide()
+        self?.callback?("blockedPageUnlock", ["target": target])
+
+      default:
+        break
       }
       result(nil)
     }

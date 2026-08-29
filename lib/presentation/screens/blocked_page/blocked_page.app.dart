@@ -35,6 +35,11 @@ class _BlockedPageAppState extends State<BlockedPageApp> {
 
   String? _string(String key) => _payload[key]?.toString();
 
+  int _int(String key, int fallback) {
+    final value = _payload[key];
+    return value is num ? value.toInt() : fallback;
+  }
+
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -50,7 +55,10 @@ class _BlockedPageAppState extends State<BlockedPageApp> {
           projectName: _string('projectName'),
           endsAt: _string('endsAt'),
           remaining: _string('remaining'),
+          unlockMinutes: _int('unlockMinutes', 2),
+          unlocksLeft: _int('unlocksLeft', 0),
           onBackToWork: () => _channel.invokeMethod<void>('dismiss'),
+          onUnlock: () => _channel.invokeMethod<void>('unlock', {'target': _string('target')}),
         ),
       ),
     ),

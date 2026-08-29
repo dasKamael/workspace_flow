@@ -71,6 +71,21 @@ void main() {
     expect(profile.items.map((i) => i.name), ['Messages', 'reddit.com']);
   });
 
+  test('Given a profile, '
+      'when an app is added through the Finder picker, '
+      'then it is stored as an app with its bundle id', () async {
+    // Given
+    final id = await repository.createProfile(name: 'Deep Work', items: []);
+
+    // When
+    await repository.addApp(profileId: id, name: 'Slack', bundleId: 'com.tinyspeck.slackmacgap');
+
+    // Then
+    final profile = (await repository.watchProfiles().first).single;
+    expect(profile.items.single.kind, BlockedItemKind.app);
+    expect(profile.items.single.bundleId, 'com.tinyspeck.slackmacgap');
+  });
+
   test('Given a profile with entries, '
       'when the profile is deleted, '
       'then its entries go with it', () async {

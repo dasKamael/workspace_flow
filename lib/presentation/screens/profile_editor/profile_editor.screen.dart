@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:workspace_flow/common/translation/translation.extension.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_icon.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_radius.dart';
@@ -65,6 +66,14 @@ class _ProfileEditorScreenState extends ConsumerState<ProfileEditorScreen> {
   TextEditingController _entryController(BlockedItem item) =>
       _entryControllers.putIfAbsent(item.id, () => TextEditingController(text: item.name));
 
+  /// Opens the Finder picker and appends the chosen app, with its bundle id, to the
+  /// draft — unlike the plain "+ Add entry" row, which starts blank and untyped.
+  Future<void> _chooseApp() async {
+    final entry = await ref.read(blockerProfileServiceProvider.notifier).pickApp();
+    if (entry == null) return;
+    _controller.addAppEntry(entry);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(profileEditorControllerProvider(widget.profileId));
@@ -102,7 +111,13 @@ class _ProfileEditorScreenState extends ConsumerState<ProfileEditorScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(context.translations.profile_editor_items_label.toUpperCase(), style: UiTypography.cardLabel),
-              UiLinkLabel(label: context.translations.profile_editor_add_entry, onTap: _controller.addEntry),
+              Row(
+                children: [
+                  UiLinkLabel(label: context.translations.profile_editor_choose_app, onTap: _chooseApp),
+                  UiSpacer.sm,
+                  UiLinkLabel(label: context.translations.profile_editor_add_entry, onTap: _controller.addEntry),
+                ],
+              ),
             ],
           ),
           UiSpacer.m,

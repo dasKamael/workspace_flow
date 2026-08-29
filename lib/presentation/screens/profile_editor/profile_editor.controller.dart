@@ -3,6 +3,7 @@ import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
+import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
 import 'package:workspace_flow/presentation/screens/profile_editor/profile_editor.state.dart';
 
 part 'profile_editor.controller.g.dart';
@@ -39,13 +40,24 @@ class ProfileEditorController extends _$ProfileEditorController {
     ],
   );
 
+  /// Adds an app picked through the Finder picker, with its bundle id.
+  void addAppEntry(AppLibraryEntry entry) => state = state.copyWith(
+    items: [
+      ...state.items,
+      BlockedItem(id: -(state.items.length + 1), name: entry.name, kind: BlockedItemKind.app, bundleId: entry.bundleId),
+    ],
+  );
+
   void setEntryName(int index, String name) => _patch(index, (item) => item.copyWith(name: name));
 
   /// Flips a row between "site" and "app" via its pill button.
-  void toggleKind(int index) => _patch(
-    index,
-    (item) => item.copyWith(kind: item.kind == BlockedItemKind.site ? BlockedItemKind.app : BlockedItemKind.site),
-  );
+  ///
+  /// A bundle id only means something for an app row, so switching to "site" clears
+  /// it — otherwise a picked app's identity would silently survive under the wrong kind.
+  void toggleKind(int index) => _patch(index, (item) {
+    final kind = item.kind == BlockedItemKind.site ? BlockedItemKind.app : BlockedItemKind.site;
+    return item.copyWith(kind: kind, bundleId: kind == BlockedItemKind.site ? null : item.bundleId);
+  });
 
   void removeEntry(int index) {
     final items = [...state.items]..removeAt(index);

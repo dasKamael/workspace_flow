@@ -61,6 +61,12 @@ class _BlockerCardState extends ConsumerState<BlockerCard> {
     await ref.read(blockerServiceProvider.notifier).reapply();
   }
 
+  Future<void> _chooseApp(BlockerProfile profile) async {
+    final entry = await ref.read(blockerProfileServiceProvider.notifier).chooseApp(profileId: profile.id);
+    if (entry == null) return;
+    await ref.read(blockerServiceProvider.notifier).reapply();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isArmed = ref.watch(blockerServiceProvider);
@@ -105,20 +111,32 @@ class _BlockerCardState extends ConsumerState<BlockerCard> {
                 opacity: isArmed ? 0 : 1,
                 child: IgnorePointer(
                   ignoring: isArmed,
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: UiTextField(
-                          controller: _addController,
-                          placeholder: context.translations.blocker_add_placeholder,
-                          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-                          onSubmitted: (_) => profile == null ? null : _addEntry(profile),
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: UiTextField(
+                              controller: _addController,
+                              placeholder: context.translations.blocker_add_placeholder,
+                              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+                              onSubmitted: (_) => profile == null ? null : _addEntry(profile),
+                            ),
+                          ),
+                          UiSpacer.s,
+                          UiLinkLabel(
+                            label: context.translations.common_add,
+                            onTap: profile == null ? null : () => _addEntry(profile),
+                          ),
+                        ],
                       ),
-                      UiSpacer.s,
+                      UiSpacer.xs,
                       UiLinkLabel(
-                        label: context.translations.common_add,
-                        onTap: profile == null ? null : () => _addEntry(profile),
+                        label: context.translations.blocker_choose_app,
+                        color: UiColor.fgSubtle,
+                        hoverColor: UiColor.fgAccent,
+                        onTap: profile == null ? null : () => _chooseApp(profile),
                       ),
                     ],
                   ),

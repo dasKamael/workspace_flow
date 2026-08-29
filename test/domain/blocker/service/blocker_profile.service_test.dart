@@ -5,6 +5,7 @@ import 'package:workspace_flow/data/blocker/repository/blocker_profile.repositor
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
+import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
 
 import '../../../database.test_util.dart';
 import '../../../riverpod.test_util.dart';
@@ -71,6 +72,24 @@ void main() {
 
     // Then
     expect((await repository.watchProfiles().first).single.items, isEmpty);
+  });
+
+  test('Given a picked app, '
+      'when it is added, '
+      'then it is stored as an app carrying its bundle id', () async {
+    // Given
+    final id = await repository.createProfile(name: 'Code', items: const []);
+
+    // When
+    await service().addApp(
+      profileId: id,
+      entry: const AppLibraryEntry(name: 'Slack', bundleId: 'com.tinyspeck.slackmacgap'),
+    );
+
+    // Then
+    final item = (await repository.watchProfiles().first).single.items.single;
+    expect(item.kind, BlockedItemKind.app);
+    expect(item.bundleId, 'com.tinyspeck.slackmacgap');
   });
 
   test('Given an enabled entry, '

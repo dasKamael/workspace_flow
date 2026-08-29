@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -41,6 +41,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.addColumn(appLibraryEntries, appLibraryEntries.documentPath);
         await m.addColumn(projectWindows, projectWindows.documentPath);
+      }
+      // v3: a blocked app added through the Finder picker carries its bundle id, so
+      // enforcement can match the running process instead of just its display name.
+      if (from < 3) {
+        await m.addColumn(blockedItems, blockedItems.bundleId);
       }
     },
     beforeOpen: (details) async {

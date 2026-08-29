@@ -19,12 +19,16 @@ class BlockedWindowRepository {
     String? projectName,
     String? endsAt,
     String? remaining,
+    int unlockMinutes = 2,
+    int unlocksLeft = 0,
   }) => channel.invoke<void>('showBlockedWindow', {
     'target': target,
     'profileName': profileName,
     'projectName': projectName,
     'endsAt': endsAt,
     'remaining': remaining,
+    'unlockMinutes': unlockMinutes,
+    'unlocksLeft': unlocksLeft,
   });
 
   Future<void> hide() => channel.invoke<void>('hideBlockedWindow');

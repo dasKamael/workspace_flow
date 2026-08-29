@@ -42,6 +42,17 @@ class BlockerProfileRepository {
     BlockedItemsCompanion.insert(profileId: profileId, name: name, kind: BlockedItemEntityMapper.kindToStorage(kind)),
   );
 
+  /// Appends an app picked through the Finder picker, with its bundle id — as opposed
+  /// to [addItem], which classifies free-typed text and never has one.
+  Future<void> addApp({required int profileId, required String name, required String bundleId}) => dao.addItem(
+    BlockedItemsCompanion.insert(
+      profileId: profileId,
+      name: name,
+      kind: BlockedItemEntityMapper.kindToStorage(BlockedItemKind.app),
+      bundleId: Value(bundleId),
+    ),
+  );
+
   /// Includes or excludes one entry for its profile.
   Future<void> setItemEnabled({required int itemId, required bool enabled}) =>
       dao.setItemEnabled(itemId, enabled: enabled);
@@ -54,6 +65,7 @@ class BlockerProfileRepository {
         kind: BlockedItemEntityMapper.kindToStorage(item.kind),
         enabled: Value(item.enabled),
         sortOrder: Value(index),
+        bundleId: Value(item.bundleId),
       ),
   ];
 }

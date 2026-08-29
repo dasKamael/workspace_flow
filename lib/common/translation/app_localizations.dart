@@ -331,6 +331,12 @@ abstract class AppLocalizations {
   /// **'add app or domain'**
   String get blocker_add_placeholder;
 
+  /// No description provided for @blocker_choose_app.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose app…'**
+  String get blocker_choose_app;
+
   /// No description provided for @blocker_blocked_today_label.
   ///
   /// In en, this message translates to:
@@ -510,6 +516,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+ Add entry'**
   String get profile_editor_add_entry;
+
+  /// No description provided for @profile_editor_choose_app.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose app…'**
+  String get profile_editor_choose_app;
 
   /// No description provided for @profile_editor_entry_placeholder.
   ///

@@ -2,24 +2,38 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/focus/repository/focus_session.repository.dart';
+import 'package:workspace_flow/data/system/repository/blocked_window.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocker_enforcement.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
 
 part 'blocker.service.g.dart';
 
-/// Whether the blocker is armed, and what it is enforcing.
+/// How long "Unlock" exempts a target from enforcement.
+const Duration kBlockerUnlockDuration = Duration(minutes: 2);
+
+/// How many unlocks a single armed session gets, reset every time the blocker is armed.
+const int kBlockerUnlocksPerSession = 3;
+
+/// Whether the blocker is armed, what it is enforcing, and how many unlocks remain.
 ///
 /// Arming is independent of projects and of the timer: a profile can run on its own.
 @Riverpod(keepAlive: true)
 class BlockerService extends _$BlockerService {
   StreamSubscription<String>? _attempts;
+  StreamSubscription<String>? _unlockRequests;
 
   @override
   bool build() {
-    ref.onDispose(() => _attempts?.cancel());
+    ref.onDispose(() {
+      _attempts?.cancel();
+      _unlockRequests?.cancel();
+    });
     return false;
   }
+
+  /// Unlocks left in the current armed session.
+  int unlocksRemaining = kBlockerUnlocksPerSession;
 
   /// Arms or disarms the blocker with the currently selected profile.
   Future<void> setArmed({required bool armed}) async {
@@ -29,15 +43,19 @@ class BlockerService extends _$BlockerService {
 
     if (!armed) {
       await _attempts?.cancel();
+      await _unlockRequests?.cancel();
       _attempts = null;
+      _unlockRequests = null;
       await enforcement.disarm();
       state = false;
       return;
     }
 
     final profile = await _selectedProfile();
+    unlocksRemaining = kBlockerUnlocksPerSession;
     await enforcement.arm(profile?.enabledItems ?? const []);
-    _attempts = enforcement.attempts.listen((target) => _recordAttempt(target, profile?.id));
+    _attempts = enforcement.attempts.listen((target) => _handleAttempt(target, profile));
+    _unlockRequests = enforcement.unlockRequests.listen(unlock);
     state = true;
   }
 
@@ -48,12 +66,33 @@ class BlockerService extends _$BlockerService {
     await ref.read(blockerEnforcementRepositoryProvider).arm(profile?.enabledItems ?? const []);
   }
 
+  /// Exempts [target] from enforcement for [kBlockerUnlockDuration], as long as a use
+  /// remains. Called both from the blocked page's own "Unlock" button (via
+  /// [BlockerEnforcementRepository.unlockRequests]) and, in principle, anywhere else
+  /// that wants to grant one.
+  Future<void> unlock(String target) async {
+    if (unlocksRemaining <= 0) return;
+    unlocksRemaining--;
+    await ref.read(blockerEnforcementRepositoryProvider).allowTemporarily(target, kBlockerUnlockDuration);
+  }
+
   Future<BlockerProfile?> _selectedProfile() async {
     // Awaited so arming right after startup does not run against an empty list.
     await ref.read(blockerProfilesProvider.future);
     return ref.read(selectedProfileProvider);
   }
 
-  void _recordAttempt(String target, int? profileId) =>
-      unawaited(ref.read(focusSessionRepositoryProvider).recordBlockedAttempt(target: target, profileId: profileId));
+  void _handleAttempt(String target, BlockerProfile? profile) {
+    unawaited(ref.read(focusSessionRepositoryProvider).recordBlockedAttempt(target: target, profileId: profile?.id));
+    unawaited(
+      ref
+          .read(blockedWindowRepositoryProvider)
+          .show(
+            target: target,
+            profileName: profile?.name ?? '',
+            unlocksLeft: unlocksRemaining,
+            unlockMinutes: kBlockerUnlockDuration.inMinutes,
+          ),
+    );
+  }
 }

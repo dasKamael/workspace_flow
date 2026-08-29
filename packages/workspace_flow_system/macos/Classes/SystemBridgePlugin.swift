@@ -30,6 +30,17 @@ final class SystemBridgePlugin {
       self?.channel.invokeMethod(method, arguments: arguments)
     }
 
+    // Same reasoning: "Unlock" is tapped in the blocked page's own engine, but only
+    // the main engine holds the profile/session state needed to act on it.
+    BlockedWindowService.shared.configure { [weak self] method, arguments in
+      self?.channel.invokeMethod(method, arguments: arguments)
+    }
+
+    // Enforcement reports an intercepted app or domain the same way.
+    BlockerEnforcementService.configure { [weak self] method, arguments in
+      self?.channel.invokeMethod(method, arguments: arguments)
+    }
+
     channel.setMethodCallHandler { [weak self] call, result in
       self?.handle(call, result: result)
     }
@@ -161,6 +172,15 @@ final class SystemBridgePlugin {
 
     case "disarmBlocker":
       BlockerEnforcementService.disarm()
+      result(nil)
+
+    case "unlockBlockerTarget":
+      guard let target = arguments["target"] as? String else {
+        result(Self.badArguments(call))
+        return
+      }
+      let seconds = arguments["seconds"] as? Double ?? 120
+      BlockerEnforcementService.allowTemporarily(target: target, seconds: seconds)
       result(nil)
 
     default:

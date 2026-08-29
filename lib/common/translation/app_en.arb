@@ -67,6 +67,7 @@
   "blocker_label": "App blocker",
   "blocker_profile_label": "Profile",
   "blocker_add_placeholder": "add app or domain",
+  "blocker_choose_app": "Choose app…",
   "blocker_blocked_today_label": "Blocked today",
   "blocker_blocked_today_caption": "Attempts intercepted while a profile was armed.",
 
@@ -112,6 +113,7 @@
   "profile_editor_untitled": "Untitled profile",
   "profile_editor_items_label": "Blocked apps & sites",
   "profile_editor_add_entry": "+ Add entry",
+  "profile_editor_choose_app": "Choose app…",
   "profile_editor_entry_placeholder": "app or domain",
 
   "blocked_page_eyebrow": "{target} is blocked · {profile}",

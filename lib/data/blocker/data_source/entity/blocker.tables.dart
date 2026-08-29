@@ -23,4 +23,8 @@ class BlockedItems extends Table {
   TextColumn get kind => text().withLength(min: 1, max: 20)();
   BoolColumn get enabled => boolean().withDefault(const Constant(true))();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  /// Set for an app added through the Finder picker — lets enforcement match the
+  /// running process reliably instead of by display name alone.
+  TextColumn get bundleId => text().nullable()();
 }
