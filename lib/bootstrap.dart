@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:workspace_flow/common/utils/platform_info.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/domain/focus/service/focus_session.service.dart';
 import 'package:workspace_flow/domain/system/service/menu_bar.service.dart';
 import 'package:workspace_flow/domain/system/service/seed.service.dart';
@@ -42,7 +43,7 @@ Future<void> _configureWindow() async {
         size: size,
         minimumSize: size,
         center: true,
-        title: 'Focus',
+        title: 'Loom',
         titleBarStyle: TitleBarStyle.hidden,
         backgroundColor: Color(0xFFF8FAFC),
       ),
@@ -63,9 +64,10 @@ Future<void> _warmUp(ProviderContainer container) async {
     debugPrint('bootstrap: seeding failed — $error');
   }
 
-  // Keeps the menu bar's project dropdown and focus toggle live for the app's whole
-  // lifetime — no widget necessarily watches either, since the main window can be
-  // closed entirely.
+  // Keeps the menu bar's project dropdown, blocker switch, and focus toggle live for
+  // the app's whole lifetime — no widget necessarily watches any of them, since the
+  // main window can be closed entirely.
   container.read(menuBarServiceProvider);
   container.read(focusSessionServiceProvider);
+  container.read(blockerServiceProvider);
 }

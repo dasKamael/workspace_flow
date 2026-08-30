@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/focus/repository/focus_session.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocked_window.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocker_enforcement.repository.dart';
+import 'package:workspace_flow/data/system/repository/menu_bar.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
@@ -31,7 +32,38 @@ class BlockerService extends _$BlockerService {
       _attempts?.cancel();
       _unlockRequests?.cancel();
     });
+
+    final menuBar = ref.read(menuBarRepositoryProvider);
+    ref.listen(blockerProfilesProvider, (_, next) {
+      final profiles = next.valueOrNull;
+      if (profiles == null) return;
+      unawaited(menuBar.setBlockerProfiles(profiles).catchError((_) {}));
+    }, fireImmediately: true);
+
+    final armSubscription = menuBar.armProfileRequests.listen(_armFromMenuBar);
+    final disarmSubscription = menuBar.disarmProfileRequests.listen((_) => setArmed(armed: false));
+    ref.onDispose(armSubscription.cancel);
+    ref.onDispose(disarmSubscription.cancel);
+
+    // Published once up front, for the same reason the focus service does: `state` is
+    // not readable until `build` itself has returned.
+    Future.microtask(_publishArmedProfileToMenuBar);
+
     return false;
+  }
+
+  /// Arms [profileId] from the menu bar dropdown. The dropdown only offers this while
+  /// idle — a stray/late request arriving after arming some other way is ignored rather
+  /// than silently swapping the enforced profile out from under it.
+  Future<void> _armFromMenuBar(int profileId) async {
+    if (state) return;
+    ref.read(selectedProfileServiceProvider.notifier).select(profileId);
+    await setArmed(armed: true);
+  }
+
+  void _publishArmedProfileToMenuBar() {
+    final name = state ? ref.read(selectedProfileProvider)?.name : null;
+    unawaited(ref.read(menuBarRepositoryProvider).setArmedProfile(name).catchError((_) {}));
   }
 
   /// Unlocks left in the current armed session.
@@ -50,6 +82,7 @@ class BlockerService extends _$BlockerService {
       _unlockRequests = null;
       await enforcement.disarm();
       state = false;
+      _publishArmedProfileToMenuBar();
       return;
     }
 
@@ -59,6 +92,7 @@ class BlockerService extends _$BlockerService {
     _attempts = enforcement.attempts.listen((target) => _handleAttempt(target, profile));
     _unlockRequests = enforcement.unlockRequests.listen(unlock);
     state = true;
+    _publishArmedProfileToMenuBar();
   }
 
   /// Re-applies the armed profile after its entries changed.

@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/system/data_source/macos_bridge.channel.dart';
+import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/project/model/project.dart';
 
 part 'menu_bar.repository.g.dart';
 
-/// Drives the menu bar's `NSStatusItem` — the project launcher, the focus-session
-/// toggle, and the running session's countdown alongside it.
+/// Drives the menu bar's `NSStatusItem` — the project launcher, the blocker-profile
+/// switch, the focus-session toggle, and the running session's countdown alongside it.
 class MenuBarRepository {
   MenuBarRepository({required this.channel}) {
     // Registered once, lazily, so construction alone does not touch the channel.
@@ -26,12 +27,23 @@ class MenuBarRepository {
       if (minutes is int) _startFocusRequests.add(minutes);
       return null;
     });
+    channel.onCall('statusItemArmProfile', (arguments) async {
+      final profileId = arguments['profileId'];
+      if (profileId is int) _armProfileRequests.add(profileId);
+      return null;
+    });
+    channel.onCall('statusItemDisarmProfile', (arguments) async {
+      _disarmProfileRequests.add(null);
+      return null;
+    });
   }
 
   final MacosBridgeChannel channel;
   final StreamController<int> _launchRequests = StreamController<int>.broadcast();
   final StreamController<void> _toggleFocusRequests = StreamController<void>.broadcast();
   final StreamController<int> _startFocusRequests = StreamController<int>.broadcast();
+  final StreamController<int> _armProfileRequests = StreamController<int>.broadcast();
+  final StreamController<void> _disarmProfileRequests = StreamController<void>.broadcast();
 
   /// Shows [title] (the countdown) in the menu bar.
   Future<void> showCountdown(String title) => channel.invoke<void>('setStatusItemTitle', {'title': title});
@@ -50,6 +62,18 @@ class MenuBarRepository {
   Future<void> setSessionRunning({required bool isRunning}) =>
       channel.invoke<void>('setStatusItemSessionRunning', {'isRunning': isRunning});
 
+  /// Rebuilds the blocker profile dropdown.
+  Future<void> setBlockerProfiles(List<BlockerProfile> profiles) =>
+      channel.invoke<void>('setStatusItemBlockerProfiles', {
+        'profiles': [
+          for (final profile in profiles) {'id': profile.id, 'name': profile.name},
+        ],
+      });
+
+  /// Switches the dropdown between offering every profile to arm and a single
+  /// `"Disarm <name>"` entry. `null` shows the profile list; a name shows the disarm entry.
+  Future<void> setArmedProfile(String? name) => channel.invoke<void>('setStatusItemArmedProfile', {'name': name});
+
   /// Emits a project's id each time it is chosen from the menu bar dropdown.
   Stream<int> get launchRequests => _launchRequests.stream;
 
@@ -59,6 +83,12 @@ class MenuBarRepository {
   /// Emits a length in minutes each time a quick-start button is chosen from the
   /// dropdown.
   Stream<int> get startFocusRequests => _startFocusRequests.stream;
+
+  /// Emits a profile's id each time it is chosen to be armed from the dropdown.
+  Stream<int> get armProfileRequests => _armProfileRequests.stream;
+
+  /// Emits each time "Disarm" is chosen from the dropdown.
+  Stream<void> get disarmProfileRequests => _disarmProfileRequests.stream;
 }
 
 @Riverpod(keepAlive: true)

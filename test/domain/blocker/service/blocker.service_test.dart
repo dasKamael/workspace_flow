@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -7,10 +9,13 @@ import 'package:workspace_flow/data/focus/data_source/focus.dao.dart';
 import 'package:workspace_flow/data/focus/repository/focus_session.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocked_window.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocker_enforcement.repository.dart';
+import 'package:workspace_flow/data/system/repository/menu_bar.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
 
 import '../../../database.test_util.dart';
 import '../../../mocks/system.mock.dart';
@@ -30,13 +35,19 @@ void main() {
   late ProviderContainer container;
   late FakeBlockerEnforcementRepository enforcement;
   late MockBlockedWindowRepository blockedWindow;
+  late MockMenuBarRepository menuBar;
   late BlockerProfileRepository profiles;
+
+  setUpAll(() {
+    registerFallbackValue(<BlockerProfile>[]);
+  });
 
   setUp(() async {
     final database = createTestDatabase();
     profiles = BlockerProfileRepository(dao: BlockerDao(database));
     enforcement = FakeBlockerEnforcementRepository();
     blockedWindow = MockBlockedWindowRepository();
+    menuBar = MockMenuBarRepository();
     when(
       () => blockedWindow.show(
         target: any(named: 'target'),
@@ -45,6 +56,10 @@ void main() {
         unlocksLeft: any(named: 'unlocksLeft'),
       ),
     ).thenAnswer((_) async {});
+    when(() => menuBar.setBlockerProfiles(any())).thenAnswer((_) async {});
+    when(() => menuBar.setArmedProfile(any())).thenAnswer((_) async {});
+    when(() => menuBar.armProfileRequests).thenAnswer((_) => const Stream<int>.empty());
+    when(() => menuBar.disarmProfileRequests).thenAnswer((_) => const Stream<void>.empty());
 
     await profiles.createProfile(
       name: 'Deep Work',
@@ -61,6 +76,7 @@ void main() {
         blockerEnforcementRepositoryProvider.overrideWith((ref) => enforcement),
         blockedWindowRepositoryProvider.overrideWithValue(blockedWindow),
         blockedPageServerServiceProvider.overrideWith(() => _FakeBlockedPageServerService()),
+        menuBarRepositoryProvider.overrideWithValue(menuBar),
       ],
     );
   });
@@ -137,5 +153,53 @@ void main() {
 
     // Then
     expect(enforcement.lastAllowedTemporarily, ('Slack', kBlockerUnlockDuration));
+  });
+
+  test('Given the blocker profiles, '
+      'when the list changes, '
+      'then the menu bar dropdown is rebuilt with it', () async {
+    // Given / When
+    container.read(blockerServiceProvider);
+    await container.read(blockerProfilesProvider.future);
+
+    // Then
+    final profile = (await profiles.watchProfiles().first).single;
+    verify(() => menuBar.setBlockerProfiles([profile])).called(1);
+  });
+
+  test('Given a profile chosen to arm from the menu bar dropdown, '
+      'when the request arrives, '
+      'then that profile is armed and the dropdown is told its name', () async {
+    // Given
+    final armProfileRequests = StreamController<int>();
+    when(() => menuBar.armProfileRequests).thenAnswer((_) => armProfileRequests.stream);
+    container.read(blockerServiceProvider);
+    final profile = (await profiles.watchProfiles().first).single;
+
+    // When
+    armProfileRequests.add(profile.id);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+
+    // Then
+    expect(container.read(blockerServiceProvider), isTrue);
+    verify(() => menuBar.setArmedProfile('Deep Work')).called(1);
+  });
+
+  test('Given the dropdown\'s "Disarm" entry is chosen, '
+      'when the request arrives, '
+      'then the blocker is disarmed', () async {
+    // Given
+    final disarmProfileRequests = StreamController<void>();
+    when(() => menuBar.disarmProfileRequests).thenAnswer((_) => disarmProfileRequests.stream);
+    container.read(blockerServiceProvider);
+    await container.read(blockerServiceProvider.notifier).setArmed(armed: true);
+
+    // When
+    disarmProfileRequests.add(null);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+
+    // Then
+    expect(container.read(blockerServiceProvider), isFalse);
+    verify(() => menuBar.setArmedProfile(null)).called(greaterThanOrEqualTo(1));
   });
 }

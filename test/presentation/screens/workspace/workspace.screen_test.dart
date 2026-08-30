@@ -38,6 +38,10 @@ void main() {
     windows: [ProjectWindow(id: 10, name: 'VS Code', screenIndex: 0, x: 0, y: 0, width: 62.5, height: 100)],
   );
 
+  setUpAll(() {
+    registerFallbackValue(<BlockerProfile>[]);
+  });
+
   setUp(() {
     sessions = MockFocusSessionRepository();
     menuBar = MockMenuBarRepository();
@@ -53,6 +57,10 @@ void main() {
     when(() => menuBar.setSessionRunning(isRunning: any(named: 'isRunning'))).thenAnswer((_) async {});
     when(() => menuBar.toggleFocusRequests).thenAnswer((_) => const Stream<void>.empty());
     when(() => menuBar.startFocusRequests).thenAnswer((_) => const Stream<int>.empty());
+    when(() => menuBar.setBlockerProfiles(any())).thenAnswer((_) async {});
+    when(() => menuBar.setArmedProfile(any())).thenAnswer((_) async {});
+    when(() => menuBar.armProfileRequests).thenAnswer((_) => const Stream<int>.empty());
+    when(() => menuBar.disarmProfileRequests).thenAnswer((_) => const Stream<void>.empty());
 
     container = createContainer(
       overrides: [

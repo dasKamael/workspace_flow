@@ -1,8 +1,8 @@
 import Cocoa
 
-/// The menu bar's icon — a project launcher and a focus-session toggle that both work
-/// whether or not the main window is open, plus the running session's countdown
-/// alongside it.
+/// The menu bar's icon — a project launcher, a blocker-profile switch, and a
+/// focus-session toggle that all work whether or not the main window is open, plus the
+/// running session's countdown alongside it.
 ///
 /// Unlike the icon this replaces (which existed only while a session was running), the
 /// item itself is now permanent once configured; only the countdown text comes and goes.
@@ -18,8 +18,12 @@ final class StatusItemService {
   private var onLaunchProject: ((Int) -> Void)?
   private var onToggleFocus: (() -> Void)?
   private var onStartFocus: ((Int) -> Void)?
+  private var onArmProfile: ((Int) -> Void)?
+  private var onDisarmProfile: (() -> Void)?
   private var projects: [(id: Int, name: String)] = []
+  private var blockerProfiles: [(id: Int, name: String)] = []
   private var isSessionRunning = false
+  private var armedProfileName: String?
 
   private init() {}
 
@@ -27,12 +31,16 @@ final class StatusItemService {
     onOpen: @escaping () -> Void,
     onLaunchProject: @escaping (Int) -> Void,
     onToggleFocus: @escaping () -> Void,
-    onStartFocus: @escaping (Int) -> Void
+    onStartFocus: @escaping (Int) -> Void,
+    onArmProfile: @escaping (Int) -> Void,
+    onDisarmProfile: @escaping () -> Void
   ) {
     self.onOpen = onOpen
     self.onLaunchProject = onLaunchProject
     self.onToggleFocus = onToggleFocus
     self.onStartFocus = onStartFocus
+    self.onArmProfile = onArmProfile
+    self.onDisarmProfile = onDisarmProfile
     createItemIfNeeded()
   }
 
@@ -57,11 +65,25 @@ final class StatusItemService {
     rebuildMenu()
   }
 
+  /// Rebuilds the blocker profile list in the dropdown.
+  func setBlockerProfiles(_ profiles: [(id: Int, name: String)]) {
+    blockerProfiles = profiles
+    rebuildMenu()
+  }
+
+  /// `nil` shows every profile so one can be armed; a name shows "Stop <name>" instead —
+  /// picking a different profile while one is already armed would be ambiguous, so the
+  /// list only makes sense while idle (same reasoning as the focus quick-start row).
+  func setArmedProfile(_ name: String?) {
+    armedProfileName = name
+    rebuildMenu()
+  }
+
   private func createItemIfNeeded() {
     guard statusItem == nil else { return }
 
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    let icon = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "workspace_flow")
+    let icon = NSImage(systemSymbolName: "rectangle.3.group", accessibilityDescription: "Loom")
     icon?.isTemplate = true
     item.button?.image = icon
     item.button?.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .semibold)
@@ -69,10 +91,22 @@ final class StatusItemService {
     rebuildMenu()
   }
 
+  /// A native section header on macOS 14+ (small-caps, matches Control Center); a
+  /// plain disabled row on 13, where `NSMenuItem.sectionHeader` does not exist yet.
+  private func sectionHeader(_ title: String) -> NSMenuItem {
+    if #available(macOS 14.0, *) {
+      return NSMenuItem.sectionHeader(title: title)
+    }
+    let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+    item.isEnabled = false
+    return item
+  }
+
   private func rebuildMenu() {
     guard let statusItem else { return }
     let menu = NSMenu()
 
+    menu.addItem(sectionHeader("Projects"))
     if projects.isEmpty {
       let empty = NSMenuItem(title: "No projects yet", action: nil, keyEquivalent: "")
       empty.isEnabled = false
@@ -87,6 +121,31 @@ final class StatusItemService {
     }
 
     menu.addItem(.separator())
+    menu.addItem(sectionHeader("Blocker"))
+
+    if let armedProfileName {
+      // Mirrors "Stop Focus" below rather than the domain's own "arm/disarm" jargon —
+      // that naming is fine for the code, not for what the user reads in the menu.
+      let stop = NSMenuItem(title: "Stop \(armedProfileName)", action: #selector(handleDisarmProfile), keyEquivalent: "")
+      stop.target = self
+      menu.addItem(stop)
+    } else if blockerProfiles.isEmpty {
+      let empty = NSMenuItem(title: "No blocker profiles yet", action: nil, keyEquivalent: "")
+      empty.isEnabled = false
+      menu.addItem(empty)
+    } else {
+      // Plain name, same as the projects list above it — clicking it is the action,
+      // the same way clicking a project launches it.
+      for profile in blockerProfiles {
+        let item = NSMenuItem(title: profile.name, action: #selector(handleArmProfile(_:)), keyEquivalent: "")
+        item.target = self
+        item.representedObject = profile.id
+        menu.addItem(item)
+      }
+    }
+
+    menu.addItem(.separator())
+    menu.addItem(sectionHeader("Focus"))
 
     if isSessionRunning {
       let stop = NSMenuItem(title: "Stop Focus", action: #selector(handleToggleFocus), keyEquivalent: "")
@@ -103,13 +162,13 @@ final class StatusItemService {
 
     menu.addItem(.separator())
 
-    let open = NSMenuItem(title: "Open workspace_flow", action: #selector(handleOpen), keyEquivalent: "")
+    let open = NSMenuItem(title: "Open Loom", action: #selector(handleOpen), keyEquivalent: "")
     open.target = self
     menu.addItem(open)
 
     menu.addItem(.separator())
 
-    let quit = NSMenuItem(title: "Quit workspace_flow", action: #selector(handleQuit), keyEquivalent: "")
+    let quit = NSMenuItem(title: "Quit Loom", action: #selector(handleQuit), keyEquivalent: "")
     quit.target = self
     menu.addItem(quit)
 
@@ -118,28 +177,22 @@ final class StatusItemService {
     statusItem.menu = menu
   }
 
-  /// "Start Focus" plus a quick-start button per length, side by side in one row — a
-  /// custom view is the only way to lay out more than one control in a single menu row.
+  /// A quick-start button per length, side by side in one row — a custom view is the
+  /// only way to lay out more than one control in a single menu row. No separate
+  /// "Start Focus" button: the "Focus" header above already says what these do, and a
+  /// length is always needed to start one anyway.
   private func makeQuickStartRow() -> NSView {
-    func pillButton(title: String, action: Selector) -> NSButton {
-      let button = NSButton(title: title, target: self, action: action)
+    let durationButtons = Self.quickStartMinutes.map { minutes -> NSButton in
+      let button = NSButton(title: "\(minutes)", target: self, action: #selector(handleStartFocusDuration(_:)))
+      button.tag = minutes
       button.isEnabled = true
       button.bezelStyle = .inline
       button.controlSize = .small
-      button.font = NSFont.systemFont(ofSize: 12)
-      return button
-    }
-
-    let startButton = pillButton(title: "Start Focus", action: #selector(handleToggleFocus))
-
-    let durationButtons = Self.quickStartMinutes.map { minutes -> NSButton in
-      let button = pillButton(title: "\(minutes)", action: #selector(handleStartFocusDuration(_:)))
-      button.tag = minutes
       button.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
       return button
     }
 
-    let stack = NSStackView(views: [startButton] + durationButtons)
+    let stack = NSStackView(views: durationButtons)
     stack.orientation = .horizontal
     stack.spacing = 4
     stack.translatesAutoresizingMaskIntoConstraints = false
@@ -157,6 +210,15 @@ final class StatusItemService {
   @objc private func handleLaunchProject(_ sender: NSMenuItem) {
     guard let projectId = sender.representedObject as? Int else { return }
     onLaunchProject?(projectId)
+  }
+
+  @objc private func handleArmProfile(_ sender: NSMenuItem) {
+    guard let profileId = sender.representedObject as? Int else { return }
+    onArmProfile?(profileId)
+  }
+
+  @objc private func handleDisarmProfile() {
+    onDisarmProfile?()
   }
 
   @objc private func handleToggleFocus() {

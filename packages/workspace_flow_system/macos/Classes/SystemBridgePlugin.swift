@@ -32,6 +32,12 @@ final class SystemBridgePlugin {
       },
       onStartFocus: { [weak self] minutes in
         self?.channel.invokeMethod("statusItemStartFocus", arguments: ["minutes": minutes])
+      },
+      onArmProfile: { [weak self] profileId in
+        self?.channel.invokeMethod("statusItemArmProfile", arguments: ["profileId": profileId])
+      },
+      onDisarmProfile: { [weak self] in
+        self?.channel.invokeMethod("statusItemDisarmProfile", arguments: nil)
       }
     )
 
@@ -156,6 +162,18 @@ final class SystemBridgePlugin {
 
     case "setStatusItemSessionRunning":
       StatusItemService.shared.setSessionRunning(arguments["isRunning"] as? Bool ?? false)
+      result(nil)
+
+    case "setStatusItemBlockerProfiles":
+      let profiles = (arguments["profiles"] as? [[String: Any]] ?? []).compactMap { entry -> (id: Int, name: String)? in
+        guard let id = entry["id"] as? Int, let name = entry["name"] as? String else { return nil }
+        return (id: id, name: name)
+      }
+      StatusItemService.shared.setBlockerProfiles(profiles)
+      result(nil)
+
+    case "setStatusItemArmedProfile":
+      StatusItemService.shared.setArmedProfile(arguments["name"] as? String)
       result(nil)
 
     case "isLoginItemEnabled":
