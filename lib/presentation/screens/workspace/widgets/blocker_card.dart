@@ -10,6 +10,7 @@ import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.da
 import 'package:workspace_flow/domain/focus/model/focus_stats.dart';
 import 'package:workspace_flow/domain/focus/service/focus_stats.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
+import 'package:workspace_flow/presentation/design_system/atoms/ui_icon.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_radius.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_size.dart';
@@ -17,7 +18,7 @@ import 'package:workspace_flow/presentation/design_system/atoms/ui_spacer.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_typography.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_chip.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_hover_region.dart';
-import 'package:workspace_flow/presentation/design_system/molecules/ui_link_label.dart';
+import 'package:workspace_flow/presentation/design_system/molecules/ui_svg_icon.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_switch.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_tick_box.dart';
 import 'package:workspace_flow/presentation/design_system/organisms/ui_card.dart';
@@ -26,9 +27,9 @@ import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_lo
 
 /// The right column: profiles, their entries, and the arming switch.
 ///
-/// While armed the card goes dark and profile switching and the edit links fade out —
-/// faded, not removed, so nothing in the layout shifts. Adding entries only happens in
-/// the profile editor now; the overview is just profiles, items, and the switch.
+/// While armed the card goes dark and profile switching gives way to the armed
+/// profile's plain name. Adding and editing entries only happens in the profile
+/// editor; the overview is just profiles, items, and the switch.
 class BlockerCard extends ConsumerStatefulWidget {
   const BlockerCard({super.key});
 
@@ -107,45 +108,9 @@ class _ProfileBlock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            context.translations.blocker_profile_label.toUpperCase(),
-            style: UiTypography.cardLabel.copyWith(color: isArmed ? UiColor.onDarkAccent : UiColor.fgSubtle),
-          ),
-          AnimatedOpacity(
-            duration: UiMotion.slow,
-            curve: UiMotion.ease,
-            opacity: isArmed ? 0 : 1,
-            child: IgnorePointer(
-              ignoring: isArmed,
-              child: Row(
-                children: [
-                  UiLinkLabel(
-                    label: context.translations.common_edit,
-                    color: UiColor.fgSubtle,
-                    hoverColor: UiColor.fgAccent,
-                    onTap: profile == null
-                        ? null
-                        : () => context.goNamed(
-                            UiRoute.profileEditor.name,
-                            pathParameters: {RoutePathParam.id.name: '${profile!.id}'},
-                          ),
-                  ),
-                  UiSpacer.sm,
-                  UiLinkLabel(
-                    label: context.translations.common_new,
-                    onTap: () => context.goNamed(
-                      UiRoute.profileEditor.name,
-                      pathParameters: {RoutePathParam.id.name: kNewEntitySegment},
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      Text(
+        context.translations.blocker_profile_label.toUpperCase(),
+        style: UiTypography.cardLabel.copyWith(color: isArmed ? UiColor.onDarkAccent : UiColor.fgSubtle),
       ),
       UiSpacer.s,
       SizedBox(
@@ -155,20 +120,67 @@ class _ProfileBlock extends ConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(profile?.name ?? '', style: UiTypography.itemTitle.copyWith(color: UiColor.onDark)),
               )
+            // Editing and adding sit right on the chips they act on — a pencil next to
+            // whichever profile is selected, a "+" chip of its own at the end — rather
+            // than text links up in the header, disconnected from what they touch.
             : ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: profiles.length,
+                itemCount: profiles.length + 1,
                 separatorBuilder: (_, _) => UiSpacer.xs,
-                itemBuilder: (context, index) => Center(
-                  child: UiChip(
-                    label: profiles[index].name,
-                    isSelected: profiles[index].id == profile?.id,
-                    onTap: () => ref.read(selectedProfileServiceProvider.notifier).select(profiles[index].id),
-                  ),
-                ),
+                itemBuilder: (context, index) {
+                  if (index == profiles.length) {
+                    return Center(
+                      child: UiChip(
+                        label: '+',
+                        onTap: () => context.goNamed(
+                          UiRoute.profileEditor.name,
+                          pathParameters: {RoutePathParam.id.name: kNewEntitySegment},
+                        ),
+                      ),
+                    );
+                  }
+
+                  final isSelected = profiles[index].id == profile?.id;
+                  return Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        UiChip(
+                          label: profiles[index].name,
+                          isSelected: isSelected,
+                          onTap: () => ref.read(selectedProfileServiceProvider.notifier).select(profiles[index].id),
+                        ),
+                        if (isSelected) ...[UiSpacer.xs, _EditProfileButton(profileId: profiles[index].id)],
+                      ],
+                    ),
+                  );
+                },
               ),
       ),
     ],
+  );
+}
+
+/// The pencil next to the selected profile chip — edits that profile specifically,
+/// which a link sitting elsewhere in the card could only imply.
+class _EditProfileButton extends StatelessWidget {
+  const _EditProfileButton({required this.profileId});
+
+  final int profileId;
+
+  @override
+  Widget build(BuildContext context) => UiHoverRegion(
+    builder: (context, isHovered) => GestureDetector(
+      onTap: () => context.goNamed(UiRoute.profileEditor.name, pathParameters: {RoutePathParam.id.name: '$profileId'}),
+      child: Container(
+        padding: const EdgeInsets.all(UiSize.xs),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: isHovered ? UiColor.borderAccentStrong : UiColor.border),
+        ),
+        child: UiSvgIcon(path: UiIcon.pencil, size: 12, color: UiColor.fgSubtle, strokeWidth: 1.5),
+      ),
+    ),
   );
 }
 

@@ -11,6 +11,8 @@ import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart'
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
+import 'package:workspace_flow/presentation/design_system/atoms/ui_icon.dart';
+import 'package:workspace_flow/presentation/design_system/molecules/ui_svg_icon.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_switch.dart';
 import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_card.dart';
 import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_lock_overlay.dart';
@@ -99,6 +101,24 @@ void main() {
     // not sit on the card as a transparent layer
     await tester.pumpAndSettle();
     expect(find.descendant(of: find.byType(BlockerLockOverlay), matching: find.byType(Opacity)), findsNothing);
+  });
+
+  testWidgets('Given more than one profile, '
+      'when the card is shown, '
+      'then a "+" chip and exactly one pencil sit next to the selected profile', (tester) async {
+    // Given
+    await profiles.createProfile(name: 'Code', items: const []);
+
+    // When
+    await pumpAppWidget(
+      tester,
+      container: container,
+      child: const SizedBox(width: 320, child: BlockerCard()),
+    );
+
+    // Then — one edit button, next to whichever profile is selected, not the others
+    expect(find.byWidgetPredicate((widget) => widget is UiSvgIcon && widget.path == UiIcon.pencil), findsOneWidget);
+    expect(find.text('+'), findsOneWidget);
   });
 
   testWidgets('Given the overview card, '
