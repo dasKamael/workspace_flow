@@ -27,7 +27,41 @@ class FocusSessionService extends _$FocusSessionService {
   @override
   FocusSession build() {
     ref.onDispose(() => _timer?.cancel());
+
+    final menuBar = ref.read(menuBarRepositoryProvider);
+    final toggleSubscription = menuBar.toggleFocusRequests.listen((_) => _toggleFromMenuBar());
+    final startSubscription = menuBar.startFocusRequests.listen(_startFromMenuBar);
+    ref.onDispose(toggleSubscription.cancel);
+    ref.onDispose(startSubscription.cancel);
+
+    // Published once up front so the menu bar's toggle already reads correctly before
+    // anything else has happened this run. Deferred a tick: `state` is not readable
+    // until `build` itself has returned.
+    Future.microtask(_publishToMenuBar);
+
     return const FocusSession();
+  }
+
+  /// Starts, resumes, or stops the session — whichever the menu bar's single toggle
+  /// item should do given the current state.
+  void _toggleFromMenuBar() {
+    if (state.isRunning) {
+      unawaited(stop());
+    } else if (state.recordId != null) {
+      resume();
+    } else {
+      unawaited(start());
+    }
+  }
+
+  /// Starts a session of exactly [minutes] from one of the menu bar's quick-start
+  /// buttons. Ignored while one is already running — the dropdown only shows these
+  /// buttons while idle, but a request could still be in flight from just before a
+  /// session started some other way.
+  void _startFromMenuBar(int minutes) {
+    if (state.isRunning) return;
+    setMinutes(minutes);
+    unawaited(start());
   }
 
   /// Sets the length from the dial. Snaps to five minutes and clamps to the dial range.
@@ -141,5 +175,6 @@ class FocusSessionService extends _$FocusSessionService {
         ? repository.showCountdown(Duration(seconds: state.displaySeconds).toCountdown)
         : repository.hide();
     unawaited(future.catchError((_) {}));
+    unawaited(repository.setSessionRunning(isRunning: state.isRunning).catchError((_) {}));
   }
 }

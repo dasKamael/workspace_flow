@@ -50,6 +50,9 @@ void main() {
     ).thenAnswer((_) async {});
     when(() => menuBar.showCountdown(any())).thenAnswer((_) async {});
     when(menuBar.hide).thenAnswer((_) async {});
+    when(() => menuBar.setSessionRunning(isRunning: any(named: 'isRunning'))).thenAnswer((_) async {});
+    when(() => menuBar.toggleFocusRequests).thenAnswer((_) => const Stream<void>.empty());
+    when(() => menuBar.startFocusRequests).thenAnswer((_) => const Stream<int>.empty());
 
     container = createContainer(
       overrides: [

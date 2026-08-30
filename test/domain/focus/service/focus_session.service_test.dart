@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +30,9 @@ void main() {
     ).thenAnswer((_) async {});
     when(() => menuBar.showCountdown(any())).thenAnswer((_) async {});
     when(menuBar.hide).thenAnswer((_) async {});
+    when(() => menuBar.setSessionRunning(isRunning: any(named: 'isRunning'))).thenAnswer((_) async {});
+    when(() => menuBar.toggleFocusRequests).thenAnswer((_) => const Stream<void>.empty());
+    when(() => menuBar.startFocusRequests).thenAnswer((_) => const Stream<int>.empty());
   });
 
   ProviderContainer makeContainer() => createContainer(
@@ -256,6 +261,69 @@ void main() {
         // Then
         verify(() => menuBar.showCountdown('04:58')).called(1);
         verify(menuBar.hide).called(greaterThanOrEqualTo(1));
+      });
+    });
+
+    test('Given one of the menu bar\'s quick-start lengths, '
+        'when it is chosen, '
+        'then a session of exactly that length starts', () {
+      withFakeTime((async) {
+        // Given
+        final startFocusRequests = StreamController<int>();
+        when(() => menuBar.startFocusRequests).thenAnswer((_) => startFocusRequests.stream);
+        final container = makeContainer();
+        // Reading the notifier once is what actually subscribes to the stream — the
+        // provider is lazy and would otherwise not exist yet to receive the event.
+        serviceIn(container);
+
+        // When
+        startFocusRequests.add(25);
+        async.flushMicrotasks();
+
+        // Then
+        expect(stateIn(container).minutes, 25);
+        expect(stateIn(container).isRunning, isTrue);
+      });
+    });
+
+    test('Given a quick-start request while a session is already running, '
+        'when it arrives, '
+        'then it is ignored rather than restarting with a different length', () {
+      withFakeTime((async) {
+        // Given
+        final startFocusRequests = StreamController<int>();
+        when(() => menuBar.startFocusRequests).thenAnswer((_) => startFocusRequests.stream);
+        final container = makeContainer();
+        serviceIn(container).setMinutes(50);
+        serviceIn(container).start();
+        async.flushMicrotasks();
+
+        // When
+        startFocusRequests.add(25);
+        async.flushMicrotasks();
+
+        // Then
+        expect(stateIn(container).minutes, 50);
+      });
+    });
+
+    test('Given the menu bar\'s toggle, '
+        'when chosen while idle, '
+        'then the session starts with whatever length was already set', () {
+      withFakeTime((async) {
+        // Given
+        final toggleFocusRequests = StreamController<void>();
+        when(() => menuBar.toggleFocusRequests).thenAnswer((_) => toggleFocusRequests.stream);
+        final container = makeContainer();
+        serviceIn(container).setMinutes(25);
+
+        // When
+        toggleFocusRequests.add(null);
+        async.flushMicrotasks();
+
+        // Then
+        expect(stateIn(container).isRunning, isTrue);
+        expect(stateIn(container).minutes, 25);
       });
     });
   });

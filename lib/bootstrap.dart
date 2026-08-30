@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:workspace_flow/common/utils/platform_info.dart';
+import 'package:workspace_flow/domain/focus/service/focus_session.service.dart';
+import 'package:workspace_flow/domain/system/service/menu_bar.service.dart';
 import 'package:workspace_flow/domain/system/service/seed.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_size.dart';
 
@@ -60,4 +62,10 @@ Future<void> _warmUp(ProviderContainer container) async {
   } on Object catch (error) {
     debugPrint('bootstrap: seeding failed — $error');
   }
+
+  // Keeps the menu bar's project dropdown and focus toggle live for the app's whole
+  // lifetime — no widget necessarily watches either, since the main window can be
+  // closed entirely.
+  container.read(menuBarServiceProvider);
+  container.read(focusSessionServiceProvider);
 }

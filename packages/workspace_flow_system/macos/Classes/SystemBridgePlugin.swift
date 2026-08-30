@@ -18,11 +18,22 @@ final class SystemBridgePlugin {
     self.channel = FlutterMethodChannel(name: Self.channelName, binaryMessenger: messenger)
     self.hostView = hostView
 
-    StatusItemService.shared.configure { [weak self] in
-      let window = self?.hostView?.window ?? NSApp.windows.first
-      window?.makeKeyAndOrderFront(nil)
-      NSApp.activate(ignoringOtherApps: true)
-    }
+    StatusItemService.shared.configure(
+      onOpen: { [weak self] in
+        let window = self?.hostView?.window ?? NSApp.windows.first
+        window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+      },
+      onLaunchProject: { [weak self] projectId in
+        self?.channel.invokeMethod("statusItemLaunchProject", arguments: ["projectId": projectId])
+      },
+      onToggleFocus: { [weak self] in
+        self?.channel.invokeMethod("statusItemToggleFocus", arguments: nil)
+      },
+      onStartFocus: { [weak self] minutes in
+        self?.channel.invokeMethod("statusItemStartFocus", arguments: ["minutes": minutes])
+      }
+    )
 
     // The overlay runs in its own engine; its result has to travel back to the main
     // one, which only this channel can reach.
@@ -133,6 +144,18 @@ final class SystemBridgePlugin {
 
     case "setStatusItemTitle":
       StatusItemService.shared.setTitle(arguments["title"] as? String)
+      result(nil)
+
+    case "setStatusItemProjects":
+      let projects = (arguments["projects"] as? [[String: Any]] ?? []).compactMap { entry -> (id: Int, name: String)? in
+        guard let id = entry["id"] as? Int, let name = entry["name"] as? String else { return nil }
+        return (id: id, name: name)
+      }
+      StatusItemService.shared.setProjects(projects)
+      result(nil)
+
+    case "setStatusItemSessionRunning":
+      StatusItemService.shared.setSessionRunning(arguments["isRunning"] as? Bool ?? false)
       result(nil)
 
     case "isLoginItemEnabled":
