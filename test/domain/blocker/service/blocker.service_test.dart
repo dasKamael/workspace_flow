@@ -99,6 +99,11 @@ void main() {
         menuBarRepositoryProvider.overrideWithValue(menuBar),
       ],
     );
+    // Riverpod 3 pauses a stream provider's subscription while nothing actively
+    // listens to it — in the real app a widget's `ref.watch` does that; here nothing
+    // otherwise would, so `BlockerService`'s internal reads of the profile list would
+    // hang forever.
+    container.listen(blockerProfilesProvider, (_, _) {});
   });
 
   test('Given an armed profile, '

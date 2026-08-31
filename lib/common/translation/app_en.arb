@@ -113,9 +113,9 @@
   "profile_editor_name_placeholder": "Profile name",
   "profile_editor_untitled": "Untitled profile",
   "profile_editor_items_label": "Blocked apps & sites",
-  "profile_editor_add_entry": "+ Add entry",
   "profile_editor_choose_app": "Choose app…",
   "profile_editor_entry_placeholder": "app or domain",
+  "profile_editor_website_placeholder": "example.com",
 
   "blocked_page_eyebrow": "{target} is blocked · {profile}",
   "@blocked_page_eyebrow": {

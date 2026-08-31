@@ -58,9 +58,9 @@ class _BlockerCardState extends ConsumerState<BlockerCard> {
   @override
   Widget build(BuildContext context) {
     final isArmed = ref.watch(blockerServiceProvider);
-    final profiles = ref.watch(blockerProfilesProvider).valueOrNull ?? const <BlockerProfile>[];
+    final profiles = ref.watch(blockerProfilesProvider).value ?? const <BlockerProfile>[];
     final profile = ref.watch(selectedProfileProvider);
-    final stats = ref.watch(focusStatsProvider).valueOrNull ?? const FocusStats();
+    final stats = ref.watch(focusStatsProvider).value ?? const FocusStats();
 
     ref.listen<BlockerErrorReason?>(blockerErrorServiceProvider, (previous, next) {
       if (next == null) return;

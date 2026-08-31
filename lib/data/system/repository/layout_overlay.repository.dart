@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/system/data_source/macos_bridge.channel.dart';
 import 'package:workspace_flow/domain/project/model/project_window.dart';

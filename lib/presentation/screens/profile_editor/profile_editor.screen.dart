@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,13 +9,11 @@ import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart'
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_icon.dart';
-import 'package:workspace_flow/presentation/design_system/atoms/ui_radius.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_size.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_spacer.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_typography.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_fade_up.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_ghost_button.dart';
-import 'package:workspace_flow/presentation/design_system/molecules/ui_hover_region.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_link_label.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_primary_button.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_svg_icon.dart';
@@ -35,12 +35,14 @@ class ProfileEditorScreen extends ConsumerStatefulWidget {
 
 class _ProfileEditorScreenState extends ConsumerState<ProfileEditorScreen> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _websiteController = TextEditingController();
   final Map<int, TextEditingController> _entryControllers = {};
   bool _didPrefillName = false;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _websiteController.dispose();
     for (final controller in _entryControllers.values) {
       controller.dispose();
     }
@@ -67,16 +69,28 @@ class _ProfileEditorScreenState extends ConsumerState<ProfileEditorScreen> {
       _entryControllers.putIfAbsent(item.id, () => TextEditingController(text: item.name));
 
   /// Opens the Finder picker and appends the chosen app, with its bundle id, to the
-  /// draft — unlike the plain "+ Add entry" row, which starts blank and untyped.
+  /// draft — its own separate control, so picking an app never blurs into typing a
+  /// site.
   Future<void> _chooseApp() async {
     final entry = await ref.read(blockerProfileServiceProvider.notifier).pickApp();
     if (entry == null) return;
     _controller.addAppEntry(entry);
   }
 
+  /// Adds a typed website from the bottom text field and clears it.
+  void _addWebsite() {
+    final raw = _websiteController.text;
+    if (raw.trim().isEmpty) return;
+    _websiteController.clear();
+    _controller.addSiteEntry(raw);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(profileEditorControllerProvider(widget.profileId));
+    final icons =
+        ref.watch(blockerItemIconsProvider(state.items.map((item) => item.bundleId).toList())).value ??
+        const <String, Uint8List>{};
 
     if (state.isLoaded && !_didPrefillName) {
       _didPrefillName = true;
@@ -107,19 +121,7 @@ class _ProfileEditorScreenState extends ConsumerState<ProfileEditorScreen> {
             onChanged: _controller.setName,
           ),
           UiSpacer.xxl,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(context.translations.profile_editor_items_label.toUpperCase(), style: UiTypography.cardLabel),
-              Row(
-                children: [
-                  UiLinkLabel(label: context.translations.profile_editor_choose_app, onTap: _chooseApp),
-                  UiSpacer.sm,
-                  UiLinkLabel(label: context.translations.profile_editor_add_entry, onTap: _controller.addEntry),
-                ],
-              ),
-            ],
-          ),
+          Text(context.translations.profile_editor_items_label.toUpperCase(), style: UiTypography.cardLabel),
           UiSpacer.m,
           for (final (index, item) in state.items.indexed) ...[
             UiFadeUp(
@@ -128,13 +130,37 @@ class _ProfileEditorScreenState extends ConsumerState<ProfileEditorScreen> {
               child: _EntryRow(
                 controller: _entryController(item),
                 kind: item.kind,
+                icon: icons[item.bundleId],
                 onChanged: (value) => _controller.setEntryName(index, value),
-                onToggleKind: () => _controller.toggleKind(index),
                 onRemove: () => _controller.removeEntry(index),
               ),
             ),
             UiSpacer.s,
           ],
+          UiSpacer.s,
+          // Typing a site and picking an app are two distinct, un-mixed controls —
+          // the field only ever adds a site; an app comes solely from Finder.
+          Row(
+            children: [
+              Expanded(
+                child: UiTextField(
+                  controller: _websiteController,
+                  placeholder: context.translations.profile_editor_website_placeholder,
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+                  leading: const UiSvgIcon(path: UiIcon.globeAlt, size: UiSize.l, color: UiColor.fgSubtle),
+                  onSubmitted: (_) => _addWebsite(),
+                ),
+              ),
+              UiSpacer.s,
+              UiLinkLabel(label: context.translations.common_add, onTap: _addWebsite),
+            ],
+          ),
+          UiSpacer.m,
+          UiGhostButton(
+            label: context.translations.profile_editor_choose_app,
+            icon: const UiSvgIcon(path: UiIcon.squares2x2, size: UiSize.l, color: UiColor.fgMuted),
+            onPressed: _chooseApp,
+          ),
           UiSpacer.l,
           const SizedBox(height: 1, child: ColoredBox(color: UiColor.border)),
           UiSpacer.l,
@@ -164,15 +190,19 @@ class _EntryRow extends StatelessWidget {
   const _EntryRow({
     required this.controller,
     required this.kind,
+    required this.icon,
     required this.onChanged,
-    required this.onToggleKind,
     required this.onRemove,
   });
 
   final TextEditingController controller;
   final BlockedItemKind kind;
+
+  /// The real app icon, keyed by bundle id — null for sites, and for an app entry
+  /// while its icon is still loading.
+  final Uint8List? icon;
+
   final ValueChanged<String> onChanged;
-  final VoidCallback onToggleKind;
   final VoidCallback onRemove;
 
   @override
@@ -183,11 +213,22 @@ class _EntryRow extends StatelessWidget {
           controller: controller,
           placeholder: context.translations.profile_editor_entry_placeholder,
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+          leading: switch (icon) {
+            final Uint8List bytes => Image.memory(
+              bytes,
+              width: UiSize.l,
+              height: UiSize.l,
+              filterQuality: FilterQuality.medium,
+            ),
+            null => UiSvgIcon(
+              path: kind == BlockedItemKind.site ? UiIcon.globeAlt : UiIcon.squares2x2,
+              size: UiSize.l,
+              color: UiColor.fgSubtle,
+            ),
+          },
           onChanged: onChanged,
         ),
       ),
-      UiSpacer.s,
-      _KindPill(kind: kind, onTap: onToggleKind),
       UiSpacer.s,
       MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -203,35 +244,4 @@ class _EntryRow extends StatelessWidget {
       ),
     ],
   );
-}
-
-/// The pill that flips a row between "site" and "app".
-class _KindPill extends StatelessWidget {
-  const _KindPill({required this.kind, required this.onTap});
-
-  final BlockedItemKind kind;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isSite = kind == BlockedItemKind.site;
-
-    return UiHoverRegion(
-      builder: (context, isHovered) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: UiSize.m, vertical: UiSize.xs),
-          decoration: BoxDecoration(
-            color: isSite ? UiColor.bgAccent : UiColor.bgMuted,
-            borderRadius: UiRadius.allFull,
-            border: Border.all(color: isHovered ? UiColor.borderStrong : UiColor.border),
-          ),
-          child: Text(
-            isSite ? context.translations.common_kind_site : context.translations.common_kind_app,
-            style: UiTypography.blockerKind.copyWith(color: isSite ? UiColor.fgAccentHover : UiColor.fgMuted),
-          ),
-        ),
-      ),
-    );
-  }
 }

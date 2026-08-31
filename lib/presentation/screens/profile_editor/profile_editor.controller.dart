@@ -13,7 +13,7 @@ part 'profile_editor.controller.g.dart';
 class ProfileEditorController extends _$ProfileEditorController {
   @override
   ProfileEditorState build(int? profileId) {
-    final profiles = ref.watch(blockerProfilesProvider).valueOrNull ?? const [];
+    final profiles = ref.watch(blockerProfilesProvider).value ?? const [];
     final canDelete = profiles.length > 1;
 
     if (profileId == null) return ProfileEditorState(isLoaded: true, canDelete: false);
@@ -32,13 +32,19 @@ class ProfileEditorController extends _$ProfileEditorController {
 
   void setName(String name) => state = state.copyWith(name: name);
 
-  /// Adds an empty row for the user to type into.
-  void addEntry() => state = state.copyWith(
-    items: [
-      ...state.items,
-      BlockedItem(id: -(state.items.length + 1), name: '', kind: BlockedItemKind.app),
-    ],
-  );
+  /// Adds a typed website as its own site row, straight from the bottom text field —
+  /// kept separate from [addAppEntry] so picking an app and typing a site never blur
+  /// into one mixed control.
+  void addSiteEntry(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    state = state.copyWith(
+      items: [
+        ...state.items,
+        BlockedItem(id: -(state.items.length + 1), name: trimmed, kind: BlockedItemKind.site),
+      ],
+    );
+  }
 
   /// Adds an app picked through the Finder picker, with its bundle id.
   void addAppEntry(AppLibraryEntry entry) => state = state.copyWith(
@@ -49,15 +55,6 @@ class ProfileEditorController extends _$ProfileEditorController {
   );
 
   void setEntryName(int index, String name) => _patch(index, (item) => item.copyWith(name: name));
-
-  /// Flips a row between "site" and "app" via its pill button.
-  ///
-  /// A bundle id only means something for an app row, so switching to "site" clears
-  /// it — otherwise a picked app's identity would silently survive under the wrong kind.
-  void toggleKind(int index) => _patch(index, (item) {
-    final kind = item.kind == BlockedItemKind.site ? BlockedItemKind.app : BlockedItemKind.site;
-    return item.copyWith(kind: kind, bundleId: kind == BlockedItemKind.site ? null : item.bundleId);
-  });
 
   void removeEntry(int index) {
     final items = [...state.items]..removeAt(index);

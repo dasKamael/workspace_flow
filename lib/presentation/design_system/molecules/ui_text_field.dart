@@ -15,6 +15,7 @@ class UiTextField extends StatefulWidget {
     this.onChanged,
     this.autofocus = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+    this.leading,
     super.key,
   });
 
@@ -24,6 +25,10 @@ class UiTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final bool autofocus;
   final EdgeInsets padding;
+
+  /// An icon fixed at the start of the field — e.g. marking what kind of entry
+  /// typing here will create, before there is anything to distinguish it by yet.
+  final Widget? leading;
 
   @override
   State<UiTextField> createState() => _UiTextFieldState();
@@ -60,21 +65,28 @@ class _UiTextFieldState extends State<UiTextField> {
     // insists on a Material ancestor. The field paints its own background above.
     child: Material(
       type: MaterialType.transparency,
-      child: TextField(
-        controller: widget.controller,
-        focusNode: _focusNode,
-        autofocus: widget.autofocus,
-        onSubmitted: widget.onSubmitted,
-        onChanged: widget.onChanged,
-        cursorHeight: UiSize.ml,
-        style: UiTypography.input,
-        decoration: InputDecoration(
-          isDense: true,
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-          hintText: widget.placeholder,
-          hintStyle: UiTypography.inputPlaceholder,
-        ),
+      child: Row(
+        children: [
+          if (widget.leading != null) ...[widget.leading!, const SizedBox(width: UiSize.s)],
+          Expanded(
+            child: TextField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              autofocus: widget.autofocus,
+              onSubmitted: widget.onSubmitted,
+              onChanged: widget.onChanged,
+              cursorHeight: UiSize.ml,
+              style: UiTypography.input,
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                hintText: widget.placeholder,
+                hintStyle: UiTypography.inputPlaceholder,
+              ),
+            ),
+          ),
+        ],
       ),
     ),
   );

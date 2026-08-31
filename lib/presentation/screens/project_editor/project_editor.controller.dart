@@ -17,7 +17,7 @@ class ProjectEditorController extends _$ProjectEditorController {
   ProjectEditorState build(int? projectId) {
     if (projectId == null) return const ProjectEditorState(isLoaded: true);
 
-    final project = ref.watch(projectsProvider).valueOrNull?.where((project) => project.id == projectId).firstOrNull;
+    final project = ref.watch(projectsProvider).value?.where((project) => project.id == projectId).firstOrNull;
 
     if (project == null) return ProjectEditorState(projectId: projectId);
 

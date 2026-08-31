@@ -1,7 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/blocker/data_source/entity/blocker.tables.dart';
 import 'package:workspace_flow/data/focus/data_source/entity/focus.tables.dart';

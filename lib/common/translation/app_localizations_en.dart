@@ -254,13 +254,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile_editor_items_label => 'Blocked apps & sites';
 
   @override
-  String get profile_editor_add_entry => '+ Add entry';
-
-  @override
   String get profile_editor_choose_app => 'Choose app…';
 
   @override
   String get profile_editor_entry_placeholder => 'app or domain';
+
+  @override
+  String get profile_editor_website_placeholder => 'example.com';
 
   @override
   String blocked_page_eyebrow(String target, String profile) {

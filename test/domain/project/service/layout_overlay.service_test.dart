@@ -38,14 +38,21 @@ void main() {
     overlay = MockLayoutOverlayRepository();
   });
 
-  ProviderContainer makeContainer({List<ScreenInfo> attached = screens}) => createContainer(
-    overrides: [
-      layoutOverlayRepositoryProvider.overrideWithValue(overlay),
-      screensProvider.overrideWith((ref) async => attached),
-      // The library travels into the overlay so apps can be dropped in from there.
-      appLibraryProvider.overrideWith((ref) => Stream.value(library)),
-    ],
-  );
+  ProviderContainer makeContainer({List<ScreenInfo> attached = screens}) {
+    final container = createContainer(
+      overrides: [
+        layoutOverlayRepositoryProvider.overrideWithValue(overlay),
+        screensProvider.overrideWith((ref) async => attached),
+        // The library travels into the overlay so apps can be dropped in from there.
+        appLibraryProvider.overrideWith((ref) => Stream.value(library)),
+      ],
+    );
+    // Riverpod 3 pauses a stream provider's subscription while nothing actively
+    // listens to it — in the real app a widget's `ref.watch` does that; here nothing
+    // otherwise would, so `LayoutOverlayService.edit`'s read of the library would hang.
+    container.listen(appLibraryProvider, (_, _) {});
+    return container;
+  }
 
   Future<List<ProjectWindow>?> edit(ProviderContainer container) =>
       container.read(layoutOverlayServiceProvider.notifier).edit(draft);

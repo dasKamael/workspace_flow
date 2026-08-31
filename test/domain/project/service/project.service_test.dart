@@ -24,7 +24,7 @@ void main() {
 
   /// The names the projects provider currently holds.
   List<String> names() =>
-      (container.read(projectsProvider).valueOrNull ?? const <Project>[]).map((project) => project.name).toList();
+      (container.read(projectsProvider).value ?? const <Project>[]).map((project) => project.name).toList();
 
   test('Given a listener on the projects provider, '
       'when projects are written to the database, '
@@ -32,7 +32,7 @@ void main() {
     // Given — a live subscription, as a widget would hold
     final emitted = <List<String>>[];
     container.listen(projectsProvider, (_, next) {
-      final projects = next.valueOrNull;
+      final projects = next.value;
       if (projects != null) emitted.add(projects.map((project) => project.name).toList());
     });
     await repository.createProject(name: 'First', windows: const []);

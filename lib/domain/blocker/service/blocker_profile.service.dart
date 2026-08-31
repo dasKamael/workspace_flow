@@ -1,9 +1,11 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:typed_data';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/blocker/repository/blocker_profile.repository.dart';
 import 'package:workspace_flow/data/system/repository/app_launcher.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
+import 'package:workspace_flow/domain/system/app_icons.util.dart';
 import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
 
 part 'blocker_profile.service.g.dart';
@@ -23,6 +25,15 @@ class LastProfileException implements Exception {
 @Riverpod(keepAlive: true)
 Stream<List<BlockerProfile>> blockerProfiles(Ref ref) => ref.watch(blockerProfileRepositoryProvider).watchProfiles();
 
+/// Icons for a given set of bundle ids, keyed by bundle id — lets the profile
+/// editor's rows show the real app icon instead of just a generic glyph.
+///
+/// Takes the bundle ids as a parameter rather than reading them off a saved profile,
+/// since a row can name an app just picked in the editor's own unsaved draft.
+@riverpod
+Future<Map<String, Uint8List>> blockerItemIcons(Ref ref, List<String?> bundleIds) =>
+    AppIconsUtil.fetch(ref.read(appLauncherRepositoryProvider), bundleIds);
+
 /// Which profile the blocker card is showing.
 @Riverpod(keepAlive: true)
 class SelectedProfileService extends _$SelectedProfileService {
@@ -38,7 +49,7 @@ class SelectedProfileService extends _$SelectedProfileService {
 /// rebuild on a selection change.
 @Riverpod(keepAlive: true)
 BlockerProfile? selectedProfile(Ref ref) {
-  final profiles = ref.watch(blockerProfilesProvider).valueOrNull ?? const <BlockerProfile>[];
+  final profiles = ref.watch(blockerProfilesProvider).value ?? const <BlockerProfile>[];
   if (profiles.isEmpty) return null;
 
   final selectedId = ref.watch(selectedProfileServiceProvider);

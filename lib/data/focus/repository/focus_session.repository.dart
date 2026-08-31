@@ -1,6 +1,5 @@
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/database/app_database.dart';
 import 'package:workspace_flow/data/focus/data_source/focus.dao.dart';

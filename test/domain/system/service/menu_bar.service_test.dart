@@ -69,15 +69,22 @@ void main() {
 
   tearDown(() => launchRequests.close());
 
-  ProviderContainer makeContainer() => createContainer(
-    overrides: [
-      appLauncherRepositoryProvider.overrideWithValue(launcher),
-      windowControlRepositoryProvider.overrideWithValue(windowControl),
-      menuBarRepositoryProvider.overrideWithValue(menuBar),
-      screensProvider.overrideWith((ref) async => const []),
-      projectsProvider.overrideWith((ref) => Stream.value(const [project])),
-    ],
-  );
+  ProviderContainer makeContainer() {
+    final container = createContainer(
+      overrides: [
+        appLauncherRepositoryProvider.overrideWithValue(launcher),
+        windowControlRepositoryProvider.overrideWithValue(windowControl),
+        menuBarRepositoryProvider.overrideWithValue(menuBar),
+        screensProvider.overrideWith((ref) async => const []),
+        projectsProvider.overrideWith((ref) => Stream.value(const [project])),
+      ],
+    );
+    // Riverpod 3 pauses a stream provider's subscription while nothing actively
+    // listens to it — in the real app a widget's `ref.watch` does that; here nothing
+    // otherwise would, so `projectsProvider.future` below would hang forever.
+    container.listen(projectsProvider, (_, _) {});
+    return container;
+  }
 
   test('Given the project list, '
       'when it changes, '

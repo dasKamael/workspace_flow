@@ -110,8 +110,8 @@ class _ProjectEditorScreenState extends ConsumerState<ProjectEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(projectEditorControllerProvider(widget.projectId));
-    final library = ref.watch(appLibraryProvider).valueOrNull ?? const <AppLibraryEntry>[];
-    final icons = ref.watch(appLibraryIconsProvider).valueOrNull ?? const <String, Uint8List>{};
+    final library = ref.watch(appLibraryProvider).value ?? const <AppLibraryEntry>[];
+    final icons = ref.watch(appLibraryIconsProvider).value ?? const <String, Uint8List>{};
 
     if (state.isLoaded && !_didPrefillName) {
       _didPrefillName = true;

@@ -50,7 +50,7 @@ class BlockerService extends _$BlockerService {
 
     final menuBar = ref.read(menuBarRepositoryProvider);
     ref.listen(blockerProfilesProvider, (_, next) {
-      final profiles = next.valueOrNull;
+      final profiles = next.value;
       if (profiles == null) return;
       unawaited(menuBar.setBlockerProfiles(profiles).catchError((_) {}));
     }, fireImmediately: true);

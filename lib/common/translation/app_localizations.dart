@@ -517,12 +517,6 @@ abstract class AppLocalizations {
   /// **'Blocked apps & sites'**
   String get profile_editor_items_label;
 
-  /// No description provided for @profile_editor_add_entry.
-  ///
-  /// In en, this message translates to:
-  /// **'+ Add entry'**
-  String get profile_editor_add_entry;
-
   /// No description provided for @profile_editor_choose_app.
   ///
   /// In en, this message translates to:
@@ -534,6 +528,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'app or domain'**
   String get profile_editor_entry_placeholder;
+
+  /// No description provided for @profile_editor_website_placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'example.com'**
+  String get profile_editor_website_placeholder;
 
   /// No description provided for @blocked_page_eyebrow.
   ///

@@ -17,7 +17,7 @@ class MenuBarService extends _$MenuBarService {
   @override
   void build() {
     ref.listen(projectsProvider, (_, next) {
-      final projects = next.valueOrNull;
+      final projects = next.value;
       if (projects == null) return;
       unawaited(ref.read(menuBarRepositoryProvider).setProjects(projects).catchError((_) {}));
     }, fireImmediately: true);

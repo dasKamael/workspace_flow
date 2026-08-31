@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -6,6 +5,7 @@ import 'package:workspace_flow/data/project/repository/project.repository.dart';
 import 'package:workspace_flow/data/system/repository/app_launcher.repository.dart';
 import 'package:workspace_flow/domain/project/model/project.dart';
 import 'package:workspace_flow/domain/project/model/project_window.dart';
+import 'package:workspace_flow/domain/system/app_icons.util.dart';
 import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
 
 part 'project.service.g.dart';
@@ -24,15 +24,7 @@ Stream<List<AppLibraryEntry>> appLibrary(Ref ref) => ref.watch(projectRepository
 @Riverpod(keepAlive: true)
 Future<Map<String, Uint8List>> appLibraryIcons(Ref ref) async {
   final library = await ref.watch(appLibraryProvider.future);
-  final bundleIds = {for (final entry in library) ?entry.bundleId}.toList();
-  if (bundleIds.isEmpty) return const {};
-
-  try {
-    return await ref.read(appLauncherRepositoryProvider).getAppIcons(bundleIds);
-  } on Object {
-    // The bridge is absent outside macOS and in tests; the chips just show text.
-    return const {};
-  }
+  return AppIconsUtil.fetch(ref.read(appLauncherRepositoryProvider), library.map((entry) => entry.bundleId));
 }
 
 /// Which project is selected in the sidebar.
@@ -54,7 +46,7 @@ class SelectedProjectService extends _$SelectedProjectService {
 /// Falls back to the first project when nothing is selected or the selection is gone.
 @Riverpod(keepAlive: true)
 Project? selectedProject(Ref ref) {
-  final projects = ref.watch(projectsProvider).valueOrNull ?? const <Project>[];
+  final projects = ref.watch(projectsProvider).value ?? const <Project>[];
   if (projects.isEmpty) return null;
 
   final selectedId = ref.watch(selectedProjectServiceProvider);

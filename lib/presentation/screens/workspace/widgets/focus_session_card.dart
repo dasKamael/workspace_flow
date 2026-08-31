@@ -139,7 +139,7 @@ class _PresetsAndStart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.read(focusSessionServiceProvider.notifier);
-    final stats = ref.watch(focusStatsProvider).valueOrNull ?? const FocusStats();
+    final stats = ref.watch(focusStatsProvider).value ?? const FocusStats();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
