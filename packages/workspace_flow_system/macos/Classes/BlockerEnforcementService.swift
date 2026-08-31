@@ -6,14 +6,15 @@ private struct ArmedApp {
   let name: String
 }
 
-/// Enforces an armed blocker profile: hides blocked apps the moment they activate, and
-/// redirects a blocked domain out of the frontmost browser's active tab.
+/// Enforces an armed blocker profile: hides blocked apps the moment they launch or
+/// activate, and redirects a blocked domain out of the frontmost browser's active tab.
 ///
-/// Apps are caught through `NSWorkspace.didActivateApplicationNotification` — far
-/// cheaper than polling, and it fires again on every re-activation (Dock click, ⌘-Tab),
-/// which is exactly what keeps a hidden app from simply being brought back. Domains have
-/// no equivalent notification, so those are polled on a short timer, and only while at
-/// least one is armed.
+/// Apps are caught through `NSWorkspace.didLaunchApplicationNotification` (before the
+/// app's window ever gets a chance to flash on screen) and `didActivateApplicationNotification`
+/// — far cheaper than polling, and the latter fires again on every re-activation (Dock
+/// click, ⌘-Tab), which is exactly what keeps a hidden app from simply being brought
+/// back. Domains have no equivalent notification, so those are polled on a short timer,
+/// and only while at least one is armed.
 enum BlockerEnforcementService {
   private static let pollInterval: TimeInterval = 1
 
@@ -25,12 +26,23 @@ enum BlockerEnforcementService {
     "com.microsoft.edgemac",
     "com.brave.Browser",
     "company.thebrowser.Browser",
+    "com.vivaldi.Vivaldi",
+    "com.operasoftware.Opera",
   ]
+
+  /// Apple Events error -1743 ("not authorized to send Apple events") — the browser's
+  /// automation permission hasn't been granted (or was revoked) yet.
+  private static let automationDeniedErrorNumber = -1743
 
   private static var armedApps: [ArmedApp] = []
   private static var armedDomains: [String] = []
   private static var activationObserver: NSObjectProtocol?
+  private static var launchObserver: NSObjectProtocol?
   private static var pollTimer: Timer?
+
+  /// Bundle ids already reported through `siteBlockingPermissionDenied` this armed
+  /// session, so a 1s poll does not repeat the same failure forever.
+  private static var reportedPermissionDenials: Set<String> = []
 
   /// Where a blocked domain's tab is redirected to — a local page the Dart side serves
   /// and owns entirely; this only ever needs the base URL to send the browser to.
@@ -68,6 +80,12 @@ enum BlockerEnforcementService {
         queue: .main,
         using: { notification in checkActivation(notification) }
       )
+      launchObserver = NSWorkspace.shared.notificationCenter.addObserver(
+        forName: NSWorkspace.didLaunchApplicationNotification,
+        object: nil,
+        queue: .main,
+        using: { notification in checkActivation(notification) }
+      )
       // The blocked app may already be frontmost the moment the blocker is armed.
       if let frontmost = NSWorkspace.shared.frontmostApplication {
         handlePossibleAppMatch(frontmost)
@@ -87,10 +105,15 @@ enum BlockerEnforcementService {
     armedDomains = []
     lastUrlByDomain = [:]
     temporarilyAllowedUntil = [:]
+    reportedPermissionDenials = []
 
     if let observer = activationObserver {
       NSWorkspace.shared.notificationCenter.removeObserver(observer)
       activationObserver = nil
+    }
+    if let observer = launchObserver {
+      NSWorkspace.shared.notificationCenter.removeObserver(observer)
+      launchObserver = nil
     }
     pollTimer?.invalidate()
     pollTimer = nil
@@ -115,7 +138,7 @@ enum BlockerEnforcementService {
     guard let url = lastUrlByDomain[domain] else { return }
     for bundleId in browserBundleIds {
       guard NSRunningApplication.runningApplications(withBundleIdentifier: bundleId).first != nil else { continue }
-      _ = runAppleScript(navigateScript(bundleId: bundleId, url: url))
+      _ = runAppleScript(navigateScript(bundleId: bundleId, url: url), bundleId: bundleId)
     }
   }
 
@@ -156,7 +179,7 @@ enum BlockerEnforcementService {
       let frontmost = NSWorkspace.shared.frontmostApplication,
       let bundleId = frontmost.bundleIdentifier,
       browserBundleIds.contains(bundleId),
-      let url = runAppleScript(urlScript(bundleId: bundleId)),
+      let url = runAppleScript(urlScript(bundleId: bundleId), bundleId: bundleId),
       let host = URLComponents(string: url)?.host?.lowercased()
     else { return }
 
@@ -166,7 +189,10 @@ enum BlockerEnforcementService {
     else { return }
 
     lastUrlByDomain[domain] = url
-    _ = runAppleScript(navigateScript(bundleId: bundleId, url: blockedPageUrl(target: domain, returnUrl: url)))
+    _ = runAppleScript(
+      navigateScript(bundleId: bundleId, url: blockedPageUrl(target: domain, returnUrl: url)),
+      bundleId: bundleId
+    )
     callback?("blockedAttempt", ["target": domain])
   }
 
@@ -203,15 +229,29 @@ enum BlockerEnforcementService {
     case "com.microsoft.edgemac": return "Microsoft Edge"
     case "com.brave.Browser": return "Brave Browser"
     case "company.thebrowser.Browser": return "Arc"
+    case "com.vivaldi.Vivaldi": return "Vivaldi"
+    case "com.operasoftware.Opera": return "Opera"
     default: return "Safari"
     }
   }
 
-  /// Runs `source`, swallowing any error — a browser without Automation permission
-  /// granted yet, or one that was quit mid-check, should not crash or spam a log.
-  private static func runAppleScript(_ source: String) -> String? {
+  /// Runs `source`, swallowing any error — a browser that was quit mid-check should not
+  /// crash or spam a log. If the error is Apple Events being denied for `bundleId`,
+  /// reports it once per armed session so the UI can tell the user site blocking isn't
+  /// actually working for that browser instead of failing silently forever.
+  private static func runAppleScript(_ source: String, bundleId: String? = nil) -> String? {
     var error: NSDictionary?
     let result = NSAppleScript(source: source)?.executeAndReturnError(&error)
+
+    if
+      let error, let bundleId,
+      (error["NSAppleScriptErrorNumber"] as? Int) == automationDeniedErrorNumber,
+      !reportedPermissionDenials.contains(bundleId)
+    {
+      reportedPermissionDenials.insert(bundleId)
+      callback?("siteBlockingPermissionDenied", ["bundleId": bundleId])
+    }
+
     return error == nil ? result?.stringValue : nil
   }
 

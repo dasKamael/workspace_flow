@@ -6,9 +6,17 @@ import 'package:workspace_flow/presentation/screens/layout_overlay/layout_overla
 import 'package:workspace_flow/presentation/screens/layout_overlay/layout_overlay.screen.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/widgets/window_tile.dart';
 
-/// Drives the overlay exactly as the second Flutter engine does: an empty app that is
-/// fed its payload over the method channel. The screen-level tests pump the widget
-/// inside a Scaffold, which would hide anything the real entry point gets wrong.
+/// Drives the overlay exactly as one of its N native engines does — one per screen —
+/// an empty app fed its payload over the method channel. The screen-level tests pump
+/// the widget inside a Scaffold, which would hide anything the real entry point gets
+/// wrong.
+///
+/// Merging every screen's tiles into one final layout on "apply" is native Swift
+/// bookkeeping (`LayoutOverlayService.swift`'s `windowsByScreen`) that a Dart widget
+/// test cannot exercise — these tests cover only this engine's own side of the
+/// contract: parsing its `update` payload (now scoped to one `screenIndex`), telling
+/// native about local edits via `windowsChanged`, accepting a tile pushed in from
+/// another screen via `windowAdded`, and firing bare `apply`/`cancel` signals.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -22,6 +30,14 @@ void main() {
     visibleHeight: 1415,
     isMain: true,
     diagonalInches: 26.8,
+  );
+  const secondScreen = ScreenInfo(
+    index: 1,
+    visibleX: 2560,
+    visibleY: 0,
+    visibleWidth: 1512,
+    visibleHeight: 945,
+    isMain: false,
   );
 
   const window = ProjectWindow(id: -1, name: 'VS Code', screenIndex: 0, x: 0, y: 0, width: 62.5, height: 100);
@@ -41,16 +57,28 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
   });
 
-  /// Sends the payload the way the native side does.
+  /// Sends an `update` the way native does — pre-scoped to this engine's own screen.
   Future<void> sendPayload(WidgetTester tester, {List<ProjectWindow> windows = const [window]}) async {
     await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
       channel.name,
       channel.codec.encodeMethodCall(
         MethodCall('update', {
-          'screens': [screen.toJson()],
+          'screens': [screen.toJson(), secondScreen.toJson()],
+          'screenIndex': screen.index,
           'windows': [for (final window in windows) window.toJson()],
         }),
       ),
+      (_) {},
+    );
+    await tester.pumpAndSettle();
+  }
+
+  /// Sends a `windowAdded` push the way native relays a "move to this screen" from a
+  /// different screen's engine.
+  Future<void> sendWindowAdded(WidgetTester tester, ProjectWindow addedWindow) async {
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+      channel.name,
+      channel.codec.encodeMethodCall(MethodCall('windowAdded', addedWindow.toJson())),
       (_) {},
     );
     await tester.pumpAndSettle();
@@ -93,8 +121,30 @@ void main() {
   });
 
   testWidgets('Given the overlay is showing, '
+      'when a tile is removed, '
+      'then this screen\'s new tile list goes back over the channel as JSON', (tester) async {
+    // Given
+    await pumpApp(tester);
+    await sendPayload(tester);
+
+    // When — the × of the only tile
+    final tile = tester.getRect(find.byType(WindowTile).first);
+    await tester.tapAt(
+      Offset(tile.right - WindowTile.cornerHandleSize - WindowTile.closeSize / 2, tile.top + WindowTile.closeSize / 2),
+    );
+    await tester.pumpAndSettle();
+
+    // Then
+    final call = outgoing.firstWhere((call) => call.method == 'windowsChanged');
+    final arguments = call.arguments as Map;
+    expect(arguments['screenIndex'], 0);
+    expect(arguments['windows'], isEmpty);
+  });
+
+  testWidgets('Given the overlay is showing, '
       'when the layout is applied, '
-      'then the edited windows go back over the channel as JSON', (tester) async {
+      'then a bare apply signal goes back — native already has every screen\'s '
+      'latest tiles from their own "windowsChanged" reports', (tester) async {
     // Given
     await pumpApp(tester);
     await sendPayload(tester);
@@ -105,10 +155,6 @@ void main() {
 
     // Then
     expect(outgoing.map((call) => call.method), contains('apply'));
-    final payload = outgoing.firstWhere((call) => call.method == 'apply').arguments as Map;
-    final windows = (payload['windows']! as List).cast<Map<Object?, Object?>>();
-    expect(windows, hasLength(1));
-    expect(ProjectWindow.fromJson(windows.single.map((k, v) => MapEntry(k.toString(), v))), window);
   });
 
   testWidgets('Given the overlay was already used once this session, '
@@ -126,19 +172,11 @@ void main() {
     // Then
     expect(find.text('Figma'), findsOneWidget);
     expect(find.text('VS Code'), findsNothing);
-
-    // And saving sends back the second project's window, not the first's
-    await tester.tap(find.text('SAVE LAYOUT'));
-    await tester.pumpAndSettle();
-    final payload = outgoing.firstWhere((call) => call.method == 'apply').arguments as Map;
-    final windows = (payload['windows']! as List).cast<Map<Object?, Object?>>();
-    expect(windows, hasLength(1));
-    expect(ProjectWindow.fromJson(windows.single.map((k, v) => MapEntry(k.toString(), v))), otherWindow);
   });
 
   testWidgets('Given the overlay is showing, '
       'when it is cancelled, '
-      'then a cancel goes back and no layout is sent', (tester) async {
+      'then a cancel goes back and no apply is sent', (tester) async {
     // Given
     await pumpApp(tester);
     await sendPayload(tester);
@@ -150,5 +188,50 @@ void main() {
     // Then
     expect(outgoing.map((call) => call.method), contains('cancel'));
     expect(outgoing.map((call) => call.method), isNot(contains('apply')));
+  });
+
+  testWidgets('Given the overlay is showing with one tile, '
+      'when native pushes a tile moved in from another screen, '
+      'then it appears here too, without disturbing the tile already here', (tester) async {
+    // Given
+    await pumpApp(tester);
+    await sendPayload(tester);
+    expect(find.byType(WindowTile), findsOneWidget);
+
+    // When — the tile arrives with the screenIndex it was moved to, exactly as
+    // `LayoutOverlayApp._moveToOtherScreen` on the origin screen would set it
+    const moved = ProjectWindow(id: -3, name: 'Slack', screenIndex: 0, x: 10, y: 10, width: 30, height: 30);
+    await sendWindowAdded(tester, moved);
+
+    // Then
+    expect(find.byType(WindowTile), findsNWidgets(2));
+    expect(find.text('VS Code'), findsOneWidget);
+    expect(find.text('Slack'), findsOneWidget);
+  });
+
+  testWidgets('Given a tile was already removed from this screen, '
+      'when native pushes a *different* tile moved in from another screen, '
+      'then only the newly arrived tile shows — the removed one does not '
+      'reappear', (tester) async {
+    // Given — this engine's own `_windows` field is only ever the *initial* seed
+    // from `update`; nothing must ever re-seed a screen from it after a local
+    // edit, or a removal like this gets silently undone by an unrelated push.
+    await pumpApp(tester);
+    await sendPayload(tester);
+    final tile = tester.getRect(find.byType(WindowTile).first);
+    await tester.tapAt(
+      Offset(tile.right - WindowTile.cornerHandleSize - WindowTile.closeSize / 2, tile.top + WindowTile.closeSize / 2),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(WindowTile), findsNothing);
+
+    // When — an unrelated tile arrives from another screen's own drag
+    const moved = ProjectWindow(id: -3, name: 'Slack', screenIndex: 0, x: 10, y: 10, width: 30, height: 30);
+    await sendWindowAdded(tester, moved);
+
+    // Then
+    expect(find.byType(WindowTile), findsOneWidget);
+    expect(find.text('Slack'), findsOneWidget);
+    expect(find.text('VS Code'), findsNothing);
   });
 }

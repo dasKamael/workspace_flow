@@ -12,6 +12,7 @@ import 'package:workspace_flow/data/system/repository/blocker_enforcement.reposi
 import 'package:workspace_flow/data/system/repository/menu_bar.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/model/blocker_error_reason.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
@@ -28,12 +29,31 @@ class _FakeBlockedPageServerService extends BlockedPageServerService {
   Future<String> build() async => 'http://127.0.0.1:0';
 }
 
+/// Lets a test force `arm`/`disarm` to fail, to exercise `BlockerService`'s error
+/// handling without a real native failure.
+class _ThrowingBlockerEnforcementRepository extends FakeBlockerEnforcementRepository {
+  bool throwOnArm = false;
+  bool throwOnDisarm = false;
+
+  @override
+  Future<void> arm(List<BlockedItem> items, {required String blockedPageBaseUrl}) async {
+    if (throwOnArm) throw Exception('arm failed');
+    return super.arm(items, blockedPageBaseUrl: blockedPageBaseUrl);
+  }
+
+  @override
+  Future<void> disarm() async {
+    if (throwOnDisarm) throw Exception('disarm failed');
+    return super.disarm();
+  }
+}
+
 /// The enforcement side (native detection) is a fake here; this only checks that an
 /// intercepted attempt is turned into the right side effects — the blocked-today stat
 /// and the blocked page itself, which nothing previously wired up at all.
 void main() {
   late ProviderContainer container;
-  late FakeBlockerEnforcementRepository enforcement;
+  late _ThrowingBlockerEnforcementRepository enforcement;
   late MockBlockedWindowRepository blockedWindow;
   late MockMenuBarRepository menuBar;
   late BlockerProfileRepository profiles;
@@ -45,7 +65,7 @@ void main() {
   setUp(() async {
     final database = createTestDatabase();
     profiles = BlockerProfileRepository(dao: BlockerDao(database));
-    enforcement = FakeBlockerEnforcementRepository();
+    enforcement = _ThrowingBlockerEnforcementRepository();
     blockedWindow = MockBlockedWindowRepository();
     menuBar = MockMenuBarRepository();
     when(
@@ -201,5 +221,48 @@ void main() {
     // Then
     expect(container.read(blockerServiceProvider), isFalse);
     verify(() => menuBar.setArmedProfile(null)).called(greaterThanOrEqualTo(1));
+  });
+
+  test('Given an armed profile, '
+      'when a browser reports its Automation permission was denied, '
+      'then the error service records a sitePermissionDenied reason', () async {
+    // Given
+    await container.read(blockerServiceProvider.notifier).setArmed(armed: true);
+
+    // When
+    enforcement.simulatePermissionDenied('com.google.Chrome');
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+
+    // Then
+    expect(container.read(blockerErrorServiceProvider), BlockerErrorReason.sitePermissionDenied);
+  });
+
+  test('Given the enforcement repository fails to arm, '
+      'when setArmed(armed: true) is called, '
+      'then the blocker stays disarmed and the error service records an armFailed reason', () async {
+    // Given
+    enforcement.throwOnArm = true;
+
+    // When
+    await container.read(blockerServiceProvider.notifier).setArmed(armed: true);
+
+    // Then
+    expect(container.read(blockerServiceProvider), isFalse);
+    expect(container.read(blockerErrorServiceProvider), BlockerErrorReason.armFailed);
+  });
+
+  test('Given an armed profile whose enforcement repository fails to disarm, '
+      'when setArmed(armed: false) is called, '
+      'then the blocker still reports disarmed and the error service records a disarmFailed reason', () async {
+    // Given
+    await container.read(blockerServiceProvider.notifier).setArmed(armed: true);
+    enforcement.throwOnDisarm = true;
+
+    // When
+    await container.read(blockerServiceProvider.notifier).setArmed(armed: false);
+
+    // Then
+    expect(container.read(blockerServiceProvider), isFalse);
+    expect(container.read(blockerErrorServiceProvider), BlockerErrorReason.disarmFailed);
   });
 }

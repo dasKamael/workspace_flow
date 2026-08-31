@@ -16,6 +16,30 @@ void main() {
   }) => ProjectWindow(id: id, name: 'VS Code', screenIndex: screenIndex, x: x, y: y, width: width, height: height);
 
   group('moving', () {
+    test('Given a neighbour on a different screen sitting exactly where a magnet '
+        'would catch, '
+        'when a tile is moved near that same spot, '
+        'then it is not treated as a magnet — screens never share snap neighbours, '
+        'even when the caller passes every window instead of pre-filtering', () {
+      // Given — this is the scenario the multi-window overlay relies on: every
+      // screen's widget now passes the *whole* draft layout as `neighbours`, not
+      // just its own screen's slice, because filtering already happens in here.
+      final elsewhere = window(id: 2, screenIndex: 1, x: 40, y: 40, width: 30, height: 30);
+
+      // When — 40.8 would snap to 40 (elsewhere's left edge) if screens leaked in
+      final snap = WindowSnapUtil.snapMove(
+        moving: window(screenIndex: 0),
+        neighbours: [elsewhere],
+        x: 40.8,
+        y: 41.3,
+        magnetsEnabled: true,
+      );
+
+      // Then
+      expect(snap.x, 40.8);
+      expect(snap.hasGuides, isFalse);
+    });
+
     test('Given a tile dragged far from anything, '
         'when it is moved, '
         'then it lands exactly where the pointer put it', () {

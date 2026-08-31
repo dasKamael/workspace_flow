@@ -31,6 +31,7 @@ class _FakeBlockedPageServerService extends BlockedPageServerService {
 void main() {
   late ProviderContainer container;
   late BlockerProfileRepository profiles;
+  late FakeBlockerEnforcementRepository enforcement;
 
   setUp(() async {
     final database = createTestDatabase();
@@ -42,12 +43,13 @@ void main() {
         BlockedItem(id: 0, name: 'Slack', kind: BlockedItemKind.app),
       ],
     );
+    enforcement = FakeBlockerEnforcementRepository();
 
     container = createContainer(
       overrides: [
         blockerProfileRepositoryProvider.overrideWithValue(profiles),
         focusSessionRepositoryProvider.overrideWithValue(FocusSessionRepository(dao: FocusDao(database))),
-        blockerEnforcementRepositoryProvider.overrideWith((ref) => FakeBlockerEnforcementRepository()),
+        blockerEnforcementRepositoryProvider.overrideWith((ref) => enforcement),
         // A real HttpServer bind never resolves inside the widget test's fake clock.
         blockedPageServerServiceProvider.overrideWith(() => _FakeBlockedPageServerService()),
       ],
@@ -154,5 +156,26 @@ void main() {
     final profile = (await profiles.watchProfiles().first).single;
     expect(profile.items.firstWhere((item) => item.name == 'Slack').enabled, isFalse);
     expect(profile.enabledItems.map((item) => item.name), ['youtube.com']);
+  });
+
+  testWidgets('Given an armed blocker card, '
+      'when a browser reports its Automation permission was denied, '
+      'then a snackbar tells the user site blocking needs permission', (tester) async {
+    // Given
+    await pumpAppWidget(
+      tester,
+      container: container,
+      child: const SizedBox(width: 320, child: BlockerCard()),
+    );
+    await tester.tap(find.byType(UiSwitch));
+    await tester.pumpAndSettle();
+
+    // When
+    enforcement.simulatePermissionDenied('com.google.Chrome');
+    await tester.pump();
+    await tester.pump();
+
+    // Then
+    expect(find.textContaining('Automation'), findsOneWidget);
   });
 }

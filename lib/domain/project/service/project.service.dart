@@ -96,8 +96,13 @@ class ProjectService extends _$ProjectService {
   }
 
   /// Pairs a project folder with an app and adds it to the library as its own entry —
-  /// "VS Code — client-a" alongside plain "VS Code" — so a project opens with the
-  /// right window already showing instead of a blank one.
+  /// "backend" alongside plain "VS Code" — so a project opens with the right window
+  /// already showing instead of a blank one.
+  ///
+  /// Named after the folder alone, not `"<app> — <folder>"`: the chip already sits
+  /// next to the app's own icon and has little width to spare, and the folder is what
+  /// tells two variants of the same app (e.g. a "backend" and a "frontend" folder
+  /// opened with the same editor) apart.
   ///
   /// Asks for the folder first, then which app opens it; returns null if either step
   /// is cancelled or the pickers are unavailable.
@@ -111,11 +116,7 @@ class ProjectService extends _$ProjectService {
       final app = await launcher.chooseApp();
       if (app == null) return null;
 
-      final entry = AppLibraryEntry(
-        name: '${app.name} — ${folder.name}',
-        bundleId: app.bundleId,
-        documentPath: folder.path,
-      );
+      final entry = AppLibraryEntry(name: folder.name, bundleId: app.bundleId, documentPath: folder.path);
       await addToLibrary(entry);
       return entry;
     } on Object {

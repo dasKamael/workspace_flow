@@ -2,7 +2,7 @@
 # Makefile — workspace_flow (Focus App, macOS)
 # ==============================================================================
 
-.PHONY: run run-release build-runner build-runner-watch format analyze test test-architecture clean
+.PHONY: run run-release build-runner build-runner-watch format analyze test test-architecture clean release
 
 # ------------------------------------------------------------------ Run
 run:
@@ -10,6 +10,10 @@ run:
 
 run-release:
 	flutter run -d macos --release
+
+# ------------------------------------------------------------------ Release
+release:
+	./scripts/release.sh
 
 # ------------------------------------------------------------------ Codegen
 build-runner:

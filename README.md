@@ -94,20 +94,33 @@ it in a plugin means CocoaPods picks up every file in `macos/Classes/` — no ma
 | `StatusItemService` | menu-bar countdown |
 | `LoginItemService` | `SMAppService` |
 | `BlockedWindowService` | the blocked page in a second `FlutterEngine` |
-| `BlockerEnforcementService` | **stub** — see below |
+| `BlockerEnforcementService` | actually enforces an armed profile — see below |
 
 Dart reaches it through the single `MacosBridgeChannel`, with one typed repository per
 concern in `data/system/repository/`.
 
-## Not done yet
+## App blocker: what's actually enforced
 
-**Blocker enforcement.** Profiles, arming, the animation, the per-entry toggles and the
-statistics all work, but nothing is actually blocked: `blockerEnforcementRepositoryProvider`
-returns `FakeBlockerEnforcementRepository`. The interface is already shaped for the intended
-macOS approach — apps polled through `NSWorkspace.runningApplications` and hidden or
-terminated, domains written into `/etc/hosts` by a privileged helper the user approves once.
-Swapping the provider for `MacosBlockerEnforcementRepository` and filling in
-`BlockerEnforcementService.swift` is the whole remaining change on the app side.
+`blockerEnforcementRepositoryProvider` returns `MacosBlockerEnforcementRepository` in the
+running app; `FakeBlockerEnforcementRepository` only backs the test suite.
 
-Because of that, the blocked-page window is reachable only from native code today, and
-"Blocked today" stays at zero until something records an attempt.
+- **Apps** are caught the moment they launch or activate (`NSWorkspace` notifications) and
+  hidden — every re-activation (Dock click, ⌘-Tab, relaunch) is caught again, which is what
+  keeps a hidden app from simply being brought back. This is deliberately not a hard
+  terminate: a paid focus tool that silently kills a user's unsaved work is a worse product
+  than one that keeps politely re-hiding it.
+- **Sites** are enforced by polling the frontmost browser's active tab via AppleScript and
+  redirecting it to a local blocked page. Supported browsers: Safari, Chrome, Edge, Brave,
+  Arc, Vivaldi, Opera. **Firefox and any other non-scriptable browser cannot be enforced** —
+  there is no AppleScript tab API for them, and that gap is accepted rather than worked
+  around. Only the frontmost tab of the frontmost browser is checked each tick, so a blocked
+  site in a background tab is only caught once it's brought to the front.
+- If a browser's Automation permission hasn't been granted (or was revoked), site blocking
+  for it silently does nothing by default from macOS's side; the app surfaces this instead
+  of failing quietly — see `BlockerErrorReason.sitePermissionDenied` /
+  `blocker_error_site_permission_denied`.
+
+**Deliberately out of scope**: `/etc/hosts`-based blocking (would need a privileged helper
+process with its own signing target, and loses the current per-attempt "blocked page with
+Unlock" UX in favour of an all-or-nothing, cross-app block) and scheduled/automatic
+arm-disarm (profiles have no time-window fields at all today — arming is manual only).

@@ -28,7 +28,9 @@ class WindowCaptureService extends _$WindowCaptureService {
       return const [];
     }
 
-    final screens = await ref.read(screensProvider.future);
+    // Refreshed rather than read: `screensProvider` is keepAlive and a display could
+    // have been connected or disconnected since it was last resolved.
+    final screens = await ref.refresh(screensProvider.future);
     if (screens.isEmpty) return const [];
 
     return [for (final (index, window) in captured.indexed) ..._toLayout(window, index, screens)];

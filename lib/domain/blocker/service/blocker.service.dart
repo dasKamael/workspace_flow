@@ -6,6 +6,7 @@ import 'package:workspace_flow/data/system/repository/blocked_window.repository.
 import 'package:workspace_flow/data/system/repository/blocker_enforcement.repository.dart';
 import 'package:workspace_flow/data/system/repository/menu_bar.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/model/blocker_error_reason.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
@@ -18,6 +19,18 @@ const Duration kBlockerUnlockDuration = Duration(minutes: 2);
 /// How many unlocks a single armed session gets, reset every time the blocker is armed.
 const int kBlockerUnlocksPerSession = 3;
 
+/// The last arm/disarm failure or permission problem the UI hasn't shown yet, if any.
+/// Set by [BlockerService], cleared by whoever displays it.
+@Riverpod(keepAlive: true)
+class BlockerErrorService extends _$BlockerErrorService {
+  @override
+  BlockerErrorReason? build() => null;
+
+  void report(BlockerErrorReason reason) => state = reason;
+
+  void clear() => state = null;
+}
+
 /// Whether the blocker is armed, what it is enforcing, and how many unlocks remain.
 ///
 /// Arming is independent of projects and of the timer: a profile can run on its own.
@@ -25,12 +38,14 @@ const int kBlockerUnlocksPerSession = 3;
 class BlockerService extends _$BlockerService {
   StreamSubscription<String>? _attempts;
   StreamSubscription<String>? _unlockRequests;
+  StreamSubscription<String>? _permissionDenied;
 
   @override
   bool build() {
     ref.onDispose(() {
       _attempts?.cancel();
       _unlockRequests?.cancel();
+      _permissionDenied?.cancel();
     });
 
     final menuBar = ref.read(menuBarRepositoryProvider);
@@ -78,9 +93,15 @@ class BlockerService extends _$BlockerService {
     if (!armed) {
       await _attempts?.cancel();
       await _unlockRequests?.cancel();
+      await _permissionDenied?.cancel();
       _attempts = null;
       _unlockRequests = null;
-      await enforcement.disarm();
+      _permissionDenied = null;
+      try {
+        await enforcement.disarm();
+      } catch (_) {
+        ref.read(blockerErrorServiceProvider.notifier).report(BlockerErrorReason.disarmFailed);
+      }
       state = false;
       _publishArmedProfileToMenuBar();
       return;
@@ -88,9 +109,17 @@ class BlockerService extends _$BlockerService {
 
     final profile = await _selectedProfile();
     unlocksRemaining = kBlockerUnlocksPerSession;
-    await enforcement.arm(profile?.enabledItems ?? const [], blockedPageBaseUrl: await _blockedPageBaseUrl());
+    try {
+      await enforcement.arm(profile?.enabledItems ?? const [], blockedPageBaseUrl: await _blockedPageBaseUrl());
+    } catch (_) {
+      ref.read(blockerErrorServiceProvider.notifier).report(BlockerErrorReason.armFailed);
+      return;
+    }
     _attempts = enforcement.attempts.listen((target) => _handleAttempt(target, profile));
     _unlockRequests = enforcement.unlockRequests.listen(unlock);
+    _permissionDenied = enforcement.permissionDenied.listen(
+      (_) => ref.read(blockerErrorServiceProvider.notifier).report(BlockerErrorReason.sitePermissionDenied),
+    );
     state = true;
     _publishArmedProfileToMenuBar();
   }

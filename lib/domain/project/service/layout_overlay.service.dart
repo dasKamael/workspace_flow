@@ -25,7 +25,9 @@ class LayoutOverlayService extends _$LayoutOverlayService {
   /// or could not be shown at all.
   Future<List<ProjectWindow>?> edit(List<ProjectWindow> windows) async {
     try {
-      final screens = await ref.read(screensProvider.future);
+      // Refreshed rather than read: `screensProvider` is keepAlive and a display could
+      // have been connected or disconnected since it was last resolved.
+      final screens = await ref.refresh(screensProvider.future);
       if (screens.isEmpty) return null;
 
       // The library travels along so apps can be dropped in from inside the overlay.

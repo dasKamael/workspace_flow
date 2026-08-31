@@ -125,26 +125,13 @@ class WindowTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    // Keeps the name clear of the close button and the corner grip.
-                    padding: const EdgeInsets.only(right: closeSize + cornerHandleSize),
-                    child: Text(
-                      window.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: UiTypography.tileName.copyWith(color: _nameColor),
-                    ),
-                  ),
-                  Text(sizeLabel, style: UiTypography.tileSize.copyWith(color: _metaColor)),
-                ],
+                children: [Text(sizeLabel, style: UiTypography.tileSize.copyWith(color: _metaColor))],
               ),
             ),
           ),
-          if (icon != null)
-            Positioned.fill(
-              child: IgnorePointer(child: _CentredIcon(icon: icon!)),
-            ),
+          Positioned.fill(
+            child: IgnorePointer(child: _CentredIcon(icon: icon, name: window.name, nameColor: _nameColor)),
+          ),
           for (final handle in ResizeHandle.values)
             _HandleSlot(
               handle: handle,
@@ -213,25 +200,46 @@ class _HandleSlot extends StatelessWidget {
   };
 }
 
-/// The app's own icon, sized to the tile and centred.
+/// The app's own icon, sized to the tile and centred, with the window's name
+/// underneath — the name reads as "which project", the icon right above it as
+/// "which app", so both no longer compete with the close button and grip up in the
+/// corners.
 class _CentredIcon extends StatelessWidget {
-  const _CentredIcon({required this.icon});
+  const _CentredIcon({required this.icon, required this.name, required this.nameColor});
 
-  final Uint8List icon;
+  final Uint8List? icon;
+  final String name;
+  final Color nameColor;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final edge = (constraints.biggest.shortestSide * WindowTile.iconFraction).clamp(
-        WindowTile.iconMin,
-        WindowTile.iconMax,
-      );
-
-      // A tile can be smaller than the icon's minimum; then it simply has no room.
-      if (constraints.biggest.shortestSide < WindowTile.iconMin * 1.5) return const SizedBox.shrink();
+      final shortestSide = constraints.biggest.shortestSide;
+      // Below the icon's own minimum there is no room for it either; the name alone
+      // still fits and stays worth showing.
+      final showIcon = icon != null && shortestSide >= WindowTile.iconMin * 1.5;
+      final edge = (shortestSide * WindowTile.iconFraction).clamp(WindowTile.iconMin, WindowTile.iconMax);
 
       return Center(
-        child: Image.memory(icon, width: edge, height: edge, filterQuality: FilterQuality.medium),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showIcon) ...[
+                Image.memory(icon!, width: edge, height: edge, filterQuality: FilterQuality.medium),
+                const SizedBox(height: 6),
+              ],
+              Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: UiTypography.tileName.copyWith(color: nameColor),
+              ),
+            ],
+          ),
+        ),
       );
     },
   );

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:workspace_flow/common/translation/translation.extension.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
+import 'package:workspace_flow/domain/blocker/model/blocker_error_reason.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
@@ -42,9 +43,17 @@ class _BlockerCardState extends ConsumerState<BlockerCard> {
   int _armCount = 0;
 
   Future<void> _toggleArmed({required bool armed, required BlockerProfile? profile}) async {
-    if (armed) setState(() => _armCount++);
     await ref.read(blockerServiceProvider.notifier).setArmed(armed: armed);
+    // Only plays the lock-in animation once arming actually succeeded — a permission
+    // error must not visually claim the profile is enforced when it isn't.
+    if (armed && ref.read(blockerServiceProvider)) setState(() => _armCount++);
   }
+
+  String _errorMessage(BuildContext context, BlockerErrorReason reason) => switch (reason) {
+    BlockerErrorReason.armFailed => context.translations.blocker_error_arm_failed,
+    BlockerErrorReason.disarmFailed => context.translations.blocker_error_disarm_failed,
+    BlockerErrorReason.sitePermissionDenied => context.translations.blocker_error_site_permission_denied,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +61,12 @@ class _BlockerCardState extends ConsumerState<BlockerCard> {
     final profiles = ref.watch(blockerProfilesProvider).valueOrNull ?? const <BlockerProfile>[];
     final profile = ref.watch(selectedProfileProvider);
     final stats = ref.watch(focusStatsProvider).valueOrNull ?? const FocusStats();
+
+    ref.listen<BlockerErrorReason?>(blockerErrorServiceProvider, (previous, next) {
+      if (next == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_errorMessage(context, next))));
+      ref.read(blockerErrorServiceProvider.notifier).clear();
+    });
 
     return UiCard(
       clipBehavior: Clip.antiAlias,

@@ -68,6 +68,21 @@ mixin WindowDragHandling<T extends StatefulWidget> on State<T> {
 
   void reportRemove(int index);
 
+  /// Called instead of [reportRemove] when a move-drag ends outside every monitor
+  /// [monitorAt] can see *on this surface* — before giving up on it as "dropped in
+  /// dead space". [globalPosition] is still in this surface's own coordinates, same
+  /// as everywhere else in this mixin, and may well be far outside its bounds: AppKit
+  /// keeps delivering drag events to the window a drag started in even once the
+  /// cursor has physically moved onto a different monitor.
+  ///
+  /// A surface backed by more than one physical screen (the layout overlay) can use
+  /// this to translate that out-of-bounds point into another screen's own space and
+  /// move the tile there instead of deleting it. Returning `true` claims the drop —
+  /// [reportRemove] is not called. The miniature stage, with only one surface and
+  /// nowhere else a drop could mean, leaves this at its default and every
+  /// out-of-bounds drop still removes the tile.
+  bool reportDroppedOutside(int index, Offset globalPosition) => false;
+
   // ---------------------------------------------------------------- gestures
   /// Holding option suspends magnetism for fine positioning.
   bool get magnetsEnabled => !HardwareKeyboard.instance.isAltPressed;
@@ -123,8 +138,13 @@ mixin WindowDragHandling<T extends StatefulWidget> on State<T> {
     _session = null;
     reportDragEnd();
 
-    // Dropped away from every monitor — that removes the tile.
-    if (session != null && !session.isResize && globalPosition != null && monitorAt(globalPosition) == null) {
+    // Dropped away from every monitor this surface knows about — give the surface a
+    // chance to claim it as landing on a *different* screen before removing it.
+    if (session != null &&
+        !session.isResize &&
+        globalPosition != null &&
+        monitorAt(globalPosition) == null &&
+        !reportDroppedOutside(session.index, globalPosition)) {
       reportRemove(session.index);
     }
   }

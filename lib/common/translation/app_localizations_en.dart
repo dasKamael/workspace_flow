@@ -157,6 +157,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get blocker_blocked_today_caption => 'Attempts intercepted while a profile was armed.';
 
   @override
+  String get blocker_error_arm_failed => 'Couldn\'t arm the blocker. Please try again.';
+
+  @override
+  String get blocker_error_disarm_failed => 'Couldn\'t fully disarm the blocker. Please try again.';
+
+  @override
+  String get blocker_error_site_permission_denied =>
+      'Site blocking needs permission for a browser — check System Settings › Privacy & Security › Automation.';
+
+  @override
   String get project_editor_eyebrow => 'Settings · Project';
 
   @override

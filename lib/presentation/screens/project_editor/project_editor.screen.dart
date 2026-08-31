@@ -252,8 +252,8 @@ class _SourcesColumn extends ConsumerWidget {
             onPressed: () => _chooseFromFinder(ref),
           ),
           UiSpacer.m,
-          // Pairs a folder with an app — "VS Code — client-a" — so a project window
-          // opens showing the right project instead of a blank editor.
+          // Pairs a folder with an app — "backend" — so a project window opens
+          // showing the right project instead of a blank editor.
           UiGhostButton(
             label: context.translations.project_editor_add_project,
             icon: const UiSvgIcon(path: UiIcon.folder, size: UiSize.l, color: UiColor.fgMuted),

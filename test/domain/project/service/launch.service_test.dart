@@ -128,6 +128,40 @@ void main() {
     ).called(1);
   }, timeout: const Timeout(Duration(seconds: 30)));
 
+  test('Given a project launched once while only one screen is attached, '
+      'when a second screen is connected and the project is launched again, '
+      'then the second window lands on the newly attached screen instead of the stale, one-screen list', () async {
+    // Given — `screensProvider` is keepAlive, so its first resolution must not stick
+    // around forever; a plain `overrideWithValue`-style fixed list would hide that bug.
+    var currentScreens = [screens[0]];
+    final container = createContainer(
+      overrides: [
+        appLauncherRepositoryProvider.overrideWithValue(launcher),
+        windowControlRepositoryProvider.overrideWithValue(windowControl),
+        screensProvider.overrideWith((ref) async => currentScreens),
+      ],
+    );
+    await container.read(launchServiceProvider.notifier).launch(project);
+    container.read(launchServiceProvider.notifier).reset();
+
+    // When — the second monitor is attached, and the project is launched again
+    currentScreens = screens;
+    await container.read(launchServiceProvider.notifier).launch(project);
+
+    // Then — Chrome, saved for screen 1, is placed on the real second screen rather
+    // than falling back to the main screen the way a detached display would
+    verify(
+      () => windowControl.positionWindow(
+        processId: 4242,
+        x: 2560,
+        y: 0,
+        width: 1512,
+        height: 567,
+        timeout: any(named: 'timeout'),
+      ),
+    ).called(1);
+  }, timeout: const Timeout(Duration(seconds: 30)));
+
   test('Given accessibility permission is missing, '
       'when a project is launched, '
       'then the apps still start but nothing is positioned', () async {

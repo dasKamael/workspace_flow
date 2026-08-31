@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutter pub *)"
+      "Bash(flutter pub *)",
+      "Bash(chmod +x /Users/rmaas/Development/Personal/workspace_flow/scripts/release.sh)"
     ]
   }
 }

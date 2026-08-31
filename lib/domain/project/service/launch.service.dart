@@ -33,7 +33,9 @@ class LaunchService extends _$LaunchService {
 
     final launcher = ref.read(appLauncherRepositoryProvider);
     final windowControl = ref.read(windowControlRepositoryProvider);
-    final screens = await ref.read(screensProvider.future);
+    // Refreshed rather than read: `screensProvider` is keepAlive and a display could
+    // have been connected or disconnected since it was last resolved.
+    final screens = await ref.refresh(screensProvider.future);
     final canPosition = await _isAccessibilityTrusted(windowControl);
 
     state = LaunchProgress(

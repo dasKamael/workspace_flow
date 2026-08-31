@@ -35,6 +35,11 @@ abstract interface class BlockerEnforcementRepository {
   /// Emits the target each time "Unlock" was tapped on the blocked page for it.
   Stream<String> get unlockRequests;
 
+  /// Emits a browser's bundle id the first time site blocking against it fails because
+  /// Automation permission hasn't been granted — enforcement looks armed but silently
+  /// isn't working for that browser until the user grants it.
+  Stream<String> get permissionDenied;
+
   /// Whether enforcement is actually in effect — false for the fake.
   bool get isEnforcing;
 }
@@ -43,6 +48,7 @@ abstract interface class BlockerEnforcementRepository {
 class FakeBlockerEnforcementRepository implements BlockerEnforcementRepository {
   final StreamController<String> _attempts = StreamController<String>.broadcast();
   final StreamController<String> _unlockRequests = StreamController<String>.broadcast();
+  final StreamController<String> _permissionDenied = StreamController<String>.broadcast();
 
   /// The entries the last [arm] call was given — read by tests and the debug view.
   List<BlockedItem> armedItems = const [];
@@ -72,6 +78,9 @@ class FakeBlockerEnforcementRepository implements BlockerEnforcementRepository {
   Stream<String> get unlockRequests => _unlockRequests.stream;
 
   @override
+  Stream<String> get permissionDenied => _permissionDenied.stream;
+
+  @override
   bool get isEnforcing => false;
 
   /// Simulates an intercepted attempt, so the counters and the blocked page can be
@@ -81,9 +90,13 @@ class FakeBlockerEnforcementRepository implements BlockerEnforcementRepository {
   /// Simulates tapping "Unlock" on the blocked page.
   void simulateUnlockRequest(String target) => _unlockRequests.add(target);
 
+  /// Simulates a browser's Automation permission being denied.
+  void simulatePermissionDenied(String bundleId) => _permissionDenied.add(bundleId);
+
   void dispose() {
     _attempts.close();
     _unlockRequests.close();
+    _permissionDenied.close();
   }
 }
 
@@ -101,11 +114,17 @@ class MacosBlockerEnforcementRepository implements BlockerEnforcementRepository 
       if (target != null) _unlockRequests.add(target);
       return null;
     });
+    channel.onCall('siteBlockingPermissionDenied', (arguments) async {
+      final bundleId = arguments['bundleId']?.toString();
+      if (bundleId != null) _permissionDenied.add(bundleId);
+      return null;
+    });
   }
 
   final MacosBridgeChannel channel;
   final StreamController<String> _attempts = StreamController<String>.broadcast();
   final StreamController<String> _unlockRequests = StreamController<String>.broadcast();
+  final StreamController<String> _permissionDenied = StreamController<String>.broadcast();
 
   @override
   Future<void> arm(List<BlockedItem> items, {required String blockedPageBaseUrl}) =>
@@ -128,6 +147,9 @@ class MacosBlockerEnforcementRepository implements BlockerEnforcementRepository 
 
   @override
   Stream<String> get unlockRequests => _unlockRequests.stream;
+
+  @override
+  Stream<String> get permissionDenied => _permissionDenied.stream;
 
   @override
   bool get isEnforcing => true;

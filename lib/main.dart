@@ -16,8 +16,10 @@ void blockedPage() {
   runApp(const BlockedPageApp());
 }
 
-/// Entry point of the engine that renders the layout overlay across every screen.
-/// Started from Swift by name, so it must survive tree shaking.
+/// Entry point of the layout-overlay engine — started once per attached screen, each
+/// its own instance of this engine, from Swift by name, so it must survive tree
+/// shaking. See `LayoutOverlayService.swift` for why it's one engine per screen
+/// rather than one engine serving every screen's window.
 @pragma('vm:entry-point')
 void layoutOverlay() {
   WidgetsFlutterBinding.ensureInitialized();

@@ -30,9 +30,9 @@ abstract class AppLibraryEntry with _$AppLibraryEntry {
 
   /// Identity used to tell whether this entry is already placed in the current layout.
   ///
-  /// [documentPath] is folded in so two project variants of the same app — "VS Code —
-  /// client-a" and "VS Code — client-b" — are distinct entries rather than colliding
-  /// on their shared bundle id.
+  /// [documentPath] is folded in so two project variants of the same app — "backend"
+  /// and "frontend", both VS Code — are distinct entries rather than colliding on
+  /// their shared bundle id.
   String get key {
     if (url != null) return url!;
     if (documentPath != null) return '$bundleId|$documentPath';

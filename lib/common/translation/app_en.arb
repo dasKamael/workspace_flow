@@ -68,6 +68,9 @@
   "blocker_profile_label": "Profile",
   "blocker_blocked_today_label": "Blocked today",
   "blocker_blocked_today_caption": "Attempts intercepted while a profile was armed.",
+  "blocker_error_arm_failed": "Couldn't arm the blocker. Please try again.",
+  "blocker_error_disarm_failed": "Couldn't fully disarm the blocker. Please try again.",
+  "blocker_error_site_permission_denied": "Site blocking needs permission for a browser — check System Settings › Privacy & Security › Automation.",
 
   "project_editor_eyebrow": "Settings · Project",
   "project_editor_title_new": "New project",

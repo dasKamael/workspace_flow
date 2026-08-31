@@ -337,6 +337,24 @@ abstract class AppLocalizations {
   /// **'Attempts intercepted while a profile was armed.'**
   String get blocker_blocked_today_caption;
 
+  /// No description provided for @blocker_error_arm_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t arm the blocker. Please try again.'**
+  String get blocker_error_arm_failed;
+
+  /// No description provided for @blocker_error_disarm_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t fully disarm the blocker. Please try again.'**
+  String get blocker_error_disarm_failed;
+
+  /// No description provided for @blocker_error_site_permission_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Site blocking needs permission for a browser — check System Settings › Privacy & Security › Automation.'**
+  String get blocker_error_site_permission_denied;
+
   /// No description provided for @project_editor_eyebrow.
   ///
   /// In en, this message translates to:

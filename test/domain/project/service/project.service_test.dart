@@ -110,7 +110,9 @@ void main() {
 
     test('Given a folder and an app chosen in turn, '
         'when a project folder is added, '
-        'then the library gets one entry naming both', () async {
+        'then the library gets one entry named after the folder alone — not '
+        'prefixed with the app — so it stays short and two folders sharing an app '
+        'still read apart', () async {
       // Given
       when(launcher.chooseFolder).thenAnswer((_) async => (name: 'client-a', path: '/Users/dev/client-a'));
       when(
@@ -121,12 +123,12 @@ void main() {
       final entry = await withLauncher.read(projectServiceProvider.notifier).addProjectFolder();
 
       // Then
-      expect(entry?.name, 'VS Code — client-a');
+      expect(entry?.name, 'client-a');
       expect(entry?.bundleId, 'com.microsoft.VSCode');
       expect(entry?.documentPath, '/Users/dev/client-a');
 
       final library = await repository.watchAppLibrary().first;
-      expect(library.map((e) => e.name), contains('VS Code — client-a'));
+      expect(library.map((e) => e.name), contains('client-a'));
     });
 
     test('Given the folder picker is cancelled, '

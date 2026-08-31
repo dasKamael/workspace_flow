@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Loom uses Apple Events to detect and redirect blocked websites in your browser.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>Loom uses Accessibility to arrange your apps' windows into saved project layouts.</string>
 </dict>
 </plist>

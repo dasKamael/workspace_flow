@@ -18,42 +18,119 @@ import 'package:workspace_flow/presentation/screens/project_editor/widgets/snap_
 import 'package:workspace_flow/presentation/screens/project_editor/widgets/window_drag_handling.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/widgets/window_tile.dart';
 
-/// Arranges a layout at full size on the real screens.
+/// One physical screen's own "arrange a layout at full size on the real screens" —
+/// one instance per screen, each hosted by its own native window *and* its own
+/// engine/isolate (see `LayoutOverlayService.swift` for why one engine can't serve
+/// more than one screen here).
 ///
-/// Rendered by a second Flutter engine in a borderless window spanning every display,
-/// so a tile sits exactly where — and is exactly as big as — the window will be after a
-/// launch. Same tiles, same magnets, same guides as the miniature stage in the editor;
-/// only the scale differs, and the size readout switches to real points.
+/// Because each screen is its own isolate, [windows] is only ever *this* screen's own
+/// tiles, and this widget owns that list itself exactly the way a single-screen
+/// overlay always did — there is no shared list to lift up to a parent this time.
+/// [onWindowsChanged] still fires on every edit, but now it's telling native to keep
+/// its cross-screen bookkeeping fresh, not asking a Dart parent to hold the truth.
 class LayoutOverlayScreen extends StatefulWidget {
   const LayoutOverlayScreen({
-    required this.screens,
-    required this.initialWindows,
+    required this.screen,
+    required this.allScreens,
+    required this.windows,
+    required this.allWindows,
+    required this.onWindowsChanged,
+    required this.onMoveToOtherScreen,
+    required this.onDragPreview,
+    required this.onHideDragPreview,
     required this.onApply,
     required this.onCancel,
     this.library = const [],
     this.icons = const {},
+    this.previewWindow,
+    this.pendingAddedWindow,
+    this.addedWindowToken = 0,
     super.key,
   });
 
-  final List<ScreenInfo> screens;
-  final List<ProjectWindow> initialWindows;
+  /// Which physical screen this instance renders.
+  final ScreenInfo screen;
 
-  /// Apps that can still be dropped onto a screen. Everything already in the layout is
-  /// left out, so the row only ever shows what is actually addable.
+  /// Every attached screen, with their own geometry — used to work out which screen
+  /// a tile dragged out of this one's bounds actually landed on (see
+  /// [WindowDragHandling.reportDroppedOutside]), live, while it's still in progress
+  /// (see [onDragPreview]).
+  final List<ScreenInfo> allScreens;
+
+  /// The initial tiles for this screen; copied into local state once and owned here
+  /// after that, same as a single-screen overlay always worked.
+  final List<ProjectWindow> windows;
+
+  /// Every screen's tiles, kept current by native but always a beat behind this
+  /// screen's own [windows] for anything just edited here — used only to keep the
+  /// "apps still available" row honest across screens, never to decide what renders.
+  final List<ProjectWindow> allWindows;
+
+  /// Called after every local edit with this screen's full current tile list, so
+  /// native can keep a fresh copy ready for the moment "apply" is pressed on any
+  /// screen.
+  final ValueChanged<List<ProjectWindow>> onWindowsChanged;
+
+  /// Moves [ProjectWindow] to another screen once a drag whose drop point
+  /// [reportDroppedOutside] resolved onto a different screen actually ends. A live
+  /// drag itself can never cross into a different screen's own window — AppKit only
+  /// ever delivers a captured drag's events to the window it started in — which is
+  /// why [onDragPreview] exists to at least show where it's headed before it does.
+  final void Function(ProjectWindow window, int targetScreenIndex) onMoveToOtherScreen;
+
+  /// While a drag on this screen is hovering over [targetScreenIndex]'s physical
+  /// area, this is a live preview of where [window] would land there if released
+  /// right now — sent continuously as the drag moves, purely so that *other* screen
+  /// can show a ghost of it while the drag is still in progress. Nothing is actually
+  /// moved until the drag ends; see [onMoveToOtherScreen] for that.
+  final void Function(ProjectWindow window, int targetScreenIndex) onDragPreview;
+
+  /// The drag that was showing a preview on [targetScreenIndex] no longer is —
+  /// either it moved back over this screen, ended, or landed somewhere no screen
+  /// occupies.
+  final ValueChanged<int> onHideDragPreview;
+
+  /// Apps that can still be dropped onto a screen. Everything already in the layout —
+  /// on *any* screen, via [allWindows] — is left out, so the row only ever shows what
+  /// is actually addable.
   final List<AppLibraryEntry> library;
 
   /// App icons by bundle id, fetched by the main engine and passed in with the payload.
   final Map<String, Uint8List> icons;
 
-  final ValueChanged<List<ProjectWindow>> onApply;
+  final VoidCallback onApply;
   final VoidCallback onCancel;
+
+  /// A live preview pushed from another screen's own in-progress drag — see
+  /// [onDragPreview]. Rendered as a non-interactive ghost, never part of [windows].
+  final ProjectWindow? previewWindow;
+
+  /// A tile another screen's drag just finished moving onto this one, paired with
+  /// [addedWindowToken] so a *new* push can be told apart from the last one even if
+  /// the window data happens to be identical. Folded into local state via
+  /// `didUpdateWidget` when the token changes — never through [windows]/a new `key`,
+  /// which would recreate this screen's state and re-seed it from [windows] as it
+  /// was at the *start* of the session, silently undoing every local edit (a
+  /// removal, especially) made since.
+  final ProjectWindow? pendingAddedWindow;
+  final int addedWindowToken;
 
   @override
   State<LayoutOverlayScreen> createState() => _LayoutOverlayScreenState();
 }
 
 class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDragHandling {
-  late final List<ProjectWindow> _windows = [...widget.initialWindows];
+  late final List<ProjectWindow> _windows = [...widget.windows];
+
+  /// The last [LayoutOverlayScreen.addedWindowToken] already folded into
+  /// [_windows], so [didUpdateWidget] only reacts to a token it hasn't seen yet.
+  ///
+  /// Set in [initState], not as a `late` field initializer: this is never read
+  /// during [build], so a `late` initializer would only ever run on its first
+  /// access — inside [didUpdateWidget] itself — by which point `widget` already
+  /// *is* the new one, making every comparison trivially equal and silently
+  /// skipping every push.
+  int _lastAddedWindowToken = 0;
 
   int? _selectedIndex;
   int? _draggingIndex;
@@ -67,41 +144,53 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
   List<double> _guidesX = const [];
   List<double> _guidesY = const [];
 
-  /// Top-left corner of the union of all screens: the overlay window's own origin,
-  /// which every screen rectangle is measured against.
-  late final Offset _origin = Offset(
-    widget.screens.map((screen) => screen.visibleX).reduce((a, b) => a < b ? a : b),
-    widget.screens.map((screen) => screen.visibleY).reduce((a, b) => a < b ? a : b),
-  );
+  /// Which other screen, if any, the current drag is showing a live preview on —
+  /// tracked so [reportDragEnd] knows whether there is one to hide.
+  int? _previewTarget;
 
-  /// Where a screen sits inside the overlay, in logical pixels.
+  /// The tile exactly as [_previewTarget]'s live preview last showed it — reused
+  /// verbatim by [reportDroppedOutside] so it lands exactly there on release,
+  /// rather than being recomputed centred on the cursor at that instant. The
+  /// preview already tracks the pointer the same relative-motion way an ordinary
+  /// same-screen drag does (see [reportMove]), so reusing it is what keeps the
+  /// tile's position relative to the cursor continuous across the hand-off instead
+  /// of jumping the moment the mouse button lifts.
+  ProjectWindow? _previewedPlacement;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastAddedWindowToken = widget.addedWindowToken;
+  }
+
+  @override
+  void didUpdateWidget(LayoutOverlayScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.addedWindowToken == _lastAddedWindowToken) return;
+    _lastAddedWindowToken = widget.addedWindowToken;
+    final added = widget.pendingAddedWindow;
+    if (added == null) return;
+    // Not reported back via `onWindowsChanged`: native already folded this same
+    // tile into its own bookkeeping for this screen directly, the moment it
+    // relayed `moveWindowToScreen` — this only has to make it render here too.
+    setState(() => _windows.add(added));
+  }
+
+  /// This screen's own area, in logical pixels.
   ///
-  /// The Flutter view fills the borderless window and the window's origin *is* the
-  /// union of all screens, so these rectangles are also the global coordinates the
-  /// drag handling reports — no conversion needed.
-  Rect _rectOf(ScreenInfo screen) => Rect.fromLTWH(
-    screen.visibleX - _origin.dx,
-    screen.visibleY - _origin.dy,
-    screen.visibleWidth,
-    screen.visibleHeight,
-  );
-
-  ScreenInfo? _screenAt(int index) => widget.screens.where((screen) => screen.index == index).firstOrNull;
+  /// The native window is already sized to exactly this screen's `visibleFrame`
+  /// (unlike the old single-window overlay, which spanned every display and needed
+  /// an offset into their union) — so this is just the window's own bounds, and it's
+  /// also the global coordinate space the drag handling reports in directly.
+  Rect get _ownRect => Rect.fromLTWH(0, 0, widget.screen.visibleWidth, widget.screen.visibleHeight);
 
   // ---------------------------------------------------------- drag handling
   @override
-  int? monitorAt(Offset globalPosition) {
-    for (final screen in widget.screens) {
-      if (_rectOf(screen).contains(globalPosition)) return screen.index;
-    }
-    return null;
-  }
+  int? monitorAt(Offset globalPosition) => _ownRect.contains(globalPosition) ? widget.screen.index : null;
 
   @override
-  Size? monitorSizeOf(int screenIndex) {
-    final screen = _screenAt(screenIndex);
-    return screen == null ? null : Size(screen.visibleWidth, screen.visibleHeight);
-  }
+  Size? monitorSizeOf(int screenIndex) =>
+      screenIndex == widget.screen.index ? Size(widget.screen.visibleWidth, widget.screen.visibleHeight) : null;
 
   @override
   ProjectWindow? windowAt(int index) => _windows.elementAtOrNull(index);
@@ -115,6 +204,9 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
     required ProjectWindow origin,
     required bool magnetsEnabled,
   }) {
+    // A drag can never actually leave this screen (see the class doc on
+    // `onMoveToOtherScreen`), so `screenIndex` here is always this screen's own —
+    // kept as a parameter only because the mixin is shared with the miniature stage.
     final snap = WindowSnapUtil.snapMove(
       moving: origin.copyWith(screenIndex: screenIndex),
       neighbours: _windows,
@@ -122,13 +214,67 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
       y: y,
       magnetsEnabled: magnetsEnabled,
     );
-
-    _patch(
-      index,
-      (window) => window.copyWith(screenIndex: screenIndex, x: snap.x, y: snap.y),
-      snap: snap,
-    );
+    _patch(index, (window) => window.copyWith(screenIndex: screenIndex, x: snap.x, y: snap.y), snap: snap);
+    // The *unsnapped* x/y, not `snap.x`/`snap.y`: `WindowSnapUtil.snapMove` clamps
+    // to 0–100 so the tile itself doesn't visually fly off this screen while
+    // dragging — exactly the range that never leaves this screen's own bounds, so
+    // checking against the clamped value could never detect a cross-screen hover.
+    _updateCrossScreenPreview(origin, x: x, y: y);
   }
+
+  /// While a move-drag's raw, unsnapped position (can run past 0–100 the moment the
+  /// pointer leaves this screen — see the class doc on [reportMove]'s `screenIndex`
+  /// parameter) sits over a different attached screen's physical area, pushes a live
+  /// preview of where it would land there. Cleared the instant it moves back over
+  /// this screen, a gap between screens, or the drag ends.
+  void _updateCrossScreenPreview(ProjectWindow origin, {required double x, required double y}) {
+    final absolute = widget.screen.rectFromPercent(x: x, y: y, width: origin.width, height: origin.height);
+    final target = _screenContaining(absolute.x + absolute.width / 2, absolute.y + absolute.height / 2);
+
+    // The screen currently showing a preview changed — including jumping straight
+    // from one non-origin screen to a *different* one, which a fast drag across 3+
+    // monitors does easily (the point that was over screen 2 one frame can land on
+    // screen 3 the next, with no frame ever landing in between). That previous
+    // screen never otherwise hears about this: only ever telling the *new* target
+    // would leave its ghost stuck there for good. Cleared unconditionally on any
+    // change, then re-shown fresh if there's still a target at all.
+    if (target?.index != _previewTarget) _clearPreview();
+    if (target == null) return;
+
+    final percent = target.percentFromRect(x: absolute.x, y: absolute.y, width: absolute.width, height: absolute.height);
+    final placement = origin.copyWith(
+      screenIndex: target.index,
+      x: percent.x,
+      y: percent.y,
+      width: percent.width,
+      height: percent.height,
+    );
+    widget.onDragPreview(placement, target.index);
+    _previewTarget = target.index;
+    _previewedPlacement = placement;
+  }
+
+  void _clearPreview() {
+    final target = _previewTarget;
+    if (target == null) return;
+    widget.onHideDragPreview(target);
+    _previewTarget = null;
+    _previewedPlacement = null;
+  }
+
+  /// The other attached screen (never this one) whose physical area contains the
+  /// shared-space point ([sharedX], [sharedY]) — the same lookup [reportDroppedOutside]
+  /// uses to resolve a finished drag, reused here for the live preview mid-drag.
+  ScreenInfo? _screenContaining(double sharedX, double sharedY) => widget.allScreens
+      .where((screen) => screen.index != widget.screen.index)
+      .where(
+        (screen) =>
+            sharedX >= screen.visibleX &&
+            sharedX < screen.visibleX + screen.visibleWidth &&
+            sharedY >= screen.visibleY &&
+            sharedY < screen.visibleY + screen.visibleHeight,
+      )
+      .firstOrNull;
 
   @override
   void reportResize({
@@ -147,7 +293,6 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
       neighbours: _windows,
       magnetsEnabled: magnetsEnabled,
     );
-
     _patch(
       index,
       (window) => window.copyWith(x: snap.x, y: snap.y, width: snap.width, height: snap.height),
@@ -156,41 +301,88 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
   }
 
   @override
-  void reportDragEnd() => setState(() {
-    _draggingIndex = null;
-    _guidesX = const [];
-    _guidesY = const [];
-  });
+  void reportDragEnd() {
+    // Deliberately does *not* clear the live preview here, unlike an earlier
+    // version of this method: the mixin calls this *before* `reportDroppedOutside`
+    // (see `WindowDragHandling.endDrag`), so clearing unconditionally at this point
+    // would wipe `_previewedPlacement` before that method ever gets to read it,
+    // silently breaking every cross-screen commit. Every other case that actually
+    // needs the preview gone already clears it reactively: moving back over this
+    // screen or into a gap between screens both do, in `_updateCrossScreenPreview`
+    // (`reportMove` fires for every move, in or out of bounds, so that transition
+    // is never missed); a successful commit clears it itself, right after reading
+    // it, in `reportDroppedOutside`.
+    setState(() {
+      _draggingIndex = null;
+      _guidesX = const [];
+      _guidesY = const [];
+    });
+  }
 
   @override
-  void reportRemove(int index) => setState(() {
-    _windows.removeAt(index);
-    _selectedIndex = null;
-  });
+  void reportRemove(int index) {
+    if (index < 0 || index >= _windows.length) return;
+    setState(() {
+      _windows.removeAt(index);
+      _selectedIndex = null;
+    });
+    widget.onWindowsChanged(_windows);
+  }
 
-  /// Drops [entry] onto [screenIndex] at a percentage position.
-  void _place(AppLibraryEntry entry, int screenIndex, Offset percent) => setState(() {
-    _windows.add(
-      ProjectWindow.fromDrop(
-        // Negative, like every other draft tile, so it cannot collide with a stored row.
-        id: -(_windows.length + 1),
-        name: entry.name,
-        bundleId: entry.bundleId,
-        url: entry.url,
-        documentPath: entry.documentPath,
-        screenIndex: screenIndex,
-        x: percent.dx,
-        y: percent.dy,
-      ),
-    );
-    _selectedIndex = _windows.length - 1;
-  });
+  /// Drops [entry] onto this screen at a percentage position.
+  void _place(AppLibraryEntry entry, Offset percent) {
+    setState(() {
+      _windows.add(
+        ProjectWindow.fromDrop(
+          // Negative, like every other draft tile, so it cannot collide with a stored row.
+          id: -(_windows.length + 1),
+          name: entry.name,
+          bundleId: entry.bundleId,
+          url: entry.url,
+          documentPath: entry.documentPath,
+          screenIndex: widget.screen.index,
+          x: percent.dx,
+          y: percent.dy,
+        ),
+      );
+      _selectedIndex = _windows.length - 1;
+    });
+    widget.onWindowsChanged(_windows);
+  }
 
-  /// The identities already in the layout, so their chips drop out of the row.
+  /// Commits a drag that ended outside this screen's own bounds onto whichever
+  /// *other* attached screen [_updateCrossScreenPreview] most recently found it
+  /// hovering over — reusing that exact, already-computed placement (see
+  /// [_previewedPlacement]) rather than recomputing one from [globalPosition] at
+  /// this instant, which would centre the tile under the cursor and visibly jump it
+  /// away from wherever it actually was a moment before release.
+  @override
+  bool reportDroppedOutside(int index, Offset globalPosition) {
+    if (index < 0 || index >= _windows.length) return false;
+    final placement = _previewedPlacement;
+    if (placement == null) return false;
+    // Consumed: the ghost this placement described is about to become a real tile
+    // on the target screen instead, and this drag is over regardless either way.
+    _clearPreview();
+
+    setState(() {
+      _windows.removeAt(index);
+      _selectedIndex = null;
+    });
+    widget.onWindowsChanged(_windows);
+    widget.onMoveToOtherScreen(placement, placement.screenIndex);
+    return true;
+  }
+
+  /// The identities already in the layout on *any* screen, so their chips drop out
+  /// of the row everywhere at once — not just on whichever screen they were placed on.
   ///
   /// Matches [AppLibraryEntry.key] so two project variants of the same app — sharing a
   /// bundle id but naming different folders — hide independently of one another.
-  Set<String> get _placedKeys => {for (final window in _windows) window.libraryKey};
+  Set<String> get _placedKeys => {
+    for (final window in _windows) window.libraryKey,
+    for (final window in widget.allWindows) window.libraryKey,
+  };
 
   void _patch(int index, ProjectWindow Function(ProjectWindow window) patch, {required WindowSnap snap}) {
     if (index < 0 || index >= _windows.length) return;
@@ -200,6 +392,7 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
       _guidesX = snap.guidesX;
       _guidesY = snap.guidesY;
     });
+    widget.onWindowsChanged(_windows);
   }
 
   // ------------------------------------------------------------------ build
@@ -211,9 +404,13 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
       SingleActivator(LogicalKeyboardKey.numpadEnter): _ApplyIntent(),
     },
     child: Actions(
+      // Duplicated per screen rather than hoisted: each physical screen is its own
+      // native window with independent AppKit key-window status, so esc/return only
+      // ever reach whichever one currently has focus — every one of them needs its
+      // own copy of these to be reachable at all.
       actions: {
         _CancelIntent: CallbackAction<_CancelIntent>(onInvoke: (_) => widget.onCancel()),
-        _ApplyIntent: CallbackAction<_ApplyIntent>(onInvoke: (_) => widget.onApply(_windows)),
+        _ApplyIntent: CallbackAction<_ApplyIntent>(onInvoke: (_) => widget.onApply()),
       },
       child: Focus(
         autofocus: true,
@@ -223,7 +420,12 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
           color: UiColor.scrim,
           child: Stack(
             children: [
-              for (final screen in widget.screens) ..._screenLayer(screen),
+              ..._screenLayer(),
+              // On every screen, not just the main one: an app can only ever be
+              // dropped onto the screen whose own window it's dragged within — there
+              // is no reaching across a screen boundary mid-drag (see the class doc
+              // on `onMoveToOtherScreen`) — so each screen needs its own row to place
+              // straight onto it, rather than placing on one screen and moving after.
               Positioned(
                 left: 0,
                 right: 0,
@@ -234,7 +436,7 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
                     icons: widget.icons,
                     onDragStart: () => setState(() => _isPlacing = true),
                     onDragEnd: () => setState(() => _isPlacing = false),
-                    onApply: () => widget.onApply(_windows),
+                    onApply: widget.onApply,
                     onCancel: widget.onCancel,
                   ),
                 ),
@@ -246,15 +448,14 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
     ),
   );
 
-  /// Percentage position of a global point inside [rect].
-  Offset _percentIn(Rect rect, Offset globalPosition) =>
-      Offset((globalPosition.dx - rect.left) / rect.width * 100, (globalPosition.dy - rect.top) / rect.height * 100);
+  /// Percentage position of a global point inside this screen.
+  Offset _percentIn(Offset globalPosition) =>
+      Offset(globalPosition.dx / _ownRect.width * 100, globalPosition.dy / _ownRect.height * 100);
 
-  /// One screen: its outline, its caption, its tiles, and the guides of a drag on it.
-  List<Widget> _screenLayer(ScreenInfo screen) {
-    final rect = _rectOf(screen);
-    final isDragTarget =
-        _draggingIndex != null && _windows.elementAtOrNull(_draggingIndex!)?.screenIndex == screen.index;
+  /// This screen: its outline, its caption, its tiles, and the guides of a drag on it.
+  List<Widget> _screenLayer() {
+    final rect = _ownRect;
+    final isDragTarget = _draggingIndex != null;
 
     return [
       Positioned.fromRect(
@@ -263,7 +464,7 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
           // Opaque, or only the caption in the corner would catch a drop: the outline
           // itself paints nothing and would defer the hit test to its only child.
           hitTestBehavior: HitTestBehavior.opaque,
-          onAcceptWithDetails: (details) => _place(details.data, screen.index, _percentIn(rect, details.offset)),
+          onAcceptWithDetails: (details) => _place(details.data, _percentIn(details.offset)),
           builder: (context, candidate, _) => DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(color: candidate.isEmpty ? UiColor.borderOnDark : UiColor.accent, width: 2),
@@ -274,7 +475,10 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
               child: Padding(
                 padding: const EdgeInsets.all(UiSize.m),
                 child: Text(
-                  context.translations.project_editor_monitor_caption(screen.index + 1, screen.diagonalLabel),
+                  context.translations.project_editor_monitor_caption(
+                    widget.screen.index + 1,
+                    widget.screen.diagonalLabel,
+                  ),
                   style: UiTypography.monitorCaption.copyWith(color: UiColor.onDarkMuted),
                 ),
               ),
@@ -282,33 +486,45 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
           ),
         ),
       ),
+      // Every entry here should already belong to this screen — each edit only ever
+      // touches this isolate's own list — but the filter stays as a cheap guard
+      // against a stray `windowAdded` push carrying the wrong `screenIndex`.
       for (final (index, window) in _windows.indexed)
-        if (window.screenIndex == screen.index)
+        if (window.screenIndex == widget.screen.index)
           Positioned(
-            left: rect.left + rect.width * window.x / 100,
-            top: rect.top + rect.height * window.y / 100,
+            left: rect.width * window.x / 100,
+            top: rect.height * window.y / 100,
             width: rect.width * window.width / 100,
             height: rect.height * window.height / 100,
             child: IgnorePointer(
               ignoring: _isPlacing,
-              child: WindowTile(
-                window: window,
-                // Real points, not percentages — the reason for arranging at full size.
-                sizeLabel: context.translations.project_editor_tile_size(
-                  (screen.visibleWidth * window.width / 100).round().toString(),
-                  (screen.visibleHeight * window.height / 100).round().toString(),
+              // `WindowSnapUtil.snapMove` clamps to 0–100, so without this the real
+              // tile just sits stuck at this screen's edge — looking left behind —
+              // for as long as a live preview shows it already sitting on another
+              // screen instead. Opacity only, not `Visibility`/removal: the drag
+              // this very tile is mid-way through has to keep receiving events from
+              // the same `WindowTile` regardless of whether it's currently visible.
+              child: Opacity(
+                opacity: index == _draggingIndex && _previewTarget != null ? 0 : 1,
+                child: WindowTile(
+                  window: window,
+                  // Real points, not percentages — the reason for arranging at full size.
+                  sizeLabel: context.translations.project_editor_tile_size(
+                    (widget.screen.visibleWidth * window.width / 100).round().toString(),
+                    (widget.screen.visibleHeight * window.height / 100).round().toString(),
+                  ),
+                  icon: widget.icons[window.bundleId],
+                  onDark: true,
+                  isSelected: index == _selectedIndex,
+                  onSelect: () => setState(() => _selectedIndex = index),
+                  onRemove: () => reportRemove(index),
+                  onDragStart: (position) => startDrag(index, position),
+                  onDragUpdate: updateMove,
+                  onDragEnd: endDrag,
+                  onResizeStart: (handle, position) => startDrag(index, position, handle: handle),
+                  onResizeUpdate: updateResize,
+                  onResizeEnd: () => endDrag(null),
                 ),
-                icon: widget.icons[window.bundleId],
-                onDark: true,
-                isSelected: index == _selectedIndex,
-                onSelect: () => setState(() => _selectedIndex = index),
-                onRemove: () => reportRemove(index),
-                onDragStart: (position) => startDrag(index, position),
-                onDragUpdate: updateMove,
-                onDragEnd: endDrag,
-                onResizeStart: (handle, position) => startDrag(index, position, handle: handle),
-                onResizeUpdate: updateResize,
-                onResizeEnd: () => endDrag(null),
               ),
             ),
           ),
@@ -318,6 +534,39 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
           child: IgnorePointer(
             child: CustomPaint(
               painter: SnapGuidePainter(guidesX: _guidesX, guidesY: _guidesY),
+            ),
+          ),
+        ),
+      // A live preview pushed from another screen's own in-progress drag — see the
+      // class doc on `onDragPreview`. Faded and non-interactive: nothing has actually
+      // landed here yet.
+      if (widget.previewWindow case final preview?)
+        Positioned(
+          left: rect.width * preview.x / 100,
+          top: rect.height * preview.y / 100,
+          width: rect.width * preview.width / 100,
+          height: rect.height * preview.height / 100,
+          child: IgnorePointer(
+            child: Opacity(
+              opacity: 0.5,
+              child: WindowTile(
+                window: preview,
+                sizeLabel: context.translations.project_editor_tile_size(
+                  (widget.screen.visibleWidth * preview.width / 100).round().toString(),
+                  (widget.screen.visibleHeight * preview.height / 100).round().toString(),
+                ),
+                icon: widget.icons[preview.bundleId],
+                onDark: true,
+                isSelected: false,
+                onSelect: () {},
+                onRemove: () {},
+                onDragStart: (_) {},
+                onDragUpdate: (_) {},
+                onDragEnd: (_) {},
+                onResizeStart: (_, _) {},
+                onResizeUpdate: (_) {},
+                onResizeEnd: () {},
+              ),
             ),
           ),
         ),
