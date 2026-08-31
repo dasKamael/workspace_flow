@@ -92,7 +92,7 @@ class LaunchService extends _$LaunchService {
       if (processId == null) return false;
       if (!canPosition) return true;
 
-      final screen = _screenFor(window.screenIndex, screens);
+      final screen = _screenFor(window, screens);
       if (screen == null) return true;
 
       final rect = screen.rectFromPercent(x: window.x, y: window.y, width: window.width, height: window.height);
@@ -108,9 +108,24 @@ class LaunchService extends _$LaunchService {
     }
   }
 
-  /// The saved screen, or the main screen when that display is no longer attached.
-  ScreenInfo? _screenFor(int index, List<ScreenInfo> screens) {
+  /// The screen [window] was arranged on.
+  ///
+  /// Matched by [ProjectWindow.displayId] first — stable for the same physical
+  /// display across sleep/wake and reconnects, unlike [ProjectWindow.screenIndex],
+  /// a plain array position that `NSScreen.screens` does not guarantee to keep. Falls
+  /// back to the index (for windows saved before displayId existed, or once that
+  /// display truly is gone), then to the main screen once even the index is out of
+  /// range.
+  ScreenInfo? _screenFor(ProjectWindow window, List<ScreenInfo> screens) {
     if (screens.isEmpty) return null;
+
+    final displayId = window.displayId;
+    if (displayId != null) {
+      final byDisplayId = screens.where((screen) => screen.displayId == displayId).firstOrNull;
+      if (byDisplayId != null) return byDisplayId;
+    }
+
+    final index = window.screenIndex;
     if (index >= 0 && index < screens.length) return screens[index];
     return screens.firstWhere((screen) => screen.isMain, orElse: () => screens.first);
   }

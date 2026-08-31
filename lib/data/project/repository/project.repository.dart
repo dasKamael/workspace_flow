@@ -66,6 +66,7 @@ class ProjectRepository {
         url: Value(window.url),
         documentPath: Value(window.documentPath),
         screenIndex: Value(window.screenIndex),
+        displayId: Value(window.displayId),
         x: window.x,
         y: window.y,
         width: window.width,

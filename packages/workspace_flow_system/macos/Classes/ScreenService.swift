@@ -22,23 +22,25 @@ enum ScreenService {
         "visibleHeight": frame.height,
         "isMain": screen == NSScreen.main,
       ]
-      if let inches = diagonalInches(of: screen) {
-        entry["diagonalInches"] = inches
+      if let id = displayId(of: screen) {
+        // Stable across sleep/wake and reconnects for the same physical display —
+        // unlike array position, which `NSScreen.screens` does not guarantee to keep,
+        // so a saved layout can otherwise land on the wrong monitor after either.
+        entry["displayId"] = Int(id)
+        let size = CGDisplayScreenSize(id)
+        if size.width > 0, size.height > 0 {
+          let millimetres = (size.width * size.width + size.height * size.height).squareRoot()
+          entry["diagonalInches"] = millimetres / 25.4
+        }
       }
       return entry
     }
   }
 
-  /// Physical diagonal in inches, for the "Monitor 1 · 27″" caption.
-  private static func diagonalInches(of screen: NSScreen) -> Double? {
+  private static func displayId(of screen: NSScreen) -> CGDirectDisplayID? {
     guard
       let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber
     else { return nil }
-
-    let size = CGDisplayScreenSize(CGDirectDisplayID(number.uint32Value))
-    guard size.width > 0, size.height > 0 else { return nil }
-
-    let millimetres = (size.width * size.width + size.height * size.height).squareRoot()
-    return millimetres / 25.4
+    return CGDirectDisplayID(number.uint32Value)
   }
 }

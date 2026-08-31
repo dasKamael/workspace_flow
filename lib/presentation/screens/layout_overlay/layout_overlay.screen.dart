@@ -214,7 +214,12 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
       y: y,
       magnetsEnabled: magnetsEnabled,
     );
-    _patch(index, (window) => window.copyWith(screenIndex: screenIndex, x: snap.x, y: snap.y), snap: snap);
+    _patch(
+      index,
+      (window) =>
+          window.copyWith(screenIndex: screenIndex, displayId: widget.screen.displayId, x: snap.x, y: snap.y),
+      snap: snap,
+    );
     // The *unsnapped* x/y, not `snap.x`/`snap.y`: `WindowSnapUtil.snapMove` clamps
     // to 0–100 so the tile itself doesn't visually fly off this screen while
     // dragging — exactly the range that never leaves this screen's own bounds, so
@@ -244,6 +249,7 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
     final percent = target.percentFromRect(x: absolute.x, y: absolute.y, width: absolute.width, height: absolute.height);
     final placement = origin.copyWith(
       screenIndex: target.index,
+      displayId: target.displayId,
       x: percent.x,
       y: percent.y,
       width: percent.width,
@@ -341,6 +347,7 @@ class _LayoutOverlayScreenState extends State<LayoutOverlayScreen> with WindowDr
           url: entry.url,
           documentPath: entry.documentPath,
           screenIndex: widget.screen.index,
+          displayId: widget.screen.displayId,
           x: percent.dx,
           y: percent.dy,
         ),

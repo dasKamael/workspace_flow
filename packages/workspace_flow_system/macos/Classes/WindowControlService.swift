@@ -24,7 +24,15 @@ enum WindowControlService {
   /// exact case "Re-arrange" hits on a second run — creates no new window at all: the
   /// app just refocuses the existing one, so waiting for a "new" one that will never
   /// come would otherwise run out the clock on every single window.
-  private static let newWindowGrace: TimeInterval = 1.5
+  ///
+  /// Long enough to outlast a *second* window of an app like VS Code actually
+  /// appearing — it can take a couple of seconds to spin one up while its previous
+  /// window is still loading extensions and workspace state. Too short a grace here
+  /// falls back to "focused" before that second window exists, silently regrabbing
+  /// and repositioning the *first* window onto the second one's target rect instead —
+  /// which reads as "a launched project's windows land in the wrong place" even
+  /// though every rect and every screen match was correct.
+  private static let newWindowGrace: TimeInterval = 4.0
 
   /// Positions a window of `processId`.
   ///

@@ -28,6 +28,15 @@ abstract class ProjectWindow with _$ProjectWindow {
     /// the app in general. Set from an AppLibraryEntry carrying the same field.
     String? documentPath,
     @Default(0) int sortOrder,
+
+    /// The [ScreenInfo.displayId] this window was placed on, captured at arrange time.
+    ///
+    /// Preferred over [screenIndex] when launching: `NSScreen.screens`' array order
+    /// isn't guaranteed stable across sleep/wake or a monitor reconnect, so the index
+    /// alone can point at the wrong physical display even though it stays in range.
+    /// Null for windows saved before this field existed, or if the display reported
+    /// none — [screenIndex] is still the fallback for those.
+    int? displayId,
   }) = _ProjectWindow;
 
   /// Read back from the layout overlay, which runs in its own Flutter engine and can
@@ -55,6 +64,7 @@ abstract class ProjectWindow with _$ProjectWindow {
     String? bundleId,
     String? url,
     String? documentPath,
+    int? displayId,
   }) => ProjectWindow(
     id: id,
     name: name,
@@ -62,6 +72,7 @@ abstract class ProjectWindow with _$ProjectWindow {
     url: url,
     documentPath: documentPath,
     screenIndex: screenIndex,
+    displayId: displayId,
     x: _clamp(x - defaultWidth / 2, defaultWidth),
     y: _clamp(y - defaultHeight / 2, defaultHeight),
     width: defaultWidth,

@@ -243,6 +243,79 @@ void main() {
     ).called(1);
   }, timeout: const Timeout(Duration(seconds: 30)));
 
+  test('Given a window arranged on a display whose array position has since '
+      'changed — e.g. after sleep/wake or a monitor reconnect, which does not '
+      'guarantee NSScreen.screens keeps its order — '
+      'when the project is launched, '
+      'then it still lands on the same physical display via its displayId, not '
+      'whichever screen now happens to sit at the old index', () async {
+    // Given — arranged when the secondary display (id 200) was reported second...
+    const reordered = Project(
+      id: 4,
+      name: 'Reordered Rig',
+      windows: [
+        ProjectWindow(
+          id: 40,
+          name: 'Chrome',
+          bundleId: 'com.google.Chrome',
+          screenIndex: 1,
+          displayId: 200,
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100,
+        ),
+      ],
+    );
+
+    // ...but by launch time the OS reports the very same two displays in the
+    // opposite order — same displayIds, swapped positions.
+    final container = createContainer(
+      overrides: [
+        appLauncherRepositoryProvider.overrideWithValue(launcher),
+        windowControlRepositoryProvider.overrideWithValue(windowControl),
+        screensProvider.overrideWith(
+          (ref) async => const [
+            ScreenInfo(
+              index: 0,
+              visibleX: 2560,
+              visibleY: 0,
+              visibleWidth: 1512,
+              visibleHeight: 945,
+              isMain: false,
+              displayId: 200,
+            ),
+            ScreenInfo(
+              index: 1,
+              visibleX: 0,
+              visibleY: 25,
+              visibleWidth: 2560,
+              visibleHeight: 1415,
+              isMain: true,
+              displayId: 100,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    // When
+    await container.read(launchServiceProvider.notifier).launch(reordered);
+
+    // Then — placed on display 200's frame (now at index 0), not on whatever
+    // screen sits at the saved index 1 (display 100, the main screen)
+    verify(
+      () => windowControl.positionWindow(
+        processId: 4242,
+        x: 2560,
+        y: 0,
+        width: 1512,
+        height: 945,
+        timeout: any(named: 'timeout'),
+      ),
+    ).called(1);
+  });
+
   test('Given a project containing a website, '
       'when it is launched, '
       'then the url is opened and no window placement is attempted for it', () async {

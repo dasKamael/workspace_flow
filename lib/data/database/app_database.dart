@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -45,6 +45,12 @@ class AppDatabase extends _$AppDatabase {
       // enforcement can match the running process instead of just its display name.
       if (from < 3) {
         await m.addColumn(blockedItems, blockedItems.bundleId);
+      }
+      // v4: a window remembers which physical display it was arranged on, not just a
+      // positional index — `NSScreen.screens`' array order can change across a sleep
+      // or a monitor reconnect even with the same displays attached.
+      if (from < 4) {
+        await m.addColumn(projectWindows, projectWindows.displayId);
       }
     },
     beforeOpen: (details) async {

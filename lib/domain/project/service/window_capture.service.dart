@@ -49,6 +49,7 @@ class WindowCaptureService extends _$WindowCaptureService {
       name: window.name,
       bundleId: window.bundleId,
       screenIndex: screen.index,
+      displayId: screen.displayId,
       x: percent.x,
       y: percent.y,
       width: percent.width,

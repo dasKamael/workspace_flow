@@ -5,6 +5,7 @@ import 'package:workspace_flow/domain/project/model/launch_progress.dart';
 import 'package:workspace_flow/domain/project/model/project.dart';
 import 'package:workspace_flow/domain/project/model/project_window.dart';
 import 'package:workspace_flow/domain/project/service/launch.service.dart';
+import 'package:workspace_flow/domain/system/service/permission.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_radius.dart';
@@ -13,6 +14,7 @@ import 'package:workspace_flow/presentation/design_system/atoms/ui_spacer.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_typography.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_fade_up.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_hover_region.dart';
+import 'package:workspace_flow/presentation/design_system/molecules/ui_link_label.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_primary_button.dart';
 import 'package:workspace_flow/presentation/design_system/molecules/ui_tick_box.dart';
 import 'package:workspace_flow/presentation/design_system/organisms/ui_card.dart';
@@ -54,6 +56,10 @@ class WorkspaceCard extends ConsumerWidget {
               ),
             ],
           ),
+          if (progress.needsAccessibilityPermission) ...[
+            const _AccessibilityPermissionBanner(),
+            UiSpacer.l,
+          ],
           UiSpacer.l,
           // Re-keyed on the project so the row cascade replays when the selection changes.
           Column(
@@ -77,6 +83,40 @@ class WorkspaceCard extends ConsumerWidget {
     if (progress.hasLaunched) return context.translations.workspace_rearrange;
     return context.translations.workspace_launch;
   }
+}
+
+/// Shown above the window rows when the last launch could not position anything —
+/// the apps still opened, but landed wherever macOS put them instead of where the
+/// project saved them.
+class _AccessibilityPermissionBanner extends ConsumerWidget {
+  const _AccessibilityPermissionBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Container(
+    padding: const EdgeInsets.all(UiSize.m),
+    decoration: BoxDecoration(color: UiColor.bgAccent, borderRadius: UiRadius.allM),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(context.translations.permission_accessibility_title, style: UiTypography.cardLabel),
+              UiSpacer.xs,
+              Text(context.translations.permission_accessibility_body, style: UiTypography.hint),
+            ],
+          ),
+        ),
+        UiSpacer.m,
+        UiLinkLabel(
+          label: context.translations.permission_accessibility_open_settings,
+          onTap: () => ref.read(accessibilityPermissionServiceProvider.notifier).request(),
+        ),
+      ],
+    ),
+  );
 }
 
 class _WindowRow extends StatelessWidget {

@@ -19,6 +19,11 @@ abstract class ScreenInfo with _$ScreenInfo {
     required double visibleHeight,
     required bool isMain,
     double? diagonalInches,
+
+    /// `CGDirectDisplayID` — stable for the same physical display across sleep/wake
+    /// and reconnects, unlike [index], which just reflects `NSScreen.screens`' current
+    /// array order and can silently swap between two still-attached monitors.
+    int? displayId,
   }) = _ScreenInfo;
 
   /// Read back from the layout overlay, which runs in its own Flutter engine.

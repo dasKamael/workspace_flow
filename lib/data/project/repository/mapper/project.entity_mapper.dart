@@ -38,6 +38,7 @@ class ProjectWindowEntityMapper implements EntityMapper<ProjectWindow, ProjectWi
     url: entity.url,
     documentPath: entity.documentPath,
     screenIndex: entity.screenIndex,
+    displayId: entity.displayId,
     x: entity.x,
     y: entity.y,
     width: entity.width,

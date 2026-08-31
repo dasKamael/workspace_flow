@@ -24,6 +24,12 @@ class ProjectWindows extends Table {
   /// A folder or file to open with [bundleId] — a specific project, not just the app.
   TextColumn get documentPath => text().nullable()();
   IntColumn get screenIndex => integer().withDefault(const Constant(0))();
+
+  /// `CGDirectDisplayID` of the screen this window was placed on, captured at arrange
+  /// time — preferred over [screenIndex] at launch since `NSScreen.screens`' array
+  /// order isn't guaranteed stable across sleep/wake or a reconnect. Null for rows
+  /// saved before this column existed.
+  IntColumn get displayId => integer().nullable()();
   RealColumn get x => real()();
   RealColumn get y => real()();
   RealColumn get width => real()();

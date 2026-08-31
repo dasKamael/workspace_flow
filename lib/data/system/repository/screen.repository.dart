@@ -23,6 +23,7 @@ class ScreenRepository {
           visibleHeight: _toDouble(row['visibleHeight']),
           isMain: row['isMain'] == true,
           diagonalInches: row['diagonalInches'] == null ? null : _toDouble(row['diagonalInches']),
+          displayId: row['displayId'] == null ? null : _toDouble(row['displayId']).toInt(),
         ),
     ];
   }
