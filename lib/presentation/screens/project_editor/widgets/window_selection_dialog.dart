@@ -3,9 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workspace_flow/common/translation/translation.extension.dart';
-import 'package:workspace_flow/data/system/repository/app_launcher.repository.dart';
-import 'package:workspace_flow/domain/system/app_icons.util.dart';
 import 'package:workspace_flow/domain/system/model/captured_window.dart';
+import 'package:workspace_flow/domain/system/service/app_icons.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_radius.dart';
@@ -57,10 +56,7 @@ class _WindowSelectionDialogState extends ConsumerState<_WindowSelectionDialog> 
   }
 
   Future<void> _loadIcons() async {
-    final icons = await AppIconsUtil.fetch(
-      ref.read(appLauncherRepositoryProvider),
-      widget.windows.map((window) => window.bundleId),
-    );
+    final icons = await ref.read(appIconsForProvider(widget.windows.map((window) => window.bundleId)).future);
     if (mounted) setState(() => _icons = icons);
   }
 

@@ -25,3 +25,17 @@ class BlockedAttempts extends Table {
   TextColumn get target => text().withLength(min: 1, max: 300)();
   IntColumn get profileId => integer().nullable().references(BlockerProfiles, #id, onDelete: KeyAction.setNull)();
 }
+
+/// A user-editable preset offered next to the dial. "Open end" is not a row here — it
+/// is a fixed, non-deletable entry the domain layer appends after these.
+@DataClassName('FocusPresetEntity')
+class FocusPresets extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get label => text().withLength(min: 1, max: 100)();
+  IntColumn get minutes => integer()();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  /// The session length the app starts on. Exactly one row should carry this; if none
+  /// do (the row was deleted), the app falls back to `kFocusDefaultMinutes`.
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+}

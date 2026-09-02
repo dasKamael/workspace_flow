@@ -277,24 +277,6 @@ abstract class AppLocalizations {
   /// **'{sessions, plural, =1{1 session today} other{{sessions} sessions today}} · {blocked} blocked'**
   String focus_session_stats(int sessions, int blocked);
 
-  /// No description provided for @focus_preset_pomodoro.
-  ///
-  /// In en, this message translates to:
-  /// **'Pomodoro'**
-  String get focus_preset_pomodoro;
-
-  /// No description provided for @focus_preset_deep_work.
-  ///
-  /// In en, this message translates to:
-  /// **'Deep work'**
-  String get focus_preset_deep_work;
-
-  /// No description provided for @focus_preset_long_haul.
-  ///
-  /// In en, this message translates to:
-  /// **'Long haul'**
-  String get focus_preset_long_haul;
-
   /// No description provided for @focus_preset_open_end.
   ///
   /// In en, this message translates to:
@@ -492,6 +474,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel'**
   String get layout_overlay_hint;
+
+  /// No description provided for @settings_eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings_eyebrow;
+
+  /// No description provided for @settings_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings_title;
+
+  /// No description provided for @settings_login_item_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Launch at login'**
+  String get settings_login_item_label;
+
+  /// No description provided for @settings_accessibility_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility access'**
+  String get settings_accessibility_label;
+
+  /// No description provided for @settings_accessibility_granted.
+  ///
+  /// In en, this message translates to:
+  /// **'Granted'**
+  String get settings_accessibility_granted;
+
+  /// No description provided for @settings_accessibility_not_granted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not granted'**
+  String get settings_accessibility_not_granted;
+
+  /// No description provided for @settings_accessibility_action.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant…'**
+  String get settings_accessibility_action;
+
+  /// No description provided for @settings_blocker_section_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocker unlock allowance'**
+  String get settings_blocker_section_label;
+
+  /// No description provided for @settings_blocker_unlock_minutes_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock length (minutes)'**
+  String get settings_blocker_unlock_minutes_label;
+
+  /// No description provided for @settings_blocker_unlocks_per_session_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks per session'**
+  String get settings_blocker_unlocks_per_session_label;
+
+  /// No description provided for @settings_focus_presets_section_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus presets'**
+  String get settings_focus_presets_section_label;
+
+  /// No description provided for @settings_focus_presets_label_placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset name'**
+  String get settings_focus_presets_label_placeholder;
+
+  /// No description provided for @settings_focus_presets_add.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add preset'**
+  String get settings_focus_presets_add;
+
+  /// No description provided for @settings_focus_presets_default_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get settings_focus_presets_default_hint;
 
   /// No description provided for @profile_editor_eyebrow.
   ///

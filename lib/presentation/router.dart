@@ -5,12 +5,13 @@ import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/navigator_keys.dart';
 import 'package:workspace_flow/presentation/screens/profile_editor/profile_editor.screen.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/project_editor.screen.dart';
+import 'package:workspace_flow/presentation/screens/settings/settings.screen.dart';
 import 'package:workspace_flow/presentation/screens/workspace/workspace.screen.dart';
 
 part 'router.g.dart';
 
 /// Every route in the app. Navigate with `context.goNamed(UiRoute.x.name)`.
-enum UiRoute { workspace, projectEditor, profileEditor }
+enum UiRoute { workspace, projectEditor, profileEditor, settings }
 
 /// Path parameters, so no route ever spells a key as a bare string.
 enum RoutePathParam { id }
@@ -38,6 +39,11 @@ Raw<GoRouter> router(Ref ref) {
             path: 'profile/:${RoutePathParam.id.name}',
             name: UiRoute.profileEditor.name,
             pageBuilder: (context, state) => _sheetPage(state, ProfileEditorScreen(profileId: _idOf(state))),
+          ),
+          GoRoute(
+            path: 'settings',
+            name: UiRoute.settings.name,
+            pageBuilder: (context, state) => _sheetPage(state, const SettingsScreen()),
           ),
         ],
       ),

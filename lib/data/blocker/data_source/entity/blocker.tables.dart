@@ -28,3 +28,15 @@ class BlockedItems extends Table {
   /// running process reliably instead of by display name alone.
   TextColumn get bundleId => text().nullable()();
 }
+
+/// The single row of user-configurable "Unlock" allowance. `id` is always `1` — there
+/// is exactly one set of these settings, not one per profile.
+@DataClassName('BlockerSettingsEntity')
+class BlockerSettings extends Table {
+  IntColumn get id => integer()();
+  IntColumn get unlockMinutes => integer().withDefault(const Constant(2))();
+  IntColumn get unlocksPerSession => integer().withDefault(const Constant(3))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

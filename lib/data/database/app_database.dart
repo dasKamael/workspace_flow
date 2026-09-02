@@ -17,7 +17,17 @@ const String kDatabaseName = 'workspace_flow';
 /// profiles and their entries, the app library, and the session/attempt history the
 /// statistics are derived from.
 @DriftDatabase(
-  tables: [Projects, ProjectWindows, AppLibraryEntries, BlockerProfiles, BlockedItems, FocusSessions, BlockedAttempts],
+  tables: [
+    Projects,
+    ProjectWindows,
+    AppLibraryEntries,
+    BlockerProfiles,
+    BlockedItems,
+    BlockerSettings,
+    FocusSessions,
+    BlockedAttempts,
+    FocusPresets,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _open());
@@ -30,10 +40,14 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+      await _seedSettingsDefaults();
+    },
     onUpgrade: (Migrator m, int from, int to) async {
       // v2: a window or library entry can name a folder/file to open — a specific
       // project rather than just the app in general.
@@ -52,12 +66,33 @@ class AppDatabase extends _$AppDatabase {
       if (from < 4) {
         await m.addColumn(projectWindows, projectWindows.displayId);
       }
+      // v5: the blocker's "Unlock" allowance and the focus dial's presets become
+      // user-configurable instead of hardcoded constants.
+      if (from < 5) {
+        await m.createTable(blockerSettings);
+        await m.createTable(focusPresets);
+        await _seedSettingsDefaults();
+      }
     },
     beforeOpen: (details) async {
       // Required for the ON DELETE CASCADE / SET NULL clauses above to take effect.
       await customStatement('PRAGMA foreign_keys = ON');
     },
   );
+
+  /// Shared by a fresh install (`onCreate` already ran `createAll`, so the tables
+  /// exist) and an upgrade from before v5 (`onUpgrade`, right after creating them) —
+  /// either way the singleton settings row and the default presets need to exist.
+  Future<void> _seedSettingsDefaults() async {
+    await into(blockerSettings).insert(BlockerSettingsCompanion.insert(id: Value(1)));
+    await batch(
+      (batch) => batch.insertAll(focusPresets, [
+        FocusPresetsCompanion.insert(label: 'Pomodoro', minutes: 25, sortOrder: Value(0)),
+        FocusPresetsCompanion.insert(label: 'Deep work', minutes: 50, sortOrder: Value(1), isDefault: Value(true)),
+        FocusPresetsCompanion.insert(label: 'Long haul', minutes: 90, sortOrder: Value(2)),
+      ]),
+    );
+  }
 }
 
 @Riverpod(keepAlive: true)

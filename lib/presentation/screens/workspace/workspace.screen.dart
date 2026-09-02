@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:workspace_flow/common/translation/translation.extension.dart';
 import 'package:workspace_flow/domain/focus/service/focus_session.service.dart';
 import 'package:workspace_flow/domain/project/model/project.dart';
@@ -9,6 +10,7 @@ import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_size.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_spacer.dart';
 import 'package:workspace_flow/presentation/design_system/organisms/ui_window_title_bar.dart';
+import 'package:workspace_flow/presentation/router.dart';
 import 'package:workspace_flow/presentation/screens/focus_running/focus_running.screen.dart';
 import 'package:workspace_flow/presentation/screens/workspace/widgets/blocker_card.dart';
 import 'package:workspace_flow/presentation/screens/workspace/widgets/focus_session_card.dart';
@@ -34,6 +36,7 @@ class WorkspaceScreen extends ConsumerWidget {
                 ? context.translations.window_title_running
                 : context.translations.window_title_idle(project?.name ?? ''),
             isSessionRunning: isRunning,
+            onSettingsTap: isRunning ? null : () => context.goNamed(UiRoute.settings.name),
           ),
           Expanded(
             // Clipped so the start burst cannot paint over the title bar.

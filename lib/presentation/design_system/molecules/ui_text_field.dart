@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_radius.dart';
@@ -16,6 +17,7 @@ class UiTextField extends StatefulWidget {
     this.autofocus = false,
     this.padding = const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
     this.leading,
+    this.inputFormatters,
     super.key,
   });
 
@@ -29,6 +31,9 @@ class UiTextField extends StatefulWidget {
   /// An icon fixed at the start of the field — e.g. marking what kind of entry
   /// typing here will create, before there is anything to distinguish it by yet.
   final Widget? leading;
+
+  /// Restricts what can be typed — e.g. digits only for a numeric setting.
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<UiTextField> createState() => _UiTextFieldState();
@@ -75,6 +80,7 @@ class _UiTextFieldState extends State<UiTextField> {
               autofocus: widget.autofocus,
               onSubmitted: widget.onSubmitted,
               onChanged: widget.onChanged,
+              inputFormatters: widget.inputFormatters,
               cursorHeight: UiSize.ml,
               style: UiTypography.input,
               decoration: InputDecoration(

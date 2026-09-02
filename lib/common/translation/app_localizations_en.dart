@@ -125,15 +125,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get focus_preset_pomodoro => 'Pomodoro';
-
-  @override
-  String get focus_preset_deep_work => 'Deep work';
-
-  @override
-  String get focus_preset_long_haul => 'Long haul';
-
-  @override
   String get focus_preset_open_end => 'Open end';
 
   @override
@@ -243,6 +234,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layout_overlay_hint => 'Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel';
+
+  @override
+  String get settings_eyebrow => 'Settings';
+
+  @override
+  String get settings_title => 'Settings';
+
+  @override
+  String get settings_login_item_label => 'Launch at login';
+
+  @override
+  String get settings_accessibility_label => 'Accessibility access';
+
+  @override
+  String get settings_accessibility_granted => 'Granted';
+
+  @override
+  String get settings_accessibility_not_granted => 'Not granted';
+
+  @override
+  String get settings_accessibility_action => 'Grant…';
+
+  @override
+  String get settings_blocker_section_label => 'Blocker unlock allowance';
+
+  @override
+  String get settings_blocker_unlock_minutes_label => 'Unlock length (minutes)';
+
+  @override
+  String get settings_blocker_unlocks_per_session_label => 'Unlocks per session';
+
+  @override
+  String get settings_focus_presets_section_label => 'Focus presets';
+
+  @override
+  String get settings_focus_presets_label_placeholder => 'Preset name';
+
+  @override
+  String get settings_focus_presets_add => '+ Add preset';
+
+  @override
+  String get settings_focus_presets_default_hint => 'Default';
 
   @override
   String get profile_editor_eyebrow => 'Settings · Profile';

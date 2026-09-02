@@ -5,6 +5,7 @@ import 'package:workspace_flow/common/translation/translation.extension.dart';
 import 'package:workspace_flow/domain/focus/model/focus_preset.dart';
 import 'package:workspace_flow/domain/focus/model/focus_session.dart';
 import 'package:workspace_flow/domain/focus/model/focus_stats.dart';
+import 'package:workspace_flow/domain/focus/service/focus_preset.service.dart';
 import 'package:workspace_flow/domain/focus/service/focus_session.service.dart';
 import 'package:workspace_flow/domain/focus/service/focus_stats.service.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
@@ -140,18 +141,21 @@ class _PresetsAndStart extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.read(focusSessionServiceProvider.notifier);
     final stats = ref.watch(focusStatsProvider).value ?? const FocusStats();
+    // Falls back to just the built-in Open End preset while the database hasn't
+    // responded yet, rather than showing an empty list for a moment.
+    final presets = ref.watch(focusPresetsProvider).value ?? const [FocusPreset.openEnd];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (final preset in FocusPreset.all) ...[
+        for (final preset in presets) ...[
           _PresetRow(
             preset: preset,
             isSelected: preset.minutes == session.minutes,
             onTap: () => service.selectPreset(preset),
           ),
-          if (preset != FocusPreset.all.last) UiSpacer.s,
+          if (preset != presets.last) UiSpacer.s,
         ],
         UiSpacer.ml,
         UiPrimaryButton(
@@ -182,12 +186,7 @@ class _PresetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = switch (preset.id) {
-      'pomodoro' => context.translations.focus_preset_pomodoro,
-      'deep_work' => context.translations.focus_preset_deep_work,
-      'long_haul' => context.translations.focus_preset_long_haul,
-      _ => context.translations.focus_preset_open_end,
-    };
+    final label = preset.isOpenEnd ? context.translations.focus_preset_open_end : preset.label;
 
     return UiHoverRegion(
       builder: (context, isHovered) => GestureDetector(

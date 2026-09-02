@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_color.dart';
+import 'package:workspace_flow/presentation/design_system/atoms/ui_icon.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_motion.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_size.dart';
 import 'package:workspace_flow/presentation/design_system/atoms/ui_typography.dart';
+import 'package:workspace_flow/presentation/design_system/molecules/ui_svg_icon.dart';
 
 /// The 46px title bar with the centred mono title.
 ///
@@ -10,12 +12,16 @@ import 'package:workspace_flow/presentation/design_system/atoms/ui_typography.da
 /// title bar, so AppKit draws them on top of this strip. The left inset keeps the title
 /// clear of them.
 class UiWindowTitleBar extends StatelessWidget {
-  const UiWindowTitleBar({required this.title, this.isSessionRunning = false, super.key});
+  const UiWindowTitleBar({required this.title, this.isSessionRunning = false, this.onSettingsTap, super.key});
 
   final String title;
 
   /// While a session runs the bar goes dark with the rest of the window.
   final bool isSessionRunning;
+
+  /// Opens Settings. Left null while a session runs — a distraction-free view has no
+  /// exit into anything else.
+  final VoidCallback? onSettingsTap;
 
   /// Space reserved for the system's traffic-light buttons.
   static const double trafficLightInset = 78;
@@ -44,7 +50,24 @@ class UiWindowTitleBar extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: trafficLightInset),
+        SizedBox(
+          width: trafficLightInset,
+          child: onSettingsTap == null
+              ? null
+              : Center(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: onSettingsTap,
+                      child: UiSvgIcon(
+                        path: UiIcon.cog6Tooth,
+                        size: UiSize.l,
+                        color: isSessionRunning ? UiColor.onDarkAccent : UiColor.fgMuted,
+                      ),
+                    ),
+                  ),
+                ),
+        ),
       ],
     ),
   );

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:workspace_flow/data/blocker/data_source/blocker.dao.dart';
 import 'package:workspace_flow/data/blocker/repository/blocker_profile.repository.dart';
+import 'package:workspace_flow/data/blocker/repository/blocker_settings.repository.dart';
 import 'package:workspace_flow/data/focus/data_source/focus.dao.dart';
 import 'package:workspace_flow/data/focus/repository/focus_session.repository.dart';
 import 'package:workspace_flow/data/system/repository/blocked_window.repository.dart';
@@ -17,6 +18,7 @@ import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker_settings.service.dart';
 
 import '../../../database.test_util.dart';
 import '../../../mocks/system.mock.dart';
@@ -92,6 +94,7 @@ void main() {
     container = createContainer(
       overrides: [
         blockerProfileRepositoryProvider.overrideWithValue(profiles),
+        blockerSettingsRepositoryProvider.overrideWithValue(BlockerSettingsRepository(dao: BlockerDao(database))),
         focusSessionRepositoryProvider.overrideWithValue(FocusSessionRepository(dao: FocusDao(database))),
         blockerEnforcementRepositoryProvider.overrideWith((ref) => enforcement),
         blockedWindowRepositoryProvider.overrideWithValue(blockedWindow),
@@ -101,9 +104,10 @@ void main() {
     );
     // Riverpod 3 pauses a stream provider's subscription while nothing actively
     // listens to it — in the real app a widget's `ref.watch` does that; here nothing
-    // otherwise would, so `BlockerService`'s internal reads of the profile list would
-    // hang forever.
+    // otherwise would, so `BlockerService`'s internal reads of the profile list (and the
+    // unlock allowance) would hang forever.
     container.listen(blockerProfilesProvider, (_, _) {});
+    container.listen(blockerUnlockSettingsProvider, (_, _) {});
   });
 
   test('Given an armed profile, '

@@ -8,15 +8,24 @@ import 'package:workspace_flow/data/system/repository/menu_bar.repository.dart';
 import 'package:workspace_flow/domain/blocker/model/blocked_item_kind.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_error_reason.enum.dart';
 import 'package:workspace_flow/domain/blocker/model/blocker_profile.dart';
+import 'package:workspace_flow/domain/blocker/model/blocker_unlock_settings.dart';
 import 'package:workspace_flow/domain/blocker/service/blocked_page_server.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker_settings.service.dart';
 
 part 'blocker.service.g.dart';
 
 /// How long "Unlock" exempts a target from enforcement.
+///
+/// User-configurable via Settings now — this is the fallback used before
+/// [blockerUnlockSettingsProvider] has loaded, and the value new installs are seeded
+/// with.
 const Duration kBlockerUnlockDuration = Duration(minutes: 2);
 
 /// How many unlocks a single armed session gets, reset every time the blocker is armed.
+///
+/// Same role as [kBlockerUnlockDuration]: fallback and seed value, not the source of
+/// truth once settings have loaded.
 const int kBlockerUnlocksPerSession = 3;
 
 /// The last arm/disarm failure or permission problem the UI hasn't shown yet, if any.
@@ -108,7 +117,7 @@ class BlockerService extends _$BlockerService {
     }
 
     final profile = await _selectedProfile();
-    unlocksRemaining = kBlockerUnlocksPerSession;
+    unlocksRemaining = _unlockSettings.unlocksPerSession;
     try {
       await enforcement.arm(profile?.enabledItems ?? const [], blockedPageBaseUrl: await _blockedPageBaseUrl());
     } catch (_) {
@@ -142,8 +151,16 @@ class BlockerService extends _$BlockerService {
   Future<void> unlock(String target) async {
     if (unlocksRemaining <= 0) return;
     unlocksRemaining--;
-    await ref.read(blockerEnforcementRepositoryProvider).allowTemporarily(target, kBlockerUnlockDuration);
+    final minutes = _unlockSettings.unlockMinutes;
+    await ref.read(blockerEnforcementRepositoryProvider).allowTemporarily(target, Duration(minutes: minutes));
   }
+
+  /// The persisted unlock allowance, or the hardcoded fallback while it hasn't loaded
+  /// yet — read fresh on every arm/unlock rather than watched, so this never
+  /// overwrites live session state the way a reactive listener could.
+  BlockerUnlockSettings get _unlockSettings =>
+      ref.read(blockerUnlockSettingsProvider).value ??
+      BlockerUnlockSettings(unlockMinutes: kBlockerUnlockDuration.inMinutes, unlocksPerSession: kBlockerUnlocksPerSession);
 
   Future<BlockerProfile?> _selectedProfile() async {
     // Awaited so arming right after startup does not run against an empty list.
@@ -169,7 +186,7 @@ class BlockerService extends _$BlockerService {
             target: target,
             profileName: profile?.name ?? '',
             unlocksLeft: unlocksRemaining,
-            unlockMinutes: kBlockerUnlockDuration.inMinutes,
+            unlockMinutes: _unlockSettings.unlockMinutes,
           ),
     );
   }

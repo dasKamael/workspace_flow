@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:workspace_flow/data/blocker/data_source/blocked_page_server.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker.service.dart';
 import 'package:workspace_flow/domain/blocker/service/blocker_profile.service.dart';
+import 'package:workspace_flow/domain/blocker/service/blocker_settings.service.dart';
 
 part 'blocked_page_server.service.g.dart';
 
@@ -18,7 +19,7 @@ class BlockedPageServerService extends _$BlockedPageServerService {
     currentPageData: () => (
       profileName: ref.read(selectedProfileProvider)?.name ?? '',
       unlocksRemaining: ref.read(blockerServiceProvider.notifier).unlocksRemaining,
-      unlockMinutes: kBlockerUnlockDuration.inMinutes,
+      unlockMinutes: ref.read(blockerUnlockSettingsProvider).value?.unlockMinutes ?? kBlockerUnlockDuration.inMinutes,
     ),
   );
 

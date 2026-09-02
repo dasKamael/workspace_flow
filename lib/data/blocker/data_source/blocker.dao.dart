@@ -5,7 +5,7 @@ import 'package:workspace_flow/data/blocker/data_source/entity/blocker.tables.da
 part 'blocker.dao.g.dart';
 
 /// Database access for blocker profiles and their entries.
-@DriftAccessor(tables: [BlockerProfiles, BlockedItems])
+@DriftAccessor(tables: [BlockerProfiles, BlockedItems, BlockerSettings])
 class BlockerDao extends DatabaseAccessor<AppDatabase> with _$BlockerDaoMixin {
   BlockerDao(super.db);
 
@@ -56,4 +56,13 @@ class BlockerDao extends DatabaseAccessor<AppDatabase> with _$BlockerDaoMixin {
   /// Toggles whether a single entry is enforced.
   Future<void> setItemEnabled(int itemId, {required bool enabled}) =>
       (update(blockedItems)..where((i) => i.id.equals(itemId))).write(BlockedItemsCompanion(enabled: Value(enabled)));
+
+  /// The singleton "Unlock" allowance row — always present, seeded on database creation.
+  Stream<BlockerSettingsEntity> watchSettings() =>
+      (select(blockerSettings)..where((s) => s.id.equals(1))).watchSingle();
+
+  Future<void> updateSettings({required int unlockMinutes, required int unlocksPerSession}) =>
+      (update(blockerSettings)..where((s) => s.id.equals(1))).write(
+        BlockerSettingsCompanion(unlockMinutes: Value(unlockMinutes), unlocksPerSession: Value(unlocksPerSession)),
+      );
 }

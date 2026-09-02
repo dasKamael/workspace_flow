@@ -54,9 +54,6 @@
       "blocked": { "type": "int" }
     }
   },
-  "focus_preset_pomodoro": "Pomodoro",
-  "focus_preset_deep_work": "Deep work",
-  "focus_preset_long_haul": "Long haul",
   "focus_preset_open_end": "Open end",
   "focus_preset_minutes": "{minutes} min",
   "@focus_preset_minutes": {
@@ -114,6 +111,21 @@
   "layout_overlay_save": "Save layout",
   "layout_overlay_library_label": "Drag an app onto a screen",
   "layout_overlay_hint": "Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel",
+
+  "settings_eyebrow": "Settings",
+  "settings_title": "Settings",
+  "settings_login_item_label": "Launch at login",
+  "settings_accessibility_label": "Accessibility access",
+  "settings_accessibility_granted": "Granted",
+  "settings_accessibility_not_granted": "Not granted",
+  "settings_accessibility_action": "Grant…",
+  "settings_blocker_section_label": "Blocker unlock allowance",
+  "settings_blocker_unlock_minutes_label": "Unlock length (minutes)",
+  "settings_blocker_unlocks_per_session_label": "Unlocks per session",
+  "settings_focus_presets_section_label": "Focus presets",
+  "settings_focus_presets_label_placeholder": "Preset name",
+  "settings_focus_presets_add": "+ Add preset",
+  "settings_focus_presets_default_hint": "Default",
 
   "profile_editor_eyebrow": "Settings · Profile",
   "profile_editor_title_new": "New profile",
