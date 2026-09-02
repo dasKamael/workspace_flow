@@ -30,6 +30,10 @@ class WindowControlRepository {
       for (final row in rows)
         CapturedWindow(
           name: row['name']?.toString() ?? '',
+          // Only worth surfacing for editors/IDEs, where a window's title names the
+          // project or folder open in it. For everything else — a browser tab, a mail
+          // subject, a Slack channel — it is just noise next to the app's own name.
+          windowTitle: _isProjectApp(row['bundleId']?.toString()) ? row['title']?.toString() ?? '' : '',
           bundleId: row['bundleId']?.toString() ?? '',
           x: _toDouble(row['x']),
           y: _toDouble(row['y']),
@@ -40,6 +44,33 @@ class WindowControlRepository {
   }
 
   static double _toDouble(Object? value) => value is num ? value.toDouble() : 0;
+
+  /// Editors and IDEs whose window title names the project or folder open in it — the
+  /// only apps where two windows of the same app are commonly two different projects a
+  /// user would want to tell apart in the picker.
+  static const Set<String> _projectAppBundleIds = {
+    'com.microsoft.VSCode',
+    'com.microsoft.VSCodeInsiders',
+    'com.vscodium',
+    'com.apple.dt.Xcode',
+    'com.jetbrains.intellij',
+    'com.jetbrains.intellij.ce',
+    'com.jetbrains.WebStorm',
+    'com.jetbrains.PhpStorm',
+    'com.jetbrains.PyCharm',
+    'com.jetbrains.CLion',
+    'com.jetbrains.rider',
+    'com.jetbrains.rubymine',
+    'com.jetbrains.goland',
+    'com.google.android.studio',
+    'com.sublimetext.4',
+    'com.sublimetext.3',
+    'dev.zed.Zed',
+    'com.panic.Nova',
+    'com.barebones.bbedit',
+  };
+
+  static bool _isProjectApp(String? bundleId) => bundleId != null && _projectAppBundleIds.contains(bundleId);
 
   /// Positions the front window of [processId] at an absolute screen rectangle.
   ///

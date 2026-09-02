@@ -22,6 +22,7 @@ import 'package:workspace_flow/presentation/design_system/organisms/ui_sheet.dar
 import 'package:workspace_flow/presentation/router.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/project_editor.controller.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/project_editor.state.dart';
+import 'package:workspace_flow/presentation/screens/project_editor/widgets/window_selection_dialog.dart';
 
 /// The project editor sheet: name, sources on the left, window layout on the right.
 class ProjectEditorScreen extends ConsumerStatefulWidget {
@@ -77,10 +78,21 @@ class _ProjectEditorScreenState extends ConsumerState<ProjectEditorScreen> {
   /// Opens the full-size overlay on the real screens.
   Future<void> _arrangeOnScreen() => _controller.arrangeOnScreen();
 
-  /// Freezes the windows that are open right now into the draft.
+  /// Lets the user choose which of the windows open right now to freeze into the
+  /// draft, rather than always taking every one of them.
   Future<void> _captureCurrentArrangement() async {
-    final captured = await _controller.captureCurrentArrangement();
-    if (captured || !mounted) return;
+    final windows = await _controller.listOpenWindows();
+    if (windows.isEmpty) {
+      if (mounted) setState(() => _captureFailed = true);
+      return;
+    }
+    if (!mounted) return;
+
+    final selected = await showWindowSelectionDialog(context, windows: windows);
+    if (selected == null || selected.isEmpty) return;
+
+    final applied = await _controller.applySelectedWindows(selected);
+    if (applied || !mounted) return;
     setState(() => _captureFailed = true);
   }
 

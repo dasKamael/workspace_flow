@@ -8,7 +8,21 @@
 PRODUCT_NAME = Loom
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.workspaceFlow
+PRODUCT_BUNDLE_IDENTIFIER = de.coodoo.loom
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 Coodoo. All rights reserved.
+
+// Signs local builds with a local, self-signed "Loom Local Dev" identity instead of
+// an ad-hoc one. An ad-hoc signature hashes the binary's own contents, so it changes
+// on every single rebuild — and macOS ties TCC grants (Accessibility among them) to
+// that signature, silently revoking them on every build. This app's entitlements
+// turn the sandbox off (it positions other apps' windows and launches them, both
+// impossible sandboxed), which a free Apple ID's automatic signing cannot provision
+// at all — it silently falls back to ad-hoc rather than failing outright. A locally
+// generated certificate sidesteps Apple's provisioning entirely: same identity every
+// build, so a permission granted once actually stays granted. Real distribution still
+// needs the Developer ID + notarization pipeline described in Release.entitlements.
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Loom Local Dev
+DEVELOPMENT_TEAM =

@@ -29,6 +29,10 @@ class WorkspaceCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(launchServiceProvider);
     final windows = project?.windows ?? const <ProjectWindow>[];
+    // Watched directly, not just read off a completed launch's `needsAccessibilityPermission`
+    // — this shows the hint as soon as the card renders, before the user wastes a launch
+    // attempt discovering it the hard way.
+    final hasAccessibility = ref.watch(accessibilityPermissionServiceProvider).value ?? true;
 
     return UiCard(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: UiSize.xl),
@@ -56,7 +60,7 @@ class WorkspaceCard extends ConsumerWidget {
               ),
             ],
           ),
-          if (progress.needsAccessibilityPermission) ...[
+          if (!hasAccessibility) ...[
             const _AccessibilityPermissionBanner(),
             UiSpacer.l,
           ],

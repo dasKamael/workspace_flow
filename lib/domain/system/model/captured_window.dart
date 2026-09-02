@@ -15,5 +15,10 @@ abstract class CapturedWindow with _$CapturedWindow {
     required double y,
     required double width,
     required double height,
+
+    /// The window's own title — "app-backend" for a VS Code project, say — as
+    /// opposed to [name], which is the app's name and identical for every window of
+    /// that app. Empty when the app reports none.
+    @Default('') String windowTitle,
   }) = _CapturedWindow;
 }

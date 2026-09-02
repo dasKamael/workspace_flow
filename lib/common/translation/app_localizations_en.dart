@@ -224,6 +224,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get window_selection_eyebrow => 'Use current arrangement';
+
+  @override
+  String get window_selection_title => 'Which windows should be saved?';
+
+  @override
+  String window_selection_confirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count windows', one: '1 window');
+    return 'Add $_temp0';
+  }
+
+  @override
   String get layout_overlay_save => 'Save layout';
 
   @override

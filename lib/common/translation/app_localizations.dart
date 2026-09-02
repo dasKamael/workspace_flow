@@ -457,6 +457,24 @@ abstract class AppLocalizations {
   /// **'{width}×{height}'**
   String project_editor_tile_size(String width, String height);
 
+  /// No description provided for @window_selection_eyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current arrangement'**
+  String get window_selection_eyebrow;
+
+  /// No description provided for @window_selection_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Which windows should be saved?'**
+  String get window_selection_title;
+
+  /// No description provided for @window_selection_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count, plural, =1{1 window} other{{count} windows}}'**
+  String window_selection_confirm(int count);
+
   /// No description provided for @layout_overlay_save.
   ///
   /// In en, this message translates to:

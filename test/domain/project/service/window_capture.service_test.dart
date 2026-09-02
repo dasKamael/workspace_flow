@@ -32,8 +32,10 @@ void main() {
     ],
   );
 
-  Future<List<dynamic>> capture(ProviderContainer container) =>
-      container.read(windowCaptureServiceProvider.notifier).capture();
+  Future<List<dynamic>> capture(ProviderContainer container) async {
+    final service = container.read(windowCaptureServiceProvider.notifier);
+    return service.toLayout(await service.listOpenWindows());
+  }
 
   test('Given a window filling the left 62.5% of the main display, '
       'when the arrangement is captured, '

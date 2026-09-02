@@ -102,6 +102,15 @@
     }
   },
 
+  "window_selection_eyebrow": "Use current arrangement",
+  "window_selection_title": "Which windows should be saved?",
+  "window_selection_confirm": "Add {count, plural, =1{1 window} other{{count} windows}}",
+  "@window_selection_confirm": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
   "layout_overlay_save": "Save layout",
   "layout_overlay_library_label": "Drag an app onto a screen",
   "layout_overlay_hint": "Drag and resize at full size · ⌥ turns off snapping · ⏎ save · esc cancel",

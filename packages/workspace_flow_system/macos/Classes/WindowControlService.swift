@@ -136,6 +136,11 @@ enum WindowControlService {
 
       windows.append([
         "name": application.localizedName ?? bundleId,
+        // The window's own title — "app-backend" for a VS Code project, the page title
+        // for a browser tab — so a picker showing several windows of the same app
+        // (several VS Code projects, say) can tell them apart. The app name alone
+        // would show "Code" for every one of them.
+        "title": titleOf(window) ?? "",
         "bundleId": bundleId,
         "x": frame.origin.x,
         "y": frame.origin.y,
@@ -149,6 +154,15 @@ enum WindowControlService {
 
   /// Windows narrower or shorter than this are treated as tool panels, not layout.
   private static let minimumCapturedEdge: CGFloat = 200
+
+  private static func titleOf(_ window: AXUIElement) -> String? {
+    var value: AnyObject?
+    guard
+      AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &value) == .success,
+      let title = value as? String, !title.isEmpty
+    else { return nil }
+    return title
+  }
 
   private static func frameOf(_ window: AXUIElement) -> CGRect? {
     var positionValue: AnyObject?

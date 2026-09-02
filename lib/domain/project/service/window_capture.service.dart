@@ -16,18 +16,24 @@ class WindowCaptureService extends _$WindowCaptureService {
   @override
   void build() {}
 
-  /// Reads the open windows and maps them onto the attached screens.
+  /// Reads the windows that are open right now, so the caller can let the user pick
+  /// which of them to keep before [toLayout] commits to any of them.
   ///
   /// Returns an empty list when accessibility permission is missing or the bridge is
-  /// unavailable — the caller shows the permission hint rather than an empty layout.
-  Future<List<ProjectWindow>> capture() async {
-    final List<CapturedWindow> captured;
+  /// unavailable — the caller shows the permission hint rather than an empty picker.
+  Future<List<CapturedWindow>> listOpenWindows() async {
     try {
-      captured = await ref.read(windowControlRepositoryProvider).captureWindows();
+      return await ref.read(windowControlRepositoryProvider).captureWindows();
     } on Object {
       return const [];
     }
+  }
 
+  /// Maps the windows the user kept onto the attached screens.
+  ///
+  /// Returns an empty list when no screen is attached — the caller shows the
+  /// permission hint rather than an empty layout.
+  Future<List<ProjectWindow>> toLayout(List<CapturedWindow> captured) async {
     // Refreshed rather than read: `screensProvider` is keepAlive and a display could
     // have been connected or disconnected since it was last resolved.
     final screens = await ref.refresh(screensProvider.future);

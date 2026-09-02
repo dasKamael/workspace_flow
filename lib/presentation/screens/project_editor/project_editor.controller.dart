@@ -4,6 +4,7 @@ import 'package:workspace_flow/domain/project/service/layout_overlay.service.dar
 import 'package:workspace_flow/domain/project/service/project.service.dart';
 import 'package:workspace_flow/domain/project/service/window_capture.service.dart';
 import 'package:workspace_flow/domain/system/model/app_library_entry.dart';
+import 'package:workspace_flow/domain/system/model/captured_window.dart';
 import 'package:workspace_flow/presentation/screens/project_editor/project_editor.state.dart';
 
 part 'project_editor.controller.g.dart';
@@ -56,21 +57,28 @@ class ProjectEditorController extends _$ProjectEditorController {
     state = state.copyWith(windows: [...state.windows, window]);
   }
 
-  /// Replaces the draft with the windows that are open right now.
+  /// The windows open right now, for the picker to show before anything is captured.
   ///
-  /// Returns false when nothing could be read — no permission, or nothing worth
-  /// capturing — and leaves the draft untouched in that case.
-  Future<bool> captureCurrentArrangement() async {
-    final captured = await ref.read(windowCaptureServiceProvider.notifier).capture();
-    if (captured.isEmpty) return false;
+  /// Empty means nothing could be read — no permission, or nothing open worth
+  /// capturing.
+  Future<List<CapturedWindow>> listOpenWindows() =>
+      ref.read(windowCaptureServiceProvider.notifier).listOpenWindows();
+
+  /// Replaces the draft with the windows the user kept in the picker.
+  ///
+  /// Returns false when none of them could be placed — no screen attached — and
+  /// leaves the draft untouched in that case.
+  Future<bool> applySelectedWindows(List<CapturedWindow> selected) async {
+    final windows = await ref.read(windowCaptureServiceProvider.notifier).toLayout(selected);
+    if (windows.isEmpty) return false;
 
     // The captured apps become chips too, so they can be re-added after a change of mind.
     final projects = ref.read(projectServiceProvider.notifier);
-    for (final window in captured) {
+    for (final window in windows) {
       await projects.addToLibrary(AppLibraryEntry(name: window.name, bundleId: window.bundleId));
     }
 
-    state = state.copyWith(windows: captured);
+    state = state.copyWith(windows: windows);
     return true;
   }
 
